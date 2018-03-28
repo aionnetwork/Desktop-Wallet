@@ -1,0 +1,6 @@
+.ant-targets-build.xml
+
+/build
+/pack
+/mod/updated
+*.iml

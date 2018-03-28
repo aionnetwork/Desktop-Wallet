@@ -1,0 +1,16 @@
+.main-stage {
+    -fx-background-color:transparent
+}
+.anchor-pane {
+    -fx-background-color: #19364e;
+}
+
+.label {
+    -fx-text-fill: white;
+    -fx-text-alignment: CENTER;
+}
+
+.header-label{
+    -fx-text-fill: black;
+    -fx-text-alignment: CENTER;
+}

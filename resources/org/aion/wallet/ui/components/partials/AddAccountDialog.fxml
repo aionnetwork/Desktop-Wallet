@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.URL?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane prefHeight="300.0" prefWidth="250.0" styleClass="anchor-pane" xmlns="http://javafx.com/javafx/8.0.121"
+            xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.aion.wallet.ui.components.partials.AddAccountDialog">
+    <stylesheets>
+        <URL value="@addAccountDialog.css"/>
+    </stylesheets>
+    <Label layoutX="84.0" layoutY="6.0" text="Add account" textFill="WHITE"/>
+    <PasswordField fx:id="newPassword" layoutX="40.0" layoutY="22.0" promptText="New password"/>
+    <PasswordField fx:id="retypedPassword" layoutX="40.0" layoutY="55.0" promptText="Retype your password"/>
+    <Button layoutX="57.0" layoutY="89.0" mnemonicParsing="false" text="Create new wallet"
+            onMouseClicked="#createAccount"/>
+    <Label layoutX="92.0" layoutY="142.0" text="Use wallet" textFill="WHITE"/>
+    <TextArea layoutX="26.0" layoutY="158.0" prefHeight="81.0" prefWidth="215.0"
+              promptText="Paste private key"/>
+    <PasswordField layoutX="41.0" layoutY="245.0" promptText="Enter password"/>
+    <Button layoutX="81.0" layoutY="273.0" mnemonicParsing="false" text="Unlock wallet"
+            onMouseClicked="#unlockAccount"/>
+</AnchorPane>

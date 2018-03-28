@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox alignment="CENTER" prefHeight="83.0" prefWidth="100.0" xmlns="http://javafx.com/javafx/8.0.162">
+    <ImageView fitHeight="62.0" fitWidth="63.0" pickOnBounds="true" preserveRatio="true">
+        <Image url="@../icons/send-50.png"/>
+    </ImageView>
+    <Label prefHeight="20.0" prefWidth="34.0" styleClass="header-label" text="Send">
+        <font>
+            <Font name="System Bold" size="12.0"/>
+        </font>
+    </Label>
+</VBox>

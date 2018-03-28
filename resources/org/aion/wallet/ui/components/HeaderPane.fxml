@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.URL?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane prefHeight="95.0" prefWidth="850.0" styleClass="default" xmlns="http://javafx.com/javafx/8.0.162" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.aion.wallet.ui.components.HeaderPaneControls">
+    <stylesheets>
+        <URL value="@header.css" />
+    </stylesheets>
+    <AnchorPane layoutX="394.0" layoutY="10.0" onMouseClicked="#openAionWebSite" prefHeight="63" prefWidth="63">
+        <ImageView fitHeight="63.0" fitWidth="63.0" layoutY="4.0" pickOnBounds="true" preserveRatio="true">
+            <Image url="@icons/aion_logo_light.png" />
+        </ImageView>
+    </AnchorPane>
+    <AnchorPane fx:id="homeButton" layoutX="72.0" layoutY="8.0" onMouseClicked="#handleButtonPressed">
+        <fx:include source="buttons/HomeButton.fxml" />
+    </AnchorPane>
+    <AnchorPane fx:id="sendButton" layoutX="172.0" layoutY="8.0" onMouseClicked="#handleButtonPressed" prefHeight="82.0" prefWidth="97.0">
+        <fx:include source="buttons/SendButton.fxml" />
+    </AnchorPane>
+    <AnchorPane fx:id="receiveButton" layoutX="272.0" layoutY="8.0" onMouseClicked="#handleButtonPressed" prefHeight="82.0" prefWidth="97.0">
+        <fx:include source="buttons/ReceiveButton.fxml" />
+    </AnchorPane>
+    <AnchorPane fx:id="historyButton" layoutX="481.0" layoutY="8.0" onMouseClicked="#handleButtonPressed" prefHeight="82.0" prefWidth="97.0">
+        <fx:include source="buttons/HistoryButton.fxml" />
+    </AnchorPane>
+    <AnchorPane fx:id="contractsButton" layoutX="581.0" layoutY="8.0" onMouseClicked="#handleButtonPressed" prefHeight="82.0" prefWidth="97.0">
+        <fx:include source="buttons/ContractsButton.fxml" />
+    </AnchorPane>
+    <AnchorPane fx:id="settingsButton" layoutX="690.0" layoutY="8.0" onMouseClicked="#handleButtonPressed" prefHeight="82.0" prefWidth="97.0">
+        <fx:include source="buttons/SettingsButton.fxml" />
+    </AnchorPane>
+    <AnchorPane layoutX="804.0" layoutY="-1.0" prefHeight="23" prefWidth="46">
+        <fx:include source="partials/WindowControls.fxml" />
+    </AnchorPane>
+</AnchorPane>

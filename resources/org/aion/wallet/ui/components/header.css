@@ -1,0 +1,12 @@
+.default{
+    -fx-background-color: #19364e;
+}
+
+.pressed{
+    -fx-background-color: #2bc0ec;
+}
+
+.header-label{
+    -fx-text-fill: black;
+    -fx-text-alignment: CENTER;
+}
