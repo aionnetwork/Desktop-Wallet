@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane layoutX="150.0" prefHeight="46.0" prefWidth="200.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.aion.wallet.ui.components.partials.SyncStatus">
+    <ProgressBar fx:id="syncProgressBar" layoutX="86.0" layoutY="13.0" prefWidth="200.0" />
+    <Label layoutX="49.0" layoutY="15.0" prefHeight="16.0" prefWidth="37.0" text="Sync" />
+    <Label id="progressBarLabel" fx:id="progressBarLabel" layoutX="117.0" layoutY="15.0" styleClass="progressBarLabel" text="How behind is the sync?" />
+</AnchorPane>

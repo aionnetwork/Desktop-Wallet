@@ -17,10 +17,13 @@ import org.aion.log.LogEnum;
 import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
 import org.aion.wallet.ui.events.WindowControlsEvent;
+import org.aion.wallet.util.DataUpdater;
+import org.aion.wallet.util.WalletUtils;
 import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Timer;
 import java.util.Map;
 import java.util.concurrent.Executors;
 
@@ -37,6 +40,7 @@ public class MainWindow extends Application {
     private double xOffset;
     private double yOffset;
     private Stage stage;
+    private Timer timer;
 
     @Override
     public void start(final Stage stage) throws IOException {
@@ -65,6 +69,9 @@ public class MainWindow extends Application {
         panes.put(HeaderPaneButtonEvent.Type.CONTRACTS, scene.lookup("#contractsPane"));
         panes.put(HeaderPaneButtonEvent.Type.HISTORY, scene.lookup("#historyPane"));
         panes.put(HeaderPaneButtonEvent.Type.SETTINGS, scene.lookup("#settingsPane"));
+
+        timer = new Timer();
+        timer.schedule(new DataUpdater(), WalletUtils.BLOCK_MINING_TIME, WalletUtils.BLOCK_MINING_TIME);
     }
 
     private void registerEventBusConsumer() {
@@ -108,6 +115,10 @@ public class MainWindow extends Application {
     private void shutDown() {
         Platform.exit();
         Executors.newSingleThreadExecutor().submit(() -> System.exit(0));
+        if(timer != null) {
+            timer.cancel();
+            timer.purge();
+        }
     }
 
     private void handleMousePressed(final MouseEvent event) {
