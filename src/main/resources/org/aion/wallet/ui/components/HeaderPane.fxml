@@ -10,7 +10,7 @@
         <URL value="@header.css" />
     </stylesheets>
     <AnchorPane layoutX="394.0" layoutY="10.0" onMouseClicked="#openAionWebSite" prefHeight="63" prefWidth="63">
-        <ImageView fitHeight="63.0" fitWidth="63.0" layoutY="4.0" pickOnBounds="true" preserveRatio="true">
+        <ImageView id="logo" fitHeight="63.0" fitWidth="63.0" layoutY="4.0" pickOnBounds="true" preserveRatio="true">
             <Image url="@icons/aion_logo_light.png" />
         </ImageView>
     </AnchorPane>

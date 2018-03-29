@@ -8,7 +8,7 @@ import java.math.RoundingMode;
  * @author Cristian Ilca, Centrys Inc.
  */
 public class BalanceFormatter {
-
+    public static final BigDecimal WEI_MULTIPLIER = BigDecimal.valueOf(1000000000000000000L);
     private static final BigInteger BILLION = BigInteger.valueOf(1000000000);
 
     public static String formatBalance(BigInteger balance) {

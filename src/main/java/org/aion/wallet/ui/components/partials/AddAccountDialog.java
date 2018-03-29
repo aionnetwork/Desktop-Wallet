@@ -6,8 +6,6 @@ import org.aion.mcf.account.Keystore;
 import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
 
-import java.awt.event.MouseEvent;
-
 public class AddAccountDialog {
 
     @FXML

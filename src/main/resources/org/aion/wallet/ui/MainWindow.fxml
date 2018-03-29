@@ -13,8 +13,16 @@
         <fx:include source="components/HeaderPane.fxml"/>
     </AnchorPane>
 
-    <AnchorPane layoutY="100.0" prefHeight="350.0" prefWidth="850.0">
+    <AnchorPane id="homePane" layoutY="100.0" prefHeight="350.0" prefWidth="850.0" visible="true">
         <fx:include source="components/ContentPane.fxml"/>
+    </AnchorPane>
+
+    <AnchorPane id="sendPane" layoutY="100.0" prefHeight="350.0" prefWidth="850.0" visible="false">
+        <fx:include source="components/SendPane.fxml"/>
+    </AnchorPane>
+
+    <AnchorPane id="historyPane" layoutY="100.0" prefHeight="350.0" prefWidth="850.0" visible="false">
+        <fx:include source="components/HistoryPane.fxml"/>
     </AnchorPane>
 
     <AnchorPane layoutY="455.0" prefHeight="46.0" prefWidth="850.0" styleClass="anchor-pane">
