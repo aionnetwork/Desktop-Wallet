@@ -88,9 +88,9 @@
                 debuglevel="source,lines,vars"
                 includeantruntime="false"
                 release="9"
-                srcdir="./"
+                srcdir="${src.main}"
                 destdir="${out.main}"
-                includes="src/**/*.java,module-info.java"
+                includes="**/*.java,module-info.java"
         >
             <modulepath>
                 <fileset dir="${dir.lib}" includes="*.jar"/>

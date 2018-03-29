@@ -12,6 +12,7 @@ module aion.wallet{
     requires javafx.controls;
     requires java.desktop;
     requires slf4j.api;
+    requires guava;
 
     exports org.aion.wallet;
     exports org.aion.wallet.ui;
