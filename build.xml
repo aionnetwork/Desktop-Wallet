@@ -5,12 +5,15 @@
     <property name="dir.lib" value="./lib"/>
     <property name="dir.mod" value="./mod"/>
     <property name="dir.pack" value="./pack"/>
-    <property name="dir.dest" value="./build/main"/>
-    <property name="dir.test" value="./build/test"/>
-    <property name="src.test" value="./test"/>
-    <property name="res.main" value="./resources"/>
-    <property name="test.report.dir" value="report"/>
-    <property name="dir.javaAPIlib" value="../javaAPIlib"/>
+    <property name="dir.main" value="./src/main"/>
+    <property name="src.main" value="${dir.main}/java"/>
+    <property name="res.main" value="${dir.main}/resources"/>
+    <property name="dir.test" value="./src/test"/>
+    <property name="src.test" value="${dir.test}/java"/>
+    <property name="res.test" value="${dir.test}/resources"/>
+    <property name="out.main" value="./build/main"/>
+    <property name="out.test" value="./build/test"/>
+    <property name="test.report.dir" value="./build/report"/>
 
     <path id="classpath.dependency">
         <pathelement location="${dir.mod}/modAionBase.jar"/>
@@ -27,22 +30,22 @@
 
 
     <target name="clean">
-        <delete dir="${dir.dest}" includeEmptyDirs="true" includes="**/*/"/>
-        <delete dir="${dir.test}" includeEmptyDirs="true" includes="**/*/"/>
+        <delete dir="${out.main}" includeEmptyDirs="true" includes="**/*/"/>
+        <delete dir="${out.test}" includeEmptyDirs="true" includes="**/*/"/>
         <delete dir="${test.report.dir}"/>
         <delete file="${dir.mod}/*.jar"/>
         <delete file="${dir.mod}/updated/*.jar"/>
     </target>
 
     <target name="test_build" depends="build">
-        <mkdir dir="${dir.test}"/>
+        <mkdir dir="${out.test}"/>
         <javac
                 debug="on"
                 debuglevel="source,lines,vars"
                 includeantruntime="false"
                 release="9"
                 srcdir="${src.test}"
-                destdir="${dir.test}"
+                destdir="${out.test}"
                 includes="**/*Test.java"
         >
             <classpath>
@@ -58,7 +61,7 @@
             <classpath>
                 <path refid="classpath.test"/>
                 <path refid="classpath.dependency"/>
-                <pathelement location="${dir.test}"/>
+                <pathelement location="${out.test}"/>
             </classpath>
             <formatter type="plain" usefile="false"/>
             <formatter type="xml"/>
@@ -69,7 +72,7 @@
     </target>
 
     <target name="build">
-        <mkdir dir="${dir.dest}"/>
+        <mkdir dir="${out.main}"/>
         <mkdir dir="${dir.pack}"/>
         <condition property="parent.exists">
             <available file="${parent.mod}" type="dir"/>
@@ -86,7 +89,7 @@
                 includeantruntime="false"
                 release="9"
                 srcdir="./"
-                destdir="${dir.dest}"
+                destdir="${out.main}"
                 includes="src/**/*.java,module-info.java"
         >
             <modulepath>
@@ -95,13 +98,13 @@
                 <fileset unless:set="parent.exists" dir="${dir.mod}" includes="*.jar"/>
             </modulepath>
         </javac>
-        <copy includeemptydirs="false" todir="${dir.dest}">
+        <copy includeemptydirs="false" todir="${out.main}">
             <fileset dir="${res.main}" id="**"/>
         </copy>
         <jar
                 destfile="modWallet.jar"
                 filesetmanifest="mergewithoutmain"
-                basedir="${dir.dest}"
+                basedir="${out.main}"
         />
         <move includeemptydirs="false" todir="${dir.pack}">
             <file file="modWallet.jar"/>
