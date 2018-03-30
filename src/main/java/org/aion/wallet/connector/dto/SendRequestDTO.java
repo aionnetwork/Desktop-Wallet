@@ -3,6 +3,7 @@ package org.aion.wallet.connector.dto;
 import org.aion.base.type.Address;
 import org.aion.base.util.ByteArrayWrapper;
 import org.aion.base.util.ByteUtil;
+import org.aion.wallet.exception.ValidationException;
 
 import java.math.BigInteger;
 
@@ -73,5 +74,11 @@ public class SendRequestDTO implements UnlockableAccount{
 
     public void setValue(BigInteger value) {
         this.value = value;
+    }
+
+    public void validate() throws ValidationException {
+        if(from == null || to == null || value == null || value.compareTo(BigInteger.ZERO)<=0) {
+            throw new ValidationException("Invalid request data");
+        }
     }
 }

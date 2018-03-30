@@ -8,30 +8,30 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-import javafx.scene.input.MouseEvent;
 import org.aion.base.util.TypeConverter;
 import org.aion.log.AionLoggerFactory;
 import org.aion.log.LogEnum;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.connector.WalletBlockchainConnector;
 import org.aion.wallet.connector.dto.SendRequestDTO;
+import org.aion.wallet.exception.ValidationException;
+import org.aion.wallet.util.BalanceFormatter;
 import org.aion.zero.types.AionTransaction;
 import org.slf4j.Logger;
 
-import java.math.BigDecimal;
 import java.net.URL;
-import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import static org.aion.wallet.util.BalanceFormatter.WEI_MULTIPLIER;
-
 public class SendPane implements Initializable {
     private static final Logger log = AionLoggerFactory.getLogger(LogEnum.WLT.name());
+    private static final Long DEFAULT_BLOCK_MINING_TIME = 10000L;
+    private static final int MAX_TX_STATUS_RETRY_COUNT = 6;
+    private static final String DEFAULT_NRG = "100000";
+    private static final String DEFAULT_NRG_PRICE = "1000000";
+
     private final BlockchainConnector blockchainConnector = new WalletBlockchainConnector();
-    private final static Long DEFAULT_BLOCK_MINING_TIME = 10000L;
-    private final static int MAX_TX_STATUS_RETRY_COUNT = 6;
 
     @FXML
     private ComboBox fromInput;
@@ -48,11 +48,6 @@ public class SendPane implements Initializable {
     @FXML
     private Label txStatusLabel;
 
-    private final String DEFAULT_NRG = "100000";
-    private final String DEFAULT_NRG_PRICE = "1000000";
-    // todo: remove debug code
-    private String DEFAULT_DEBUG_ADDR_TO_SEND = null;
-
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         reloadAccounts();
@@ -60,41 +55,37 @@ public class SendPane implements Initializable {
     }
 
     private void setDefaults() {
-        toInput.setText(DEFAULT_DEBUG_ADDR_TO_SEND);
         nrgInput.setText(DEFAULT_NRG);
         nrgPriceInput.setText(DEFAULT_NRG_PRICE);
+
+        toInput.setText("");
         valueInput.setText("");
         passwordInput.setText("");
     }
 
     private void reloadAccounts() {
-        List<String> accounts = blockchainConnector.getAccounts();
-        fromInput.setItems(FXCollections.observableArrayList(accounts));
-        // todo: remove debug code
-        if (accounts.size() > 1) {
-            DEFAULT_DEBUG_ADDR_TO_SEND = accounts.get(1);
-        }
+        fromInput.setItems(FXCollections.observableArrayList(blockchainConnector.getAccounts()));
     }
 
-    public void sendAion(MouseEvent mouseEvent) {
-        SendRequestDTO dto;
+    public void onSendAionClicked() {
         try {
-            dto = validateForm();
-        } catch (Exception e) {
-            txStatusLabel.setText("Invalid data");
-            return;
+            final byte[] txHash = sendAion();
+            this.setDefaults();
+            this.displayTxStatus(txHash);
+        } catch (ValidationException e) {
+            txStatusLabel.setText(e.getMessage() != null ? e.getMessage() : "An error has occured");
         }
+
+    }
+
+    private byte[] sendAion() throws ValidationException {
+        SendRequestDTO dto = mapFormData();
         txStatusLabel.setText("Unlocking wallet");
         if (!blockchainConnector.unlock(dto)) {
-            txStatusLabel.setText("Failed to unlock wallet");
-            return;
+            throw new ValidationException("Failed to unlock wallet");
         }
-        ;
         txStatusLabel.setText("Sending transaction");
-        final byte[] txHash = blockchainConnector.sendTransaction(dto);
-
-        this.setDefaults();
-        this.displayTxStatus(txHash);
+        return blockchainConnector.sendTransaction(dto);
     }
 
     private void displayTxStatus(final byte[] txHash) {
@@ -103,23 +94,15 @@ public class SendPane implements Initializable {
         timer.schedule(new TransactionStatusTimedTask(timer, txHash, MAX_TX_STATUS_RETRY_COUNT), DEFAULT_BLOCK_MINING_TIME, DEFAULT_BLOCK_MINING_TIME);
     }
 
-    private SendRequestDTO validateForm() throws Exception {
+    private SendRequestDTO mapFormData() {
         SendRequestDTO dto = new SendRequestDTO();
         dto.setFrom((String) fromInput.getValue());
         dto.setTo(toInput.getText());
         dto.setPassword(passwordInput.getText());
         dto.setNrg(TypeConverter.StringNumberAsBigInt(nrgInput.getText()).longValue());
         dto.setNrgPrice(TypeConverter.StringNumberAsBigInt(nrgPriceInput.getText()).longValue());
-        dto.setValue(new BigDecimal(valueInput.getText()).multiply(WEI_MULTIPLIER).toBigInteger());
-        if (!isValid(dto.getNrg()) || !isValid(dto.getNrgPrice())
-                || dto.getValue() == null) {
-            throw new Exception("Invalid tx data");
-        }
+        dto.setValue(BalanceFormatter.extractBalance(valueInput.getText()));
         return dto;
-    }
-
-    private boolean isValid(Long l) {
-        return l != null && l > 0;
     }
 
     private class TransactionStatusTimedTask extends TimerTask {
@@ -137,7 +120,7 @@ public class SendPane implements Initializable {
         @Override
         public void run() {
             Platform.runLater(() -> {
-                if(retryCount >= MAX_TX_STATUS_RETRY_COUNT) {
+                if (retryCount >= maxRetryCount) {
                     purge();
                     setTxStatusLabel("Transaction status could not be loaded!");
                     return;
@@ -148,7 +131,7 @@ public class SendPane implements Initializable {
                     setTxStatusLabel("Transaction finished");
                     purge();
                 } else {
-                    retryCount ++;
+                    retryCount++;
                     if (txStatusLabel.getText().endsWith("...")) {
                         setTxStatusLabel("Transaction pending");
                     }

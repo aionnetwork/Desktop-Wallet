@@ -3,12 +3,13 @@ package org.aion.wallet.connector;
 import org.aion.base.type.Address;
 import org.aion.wallet.connector.dto.SendRequestDTO;
 import org.aion.wallet.connector.dto.UnlockableAccount;
+import org.aion.wallet.exception.ValidationException;
 import org.aion.zero.types.AionTransaction;
 
 import java.util.List;
 
 public interface BlockchainConnector {
-    byte[] sendTransaction(SendRequestDTO dto);
+    byte[] sendTransaction(SendRequestDTO dto) throws ValidationException;
     boolean unlock(UnlockableAccount account);
     List<String> getAccounts();
     AionTransaction getTransaction(byte[] txHash);

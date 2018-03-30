@@ -29,5 +29,5 @@
             <Label fx:id="txStatusLabel" />
         </VBox>
     </Pane>
-    <Button layoutX="10.0" layoutY="260.0" mnemonicParsing="false" onMouseClicked="#sendAion" text="Send aion" />
+    <Button layoutX="10.0" layoutY="260.0" mnemonicParsing="false" onMouseClicked="#onSendAionClicked" text="Send aion" />
 </AnchorPane>

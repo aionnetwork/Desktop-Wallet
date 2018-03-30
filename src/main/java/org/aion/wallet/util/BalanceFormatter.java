@@ -17,4 +17,8 @@ public class BalanceFormatter {
 
         return String.valueOf(bigDecimalBalance.divide(decimalPlaces, 10, RoundingMode.HALF_EVEN));
     }
+
+    public static BigInteger extractBalance(String formattedBalance) {
+        return new BigDecimal(formattedBalance).multiply(WEI_MULTIPLIER).toBigInteger();
+    }
 }

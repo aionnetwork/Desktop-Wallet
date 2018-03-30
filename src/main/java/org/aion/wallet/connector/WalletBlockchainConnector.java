@@ -6,27 +6,31 @@ import org.aion.base.type.Address;
 import org.aion.wallet.WalletApi;
 import org.aion.wallet.connector.dto.SendRequestDTO;
 import org.aion.wallet.connector.dto.UnlockableAccount;
+import org.aion.wallet.exception.ValidationException;
 import org.aion.zero.impl.types.AionBlock;
 import org.aion.zero.types.AionTransaction;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-//todo: add validation and errors
 public class WalletBlockchainConnector implements BlockchainConnector {
     // todo: will we be able to access this from AccountManager?
     private static final Integer DEFAULT_UNLOCK_DURATION = 1000;
+    private static final Integer MAX_BLOCKS_FOR_TRANSACTIONS_QUERY = 500;
 
     private ApiAion aionApi = new WalletApi();
 
     @Override
-    public byte[] sendTransaction(SendRequestDTO dto) {
-        ArgTxCall params = new ArgTxCall(dto.getFrom(), dto.getTo(), dto.getData(),
+    public byte[] sendTransaction(SendRequestDTO dto) throws ValidationException {
+        if(dto == null) {
+            throw new ValidationException("Invalid transaction request data");
+        }
+        dto.validate();
+        ArgTxCall transactionParams = new ArgTxCall(dto.getFrom(), dto.getTo(), dto.getData(),
                 dto.getNonce(), dto.getValue(), dto.getNrg(), dto.getNrgPrice());
 
-        List<AionTransaction> txs = getTransactions(dto.getFrom());
-
-        return aionApi.sendTransaction(params);
+        return aionApi.sendTransaction(transactionParams);
     }
 
     @Override
@@ -47,10 +51,10 @@ public class WalletBlockchainConnector implements BlockchainConnector {
 
     @Override
     public List<AionTransaction> getTransactions(Address address) {
-       return getTransactions(address, aionApi.getBestBlock().getNumber());
+       return getTransactions(address, MAX_BLOCKS_FOR_TRANSACTIONS_QUERY);
     }
 
-    private List<AionTransaction> getTransactions(Address addr, long nrOfBlocksToCheck) {
+    private List<AionTransaction> getTransactions(final Address addr, long nrOfBlocksToCheck) {
         AionBlock latest = aionApi.getBestBlock();
         long blockOffset = latest.getNumber() - nrOfBlocksToCheck;
         if(blockOffset < 0){
@@ -62,11 +66,9 @@ public class WalletBlockchainConnector implements BlockchainConnector {
             if(blk == null) {
                 continue;
             }
-            for(AionTransaction tx: blk.getTransactionsList()) {
-                if(tx.getFrom().equals(addr) || tx.getTo().equals(addr)) {
-                    txs.add(tx);
-                }
-            }
+            txs.addAll(blk.getTransactionsList().stream()
+                    .filter(t -> t.getFrom().equals(addr) || t.getTo().equals(addr))
+                    .collect(Collectors.toList()));
         }
         return txs;
     }
