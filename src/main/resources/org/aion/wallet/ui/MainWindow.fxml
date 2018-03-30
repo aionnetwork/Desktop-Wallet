@@ -25,6 +25,18 @@
         <fx:include source="components/HistoryPane.fxml"/>
     </AnchorPane>
 
+    <AnchorPane id="receivePane" layoutY="100.0" prefHeight="350.0" prefWidth="850.0" visible="false">
+        <fx:include source="components/ReceivePane.fxml"/>
+    </AnchorPane>
+
+    <AnchorPane id="contractsPane" layoutY="100.0" prefHeight="350.0" prefWidth="850.0" visible="false">
+        <fx:include source="components/ContractsPane.fxml"/>
+    </AnchorPane>
+
+    <AnchorPane id="settingsPane" layoutY="100.0" prefHeight="350.0" prefWidth="850.0" visible="false">
+        <fx:include source="components/SettingsPane.fxml"/>
+    </AnchorPane>
+
     <AnchorPane layoutY="455.0" prefHeight="46.0" prefWidth="850.0" styleClass="anchor-pane">
         <fx:include source="components/FooterPane.fxml"/>
     </AnchorPane>

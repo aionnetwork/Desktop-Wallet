@@ -1,5 +1,6 @@
 package org.aion.wallet.ui.components;
 
+import com.google.common.eventbus.Subscribe;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -16,6 +17,8 @@ import org.aion.wallet.connector.WalletBlockchainConnector;
 import org.aion.wallet.connector.dto.SendRequestDTO;
 import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
+import org.aion.wallet.ui.events.EventBusFactory;
+import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
 import org.aion.wallet.util.BalanceFormatter;
 import org.slf4j.Logger;
 
@@ -33,7 +36,7 @@ public class SendPane implements Initializable {
     private final BlockchainConnector blockchainConnector = new WalletBlockchainConnector();
 
     @FXML
-    private ComboBox fromInput;
+    private ComboBox<String> fromInput;
     @FXML
     private PasswordField passwordInput;
     @FXML
@@ -49,8 +52,22 @@ public class SendPane implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        registerEventBusConsumer();
         reloadAccounts();
         setDefaults();
+    }
+
+    @Subscribe
+    private void handleHeaderPaneButtonEvent(HeaderPaneButtonEvent event) {
+        if(!event.getType().equals(HeaderPaneButtonEvent.Type.SEND)){
+            return;
+        }
+        reloadAccounts();
+    }
+
+    private void registerEventBusConsumer() {
+        EventBusFactory eventBusFactory = EventBusFactory.getInstance();
+        eventBusFactory.getBus(HeaderPaneButtonEvent.ID).register(this);
     }
 
     private void setDefaults() {

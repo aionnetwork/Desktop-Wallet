@@ -61,7 +61,10 @@ public class MainWindow extends Application {
 
         panes.put(HeaderPaneButtonEvent.Type.HOME, scene.lookup("#homePane"));
         panes.put(HeaderPaneButtonEvent.Type.SEND, scene.lookup("#sendPane"));
+        panes.put(HeaderPaneButtonEvent.Type.RECEIVE, scene.lookup("#receivePane"));
+        panes.put(HeaderPaneButtonEvent.Type.CONTRACTS, scene.lookup("#contractsPane"));
         panes.put(HeaderPaneButtonEvent.Type.HISTORY, scene.lookup("#historyPane"));
+        panes.put(HeaderPaneButtonEvent.Type.SETTINGS, scene.lookup("#settingsPane"));
     }
 
     private void registerEventBusConsumer() {

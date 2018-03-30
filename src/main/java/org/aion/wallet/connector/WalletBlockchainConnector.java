@@ -21,8 +21,8 @@ import java.util.stream.Collectors;
 
 public class WalletBlockchainConnector implements BlockchainConnector {
 
-    private ApiAion aionApi = new WalletApi();
-//
+    private final static ApiAion aionApi = new WalletApi();
+
     @Override
     public String sendTransaction(SendRequestDTO dto) throws ValidationException {
         if (dto == null || !dto.isValid()) {
