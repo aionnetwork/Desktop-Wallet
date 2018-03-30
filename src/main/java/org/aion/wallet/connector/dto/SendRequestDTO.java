@@ -1,30 +1,21 @@
 package org.aion.wallet.connector.dto;
 
-import org.aion.base.type.Address;
 import org.aion.base.util.ByteArrayWrapper;
-import org.aion.base.util.ByteUtil;
 import org.aion.wallet.exception.ValidationException;
+import org.aion.wallet.util.AddressUtils;
 
 import java.math.BigInteger;
 
-public class SendRequestDTO implements UnlockableAccount{
-    private Address from;
+public class SendRequestDTO implements UnlockableAccount {
+    private String from;
     private String password;
-    private Address to;
+    private String to;
     private Long nrg;
     private Long nrgPrice;
     private BigInteger value;
 
-    public byte[] getData() {
-        return ByteArrayWrapper.NULL_BYTE;
-    }
-
-    public BigInteger getNonce() {
-        return BigInteger.ZERO;
-    }
-
     @Override
-    public Address getAddress() {
+    public String getAddress() {
         return this.from;
     }
 
@@ -36,20 +27,20 @@ public class SendRequestDTO implements UnlockableAccount{
         this.password = password;
     }
 
-    public Address getFrom() {
+    public String getFrom() {
         return from;
     }
 
     public void setFrom(String from) {
-        this.from = Address.wrap(ByteUtil.hexStringToBytes(from));
+        this.from = from;
     }
 
-    public Address getTo() {
+    public String getTo() {
         return to;
     }
 
     public void setTo(String to) {
-        this.to = Address.wrap(ByteUtil.hexStringToBytes(to));
+        this.to = to;
     }
 
     public Long getNrg() {
@@ -76,9 +67,16 @@ public class SendRequestDTO implements UnlockableAccount{
         this.value = value;
     }
 
-    public void validate() throws ValidationException {
-        if(from == null || to == null || value == null || value.compareTo(BigInteger.ZERO)<=0) {
-            throw new ValidationException("Invalid request data");
-        }
+    public byte[] getData() {
+        return ByteArrayWrapper.NULL_BYTE;
+    }
+
+    public BigInteger getNonce() {
+        return BigInteger.ZERO;
+    }
+
+    public boolean isValid(){
+        return !AddressUtils.isValid(from) || !AddressUtils.isValid(to)
+                || value == null || value.compareTo(BigInteger.ZERO) <= 0;
     }
 }

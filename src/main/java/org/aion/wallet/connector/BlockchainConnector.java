@@ -1,10 +1,10 @@
 package org.aion.wallet.connector;
 
-import org.aion.base.type.Address;
 import org.aion.wallet.connector.dto.SendRequestDTO;
+import org.aion.wallet.connector.dto.TransactionDTO;
 import org.aion.wallet.connector.dto.UnlockableAccount;
+import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
-import org.aion.zero.types.AionTransaction;
 
 import java.util.List;
 
@@ -12,7 +12,6 @@ public interface BlockchainConnector {
     byte[] sendTransaction(SendRequestDTO dto) throws ValidationException;
     boolean unlock(UnlockableAccount account);
     List<String> getAccounts();
-    AionTransaction getTransaction(byte[] txHash);
-    //todo: create transaction dto so we cut the core dep
-    List<AionTransaction> getTransactions(Address address);
+    TransactionDTO getTransaction(byte[] txHash) throws NotFoundException;
+    List<TransactionDTO> getTransactions(String address);
 }

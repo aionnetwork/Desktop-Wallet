@@ -14,9 +14,9 @@ import org.aion.log.LogEnum;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.connector.WalletBlockchainConnector;
 import org.aion.wallet.connector.dto.SendRequestDTO;
+import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.util.BalanceFormatter;
-import org.aion.zero.types.AionTransaction;
 import org.slf4j.Logger;
 
 import java.net.URL;
@@ -125,12 +125,11 @@ public class SendPane implements Initializable {
                     setTxStatusLabel("Transaction status could not be loaded!");
                     return;
                 }
-                final AionTransaction tx = blockchainConnector.getTransaction(txHash);
-
-                if (tx != null) {
+                try {
+                    blockchainConnector.getTransaction(txHash);
                     setTxStatusLabel("Transaction finished");
                     purge();
-                } else {
+                } catch (NotFoundException e) {
                     retryCount++;
                     if (txStatusLabel.getText().endsWith("...")) {
                         setTxStatusLabel("Transaction pending");

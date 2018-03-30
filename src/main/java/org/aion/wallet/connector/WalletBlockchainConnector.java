@@ -3,9 +3,13 @@ package org.aion.wallet.connector;
 import org.aion.api.server.ApiAion;
 import org.aion.api.server.types.ArgTxCall;
 import org.aion.base.type.Address;
+import org.aion.base.util.ByteUtil;
+import org.aion.base.util.TypeConverter;
 import org.aion.wallet.WalletApi;
 import org.aion.wallet.connector.dto.SendRequestDTO;
+import org.aion.wallet.connector.dto.TransactionDTO;
 import org.aion.wallet.connector.dto.UnlockableAccount;
+import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.zero.impl.types.AionBlock;
 import org.aion.zero.types.AionTransaction;
@@ -23,11 +27,11 @@ public class WalletBlockchainConnector implements BlockchainConnector {
 
     @Override
     public byte[] sendTransaction(SendRequestDTO dto) throws ValidationException {
-        if(dto == null) {
+        if (dto == null || !dto.isValid()) {
             throw new ValidationException("Invalid transaction request data");
         }
-        dto.validate();
-        ArgTxCall transactionParams = new ArgTxCall(dto.getFrom(), dto.getTo(), dto.getData(),
+        ArgTxCall transactionParams = new ArgTxCall(Address.wrap(ByteUtil.hexStringToBytes(dto.getFrom()))
+                , Address.wrap(ByteUtil.hexStringToBytes(dto.getTo())), dto.getData(),
                 dto.getNonce(), dto.getValue(), dto.getNrg(), dto.getNrgPrice());
 
         return aionApi.sendTransaction(transactionParams);
@@ -45,31 +49,49 @@ public class WalletBlockchainConnector implements BlockchainConnector {
     }
 
     @Override
-    public AionTransaction getTransaction(byte[] txHash) {
-        return aionApi.getTransactionByHash(txHash);
+    public TransactionDTO getTransaction(byte[] txHash) throws NotFoundException {
+        TransactionDTO transaction = mapTransaction(aionApi.getTransactionByHash(txHash));
+        if (transaction == null) {
+            throw new NotFoundException();
+        }
+        return transaction;
     }
 
     @Override
-    public List<AionTransaction> getTransactions(Address address) {
-       return getTransactions(address, MAX_BLOCKS_FOR_TRANSACTIONS_QUERY);
+    public List<TransactionDTO> getTransactions(String address) {
+        return getTransactions(address, MAX_BLOCKS_FOR_TRANSACTIONS_QUERY);
     }
 
-    private List<AionTransaction> getTransactions(final Address addr, long nrOfBlocksToCheck) {
+    private List<TransactionDTO> getTransactions(final String addr, long nrOfBlocksToCheck) {
         AionBlock latest = aionApi.getBestBlock();
         long blockOffset = latest.getNumber() - nrOfBlocksToCheck;
-        if(blockOffset < 0){
+        if (blockOffset < 0) {
             blockOffset = 0;
         }
-        List<AionTransaction> txs = new ArrayList<>();
-        for(long i = latest.getNumber(); i > blockOffset; i--){
+        List<TransactionDTO> txs = new ArrayList<>();
+        for (long i = latest.getNumber(); i > blockOffset; i--) {
             AionBlock blk = aionApi.getBlock(i);
-            if(blk == null) {
+            if (blk == null) {
                 continue;
             }
             txs.addAll(blk.getTransactionsList().stream()
-                    .filter(t -> t.getFrom().equals(addr) || t.getTo().equals(addr))
+                    .filter(t -> t.getFrom().toString().equals(addr) || t.getTo().toString().equals(addr))
+                    .map(this::mapTransaction)
                     .collect(Collectors.toList()));
         }
         return txs;
+    }
+
+    private TransactionDTO mapTransaction(AionTransaction transaction) {
+        if (transaction == null) {
+            return null;
+        }
+        TransactionDTO dto = new TransactionDTO();
+        dto.setFrom(transaction.getFrom().toString());
+        dto.setTo(transaction.getTo().toString());
+        dto.setValue(TypeConverter.StringHexToBigInteger(TypeConverter.toJsonHex(transaction.getValue())));
+        dto.setNrg(transaction.getNrg());
+        dto.setNrgPrice(transaction.getNrgPrice());
+        return dto;
     }
 }

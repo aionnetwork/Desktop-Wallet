@@ -7,21 +7,15 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
-import org.aion.base.type.Address;
-import org.aion.base.util.ByteUtil;
-import org.aion.base.util.TypeConverter;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.connector.WalletBlockchainConnector;
+import org.aion.wallet.connector.dto.TransactionDTO;
+import org.aion.wallet.util.BalanceFormatter;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.math.RoundingMode;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
-
-import static org.aion.wallet.util.BalanceFormatter.WEI_MULTIPLIER;
 
 public class HistoryPane implements Initializable {
 
@@ -43,26 +37,22 @@ public class HistoryPane implements Initializable {
     }
 
     private void reloadHistory() {
-        Address me = Address.wrap(ByteUtil.hexStringToBytes(blockchainConnector.getAccounts().get(0)));
-        List<TxRow> txs = blockchainConnector.getTransactions(me).stream().map(t -> {
-            TxRow row = new TxRow();
-            row.setAddress(me.equals(t.getFrom()) ? t.getTo().toString() : t.getFrom().toString());
-            row.setType(me.equals(t.getFrom()) ? "to" : "from");
-
-            BigInteger intVal = TypeConverter.StringHexToBigInteger(TypeConverter.toJsonHex(t.getValue()));
-            row.setValue(new BigDecimal(intVal).divide(WEI_MULTIPLIER, RoundingMode.HALF_UP).toString());
-            return row;
-        }).collect(Collectors.toList());
+        String me = blockchainConnector.getAccounts().get(0);
+        List<TxRow> txs = blockchainConnector.getTransactions(me).stream()
+                .map(t -> new TxRow(me, t))
+                .collect(Collectors.toList());
         txListOverview.setItems(FXCollections.observableList(txs));
     }
 
     public static class TxRow {
-        private SimpleStringProperty type;
-        private SimpleStringProperty address;
-        private SimpleStringProperty value;
+        private final SimpleStringProperty type;
+        private final SimpleStringProperty address;
+        private final SimpleStringProperty value;
 
-        private TxRow() {
-
+        private TxRow(String requestingAddress, TransactionDTO dto) {
+            this.type = new SimpleStringProperty(requestingAddress.equals(dto.getFrom()) ? "to" : "from");
+            this.address = new SimpleStringProperty(requestingAddress.equals(dto.getFrom()) ? dto.getTo() : dto.getFrom());
+            this.value = new SimpleStringProperty(BalanceFormatter.formatBalance(dto.getValue()));
         }
 
         public String getType() {
@@ -70,7 +60,7 @@ public class HistoryPane implements Initializable {
         }
 
         public void setType(String type) {
-            this.type = new SimpleStringProperty(type);
+            this.type.setValue(type);
         }
 
         public String getAddress() {
@@ -78,7 +68,7 @@ public class HistoryPane implements Initializable {
         }
 
         public void setAddress(String address) {
-            this.address = new SimpleStringProperty(address);
+            this.address.setValue(address);
         }
 
         public String getValue() {
@@ -86,7 +76,7 @@ public class HistoryPane implements Initializable {
         }
 
         public void setValue(String value) {
-            this.value = new SimpleStringProperty(value);
+            this.value.setValue(value);
         }
 
     }
