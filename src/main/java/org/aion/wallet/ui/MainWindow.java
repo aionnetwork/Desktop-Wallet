@@ -32,10 +32,11 @@ public class MainWindow extends Application {
     private static final String MAIN_WINDOW_FXML = "MainWindow.fxml";
     private static final String AION_LOGO = "components/icons/aion_logo.png";
 
+    private final Map<HeaderPaneButtonEvent.Type, Node> panes = new HashMap<>();
+
     private double xOffset;
     private double yOffset;
     private Stage stage;
-    private Map<HeaderPaneButtonEvent.Type, Node> panes = new HashMap<>();
 
     @Override
     public void start(final Stage stage) throws IOException {

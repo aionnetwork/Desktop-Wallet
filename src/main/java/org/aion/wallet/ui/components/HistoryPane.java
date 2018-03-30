@@ -25,12 +25,12 @@ public class HistoryPane implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        TableColumn typeCol = new TableColumn("Type");
-        TableColumn addrCol = new TableColumn("Addr");
-        TableColumn valueCol = new TableColumn("Value");
-        typeCol.setCellValueFactory(new PropertyValueFactory<TxRow, String>("type"));
-        addrCol.setCellValueFactory(new PropertyValueFactory<TxRow, String>("address"));
-        valueCol.setCellValueFactory(new PropertyValueFactory<TxRow, String>("value"));
+        TableColumn<TxRow, String> typeCol = new TableColumn<>("Type");
+        TableColumn<TxRow, String> addrCol = new TableColumn<>("Addr");
+        TableColumn<TxRow, String> valueCol = new TableColumn<>("Value");
+        typeCol.setCellValueFactory(new PropertyValueFactory<>("type"));
+        addrCol.setCellValueFactory(new PropertyValueFactory<>("address"));
+        valueCol.setCellValueFactory(new PropertyValueFactory<>("value"));
 
         txListOverview.getColumns().addAll(typeCol, addrCol, valueCol);
         reloadHistory();
