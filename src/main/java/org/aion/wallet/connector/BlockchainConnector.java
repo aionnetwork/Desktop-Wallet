@@ -13,5 +13,5 @@ public interface BlockchainConnector {
     boolean unlock(UnlockableAccount account);
     List<String> getAccounts();
     TransactionDTO getTransaction(String txHash) throws NotFoundException;
-    List<TransactionDTO> getTransactions(String address);
+    List<TransactionDTO> getLatestTransactions(String address);
 }

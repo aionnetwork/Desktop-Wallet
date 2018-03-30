@@ -24,12 +24,11 @@ import java.util.ResourceBundle;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import static org.aion.wallet.util.WalletUtils.*;
+
 public class SendPane implements Initializable {
     private static final Logger log = AionLoggerFactory.getLogger(LogEnum.WLT.name());
-    private static final Long DEFAULT_BLOCK_MINING_TIME = 10000L;
     private static final int MAX_TX_STATUS_RETRY_COUNT = 6;
-    private static final String DEFAULT_NRG = "100000";
-    private static final String DEFAULT_NRG_PRICE = "1000000";
 
     private final BlockchainConnector blockchainConnector = new WalletBlockchainConnector();
 
@@ -91,7 +90,7 @@ public class SendPane implements Initializable {
     private void displayTxStatus(final String txHash) {
         txStatusLabel.setText("Transaction pending");
         final Timer timer = new Timer();
-        timer.schedule(new TransactionStatusTimedTask(timer, txHash, MAX_TX_STATUS_RETRY_COUNT), DEFAULT_BLOCK_MINING_TIME, DEFAULT_BLOCK_MINING_TIME);
+        timer.schedule(new TransactionStatusTimedTask(timer, txHash, MAX_TX_STATUS_RETRY_COUNT), BLOCK_MINING_TIME, BLOCK_MINING_TIME);
     }
 
     private SendRequestDTO mapFormData() {

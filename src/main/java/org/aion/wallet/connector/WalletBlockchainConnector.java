@@ -11,6 +11,7 @@ import org.aion.wallet.connector.dto.TransactionDTO;
 import org.aion.wallet.connector.dto.UnlockableAccount;
 import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
+import org.aion.wallet.util.WalletUtils;
 import org.aion.zero.impl.types.AionBlock;
 import org.aion.zero.types.AionTransaction;
 
@@ -19,9 +20,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class WalletBlockchainConnector implements BlockchainConnector {
-    // todo: will we be able to access this from AccountManager?
-    private static final Integer DEFAULT_UNLOCK_DURATION = 1000;
-    private static final Integer MAX_BLOCKS_FOR_TRANSACTIONS_QUERY = 500;
 
     private ApiAion aionApi = new WalletApi();
 //
@@ -39,7 +37,7 @@ public class WalletBlockchainConnector implements BlockchainConnector {
 
     @Override
     public boolean unlock(UnlockableAccount account) {
-        return aionApi.unlockAccount(account.getAddress(), account.getPassword(), DEFAULT_UNLOCK_DURATION);
+        return aionApi.unlockAccount(account.getAddress(), account.getPassword(), WalletUtils.DEFAULT_WALLET_UNLOCK_DURATION);
     }
 
     @Override
@@ -57,8 +55,8 @@ public class WalletBlockchainConnector implements BlockchainConnector {
     }
 
     @Override
-    public List<TransactionDTO> getTransactions(String address) {
-        return getTransactions(address, MAX_BLOCKS_FOR_TRANSACTIONS_QUERY);
+    public List<TransactionDTO> getLatestTransactions(String address) {
+        return getTransactions(address, WalletUtils.MAX_BLOCKS_FOR_LATEST_TRANSACTIONS_QUERY);
     }
 
     private List<TransactionDTO> getTransactions(final String addr, long nrOfBlocksToCheck) {

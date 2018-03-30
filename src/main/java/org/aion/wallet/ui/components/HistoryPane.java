@@ -38,7 +38,7 @@ public class HistoryPane implements Initializable {
 
     private void reloadHistory() {
         String me = blockchainConnector.getAccounts().get(0);
-        List<TxRow> txs = blockchainConnector.getTransactions(me).stream()
+        List<TxRow> txs = blockchainConnector.getLatestTransactions(me).stream()
                 .map(t -> new TxRow(me, t))
                 .collect(Collectors.toList());
         txListOverview.setItems(FXCollections.observableList(txs));
