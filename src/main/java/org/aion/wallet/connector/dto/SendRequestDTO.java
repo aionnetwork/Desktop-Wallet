@@ -76,7 +76,7 @@ public class SendRequestDTO implements UnlockableAccount {
     }
 
     public boolean isValid(){
-        return !AddressUtils.isValid(from) || !AddressUtils.isValid(to)
-                || value == null || value.compareTo(BigInteger.ZERO) <= 0;
+        return AddressUtils.isValid(from) && AddressUtils.isValid(to)
+                && value != null && value.compareTo(BigInteger.ZERO) > 0;
     }
 }

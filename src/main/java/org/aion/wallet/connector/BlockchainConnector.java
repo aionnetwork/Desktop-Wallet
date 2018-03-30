@@ -9,9 +9,9 @@ import org.aion.wallet.exception.ValidationException;
 import java.util.List;
 
 public interface BlockchainConnector {
-    byte[] sendTransaction(SendRequestDTO dto) throws ValidationException;
+    String sendTransaction(SendRequestDTO dto) throws ValidationException;
     boolean unlock(UnlockableAccount account);
     List<String> getAccounts();
-    TransactionDTO getTransaction(byte[] txHash) throws NotFoundException;
+    TransactionDTO getTransaction(String txHash) throws NotFoundException;
     List<TransactionDTO> getTransactions(String address);
 }

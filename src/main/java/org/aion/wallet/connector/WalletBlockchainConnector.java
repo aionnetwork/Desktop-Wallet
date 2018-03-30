@@ -24,9 +24,9 @@ public class WalletBlockchainConnector implements BlockchainConnector {
     private static final Integer MAX_BLOCKS_FOR_TRANSACTIONS_QUERY = 500;
 
     private ApiAion aionApi = new WalletApi();
-
+//
     @Override
-    public byte[] sendTransaction(SendRequestDTO dto) throws ValidationException {
+    public String sendTransaction(SendRequestDTO dto) throws ValidationException {
         if (dto == null || !dto.isValid()) {
             throw new ValidationException("Invalid transaction request data");
         }
@@ -34,12 +34,11 @@ public class WalletBlockchainConnector implements BlockchainConnector {
                 , Address.wrap(ByteUtil.hexStringToBytes(dto.getTo())), dto.getData(),
                 dto.getNonce(), dto.getValue(), dto.getNrg(), dto.getNrgPrice());
 
-        return aionApi.sendTransaction(transactionParams);
+        return TypeConverter.toJsonHex(aionApi.sendTransaction(transactionParams));
     }
 
     @Override
     public boolean unlock(UnlockableAccount account) {
-
         return aionApi.unlockAccount(account.getAddress(), account.getPassword(), DEFAULT_UNLOCK_DURATION);
     }
 
@@ -49,8 +48,8 @@ public class WalletBlockchainConnector implements BlockchainConnector {
     }
 
     @Override
-    public TransactionDTO getTransaction(byte[] txHash) throws NotFoundException {
-        TransactionDTO transaction = mapTransaction(aionApi.getTransactionByHash(txHash));
+    public TransactionDTO getTransaction(String txHash) throws NotFoundException {
+        TransactionDTO transaction = mapTransaction(aionApi.getTransactionByHash(TypeConverter.StringHexToByteArray(txHash)));
         if (transaction == null) {
             throw new NotFoundException();
         }
@@ -68,14 +67,16 @@ public class WalletBlockchainConnector implements BlockchainConnector {
         if (blockOffset < 0) {
             blockOffset = 0;
         }
+        final String parsedAddr = TypeConverter.toJsonHex(addr);
         List<TransactionDTO> txs = new ArrayList<>();
         for (long i = latest.getNumber(); i > blockOffset; i--) {
             AionBlock blk = aionApi.getBlock(i);
-            if (blk == null) {
+            if (blk == null || blk.getTransactionsList().size() == 0) {
                 continue;
             }
             txs.addAll(blk.getTransactionsList().stream()
-                    .filter(t -> t.getFrom().toString().equals(addr) || t.getTo().toString().equals(addr))
+                    .filter(t -> TypeConverter.toJsonHex(t.getFrom().toString()).equals(parsedAddr)
+                            || TypeConverter.toJsonHex(t.getTo().toString()).equals(parsedAddr))
                     .map(this::mapTransaction)
                     .collect(Collectors.toList()));
         }

@@ -69,7 +69,7 @@ public class SendPane implements Initializable {
 
     public void onSendAionClicked() {
         try {
-            final byte[] txHash = sendAion();
+            final String txHash = sendAion();
             this.setDefaults();
             this.displayTxStatus(txHash);
         } catch (ValidationException e) {
@@ -78,7 +78,7 @@ public class SendPane implements Initializable {
 
     }
 
-    private byte[] sendAion() throws ValidationException {
+    private String sendAion() throws ValidationException {
         SendRequestDTO dto = mapFormData();
         txStatusLabel.setText("Unlocking wallet");
         if (!blockchainConnector.unlock(dto)) {
@@ -88,7 +88,7 @@ public class SendPane implements Initializable {
         return blockchainConnector.sendTransaction(dto);
     }
 
-    private void displayTxStatus(final byte[] txHash) {
+    private void displayTxStatus(final String txHash) {
         txStatusLabel.setText("Transaction pending");
         final Timer timer = new Timer();
         timer.schedule(new TransactionStatusTimedTask(timer, txHash, MAX_TX_STATUS_RETRY_COUNT), DEFAULT_BLOCK_MINING_TIME, DEFAULT_BLOCK_MINING_TIME);
@@ -107,11 +107,11 @@ public class SendPane implements Initializable {
 
     private class TransactionStatusTimedTask extends TimerTask {
         private final Timer timer;
-        private final byte[] txHash;
+        private final String txHash;
         private final int maxRetryCount;
         private int retryCount = 0;
 
-        private TransactionStatusTimedTask(Timer timer, byte[] txHash, int maxRetryCount) {
+        private TransactionStatusTimedTask(Timer timer, String txHash, int maxRetryCount) {
             this.timer = timer;
             this.txHash = txHash;
             this.maxRetryCount = maxRetryCount;
