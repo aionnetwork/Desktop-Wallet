@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<AnchorPane id="sendPane" styleClass="main-pane" stylesheets="@mainPane.css" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.aion.wallet.ui.components.SendPane">
+    <Pane layoutX="8.0" prefHeight="348.0" prefWidth="850.0">
+        <VBox prefHeight="50.0" prefWidth="833.0">
+            <Label prefHeight="50.0" prefWidth="400.0" text="Send aion" textFill="WHITE">
+                <font>
+                    <Font size="40.0" />
+                </font>
+            </Label>
+        </VBox>
+        <VBox layoutY="50.0" prefHeight="240.0" prefWidth="833.0">
+            <ComboBox fx:id="fromInput" prefHeight="26.0" prefWidth="833.0" promptText="From" />
+            <PasswordField fx:id="passwordInput" promptText="Password" />
+            <TextField fx:id="toInput" promptText="To" />
+            <TextField fx:id="nrgInput" promptText="Energy" />
+            <TextField fx:id="nrgPriceInput" promptText="Energy price" />
+            <TextField fx:id="valueInput" promptText="Amount to send" />
+            <Label fx:id="txStatusLabel" />
+        </VBox>
+    </Pane>
+    <Button layoutX="10.0" layoutY="260.0" mnemonicParsing="false" onMouseClicked="#onSendAionClicked" text="Send aion" />
+</AnchorPane>

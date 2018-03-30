@@ -1,6 +1,7 @@
 module aion.wallet{
 
     requires aion.apiserver;
+    requires aion.zero;
     requires aion.zero.impl;
     requires aion.log;
     requires aion.base;

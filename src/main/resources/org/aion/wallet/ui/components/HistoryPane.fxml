@@ -1,19 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TableView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
-<AnchorPane id="contentPane" stylesheets="@contentPane.css"
+<AnchorPane id="contentPane" stylesheets="@mainPane.css" styleClass="main-pane"
             xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="org.aion.wallet.ui.components.ContentPane">
+            fx:controller="org.aion.wallet.ui.components.HistoryPane">
     <Pane layoutX="8.0" prefHeight="348.0" prefWidth="850.0">
         <VBox prefHeight="50.0" prefWidth="833.0">
-            <Label prefHeight="50.0" prefWidth="400.0" text="Accounts overview" textFill="WHITE">
+            <Label prefHeight="50.0" prefWidth="400.0" text="Transaction history" textFill="WHITE">
                 <font>
                     <Font size="40.0"/>
                 </font>
@@ -21,10 +20,8 @@
         </VBox>
         <VBox layoutY="50.0" prefHeight="240.0" prefWidth="833.0">
             <ScrollPane prefHeight="240.0" prefWidth="633.0">
-                <ListView fx:id="accountListView" prefHeight="198.0" prefWidth="831.0"/>
+                <TableView fx:id="txListOverview"  prefHeight="240.0" prefWidth="831.0"/>
             </ScrollPane>
         </VBox>
     </Pane>
-    <Button layoutX="10.0" layoutY="260.0" mnemonicParsing="false" text="Add account"
-            onMouseClicked="#openAddAccountDialog"/>
 </AnchorPane>

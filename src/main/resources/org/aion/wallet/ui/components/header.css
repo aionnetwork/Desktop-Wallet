@@ -10,3 +10,10 @@
     -fx-text-fill: black;
     -fx-text-alignment: CENTER;
 }
+
+#logo:hover {
+    -fx-cursor: hand;
+}
+AnchorPane:hover {
+    -fx-cursor: hand;
+}

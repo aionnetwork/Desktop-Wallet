@@ -8,13 +8,15 @@ import java.math.RoundingMode;
  * @author Cristian Ilca, Centrys Inc.
  */
 public class BalanceFormatter {
-
-    private static final BigInteger BILLION = BigInteger.valueOf(1000000000);
+    private static final BigDecimal WEI_MULTIPLIER = BigDecimal.valueOf(1000000000000000000L);
 
     public static String formatBalance(BigInteger balance) {
         BigDecimal bigDecimalBalance = new BigDecimal(balance);
-        BigDecimal decimalPlaces = new BigDecimal(BILLION.multiply(BILLION));
 
-        return String.valueOf(bigDecimalBalance.divide(decimalPlaces, 10, RoundingMode.HALF_EVEN));
+        return String.valueOf(bigDecimalBalance.divide(WEI_MULTIPLIER, 10, RoundingMode.HALF_EVEN));
+    }
+
+    public static BigInteger extractBalance(String formattedBalance) {
+        return new BigDecimal(formattedBalance).multiply(WEI_MULTIPLIER).toBigInteger();
     }
 }
