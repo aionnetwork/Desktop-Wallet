@@ -2,11 +2,13 @@ package org.aion.wallet.connector;
 
 import org.aion.api.server.ApiAion;
 import org.aion.api.server.types.ArgTxCall;
+import org.aion.api.server.types.SyncInfo;
 import org.aion.base.type.Address;
 import org.aion.base.util.ByteUtil;
 import org.aion.base.util.TypeConverter;
 import org.aion.wallet.WalletApi;
 import org.aion.wallet.connector.dto.SendRequestDTO;
+import org.aion.wallet.connector.dto.SyncInfoDTO;
 import org.aion.wallet.connector.dto.TransactionDTO;
 import org.aion.wallet.connector.dto.UnlockableAccount;
 import org.aion.wallet.exception.NotFoundException;
@@ -15,6 +17,7 @@ import org.aion.wallet.util.WalletUtils;
 import org.aion.zero.impl.types.AionBlock;
 import org.aion.zero.types.AionTransaction;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -57,6 +60,28 @@ public class WalletBlockchainConnector implements BlockchainConnector {
     @Override
     public List<TransactionDTO> getLatestTransactions(String address) {
         return getTransactions(address, WalletUtils.MAX_BLOCKS_FOR_LATEST_TRANSACTIONS_QUERY);
+    }
+
+    @Override
+    public boolean getConnectionStatusByConnectedPeers() {
+        return aionApi.peerCount() > 0;
+    }
+
+    @Override
+    public SyncInfoDTO getSyncInfo() {
+        return mapSyncInfo(aionApi.getSync());
+    }
+
+    @Override
+    public BigInteger getBalance(String address) throws Exception {
+        return aionApi.getBalance(address);
+    }
+
+    private SyncInfoDTO mapSyncInfo(SyncInfo sync) {
+        SyncInfoDTO syncInfoDTO = new SyncInfoDTO();
+        syncInfoDTO.setChainBestBlkNumber(sync.chainBestBlkNumber);
+        syncInfoDTO.setNetworkBestBlkNumber(sync.networkBestBlkNumber);
+        return syncInfoDTO;
     }
 
     private List<TransactionDTO> getTransactions(final String addr, long nrOfBlocksToCheck) {

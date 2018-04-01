@@ -9,14 +9,11 @@ import java.util.TimerTask;
 
 public class DataUpdater extends TimerTask {
 
-    public static final String FOOTER_BUS_EVENT_ID = "footer";
+    public static final String FOOTER_BUS_EVENT_ID = "ui.footer";
     private final EventBus eventBus = EventBusFactory.getInstance().getBus(FOOTER_BUS_EVENT_ID);
 
     @Override
     public void run() {
-        Platform.runLater(() -> {
-            eventBus.post(new TimerEvent(null));
-            eventBus.post(new TimerEvent(null));
-        });
+        Platform.runLater(() -> eventBus.post(new TimerEvent(null)));
     }
 }

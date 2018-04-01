@@ -6,6 +6,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import org.aion.wallet.WalletApi;
+import org.aion.wallet.connector.WalletBlockchainConnector;
 import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.TimerEvent;
 import org.aion.wallet.util.DataUpdater;
@@ -15,8 +16,9 @@ import java.util.ResourceBundle;
 
 public class ConnectivityStatus implements Initializable {
 
-    public static final String CONNECTIVITY_STATUS_CONNECTED = "CONNECTED";
-    public static final String CONNECTIVITY_STATUS_DISCONNECTED = "DISCONNECTED";
+    private static final String CONNECTIVITY_STATUS_CONNECTED = "CONNECTED";
+    private static final String CONNECTIVITY_STATUS_DISCONNECTED = "DISCONNECTED";
+
     @FXML
     private ImageView connectedImage;
 
@@ -26,7 +28,7 @@ public class ConnectivityStatus implements Initializable {
     @FXML
     private Label connectivityLabel;
 
-    private WalletApi walletApi = new WalletApi();
+    WalletBlockchainConnector walletBlockchainConnector = new WalletBlockchainConnector();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -40,13 +42,13 @@ public class ConnectivityStatus implements Initializable {
 
     @Subscribe
     private void handleConnectivityStatusEvent(TimerEvent event) {
-        int peerCount = walletApi.peerCount();
-        setConnectivityImage(peerCount);
-        setConnectivityLabel(peerCount);
+        boolean connected = walletBlockchainConnector.getConnectionStatusByConnectedPeers();
+        setConnectivityImage(connected);
+        setConnectivityLabel(connected);
     }
 
-    private void setConnectivityImage(int peerCount) {
-        if (peerCount > 0) {
+    private void setConnectivityImage(boolean connected) {
+        if (connected) {
             connectedImage.setVisible(true);
             disConnectedImage.setVisible(false);
         } else {
@@ -55,8 +57,8 @@ public class ConnectivityStatus implements Initializable {
         }
     }
 
-    public void setConnectivityLabel(int peerCount) {
-        if (peerCount > 0) {
+    private void setConnectivityLabel(boolean connected) {
+        if (connected) {
             connectivityLabel.setText(CONNECTIVITY_STATUS_CONNECTED);
         } else {
             connectivityLabel.setText(CONNECTIVITY_STATUS_DISCONNECTED);

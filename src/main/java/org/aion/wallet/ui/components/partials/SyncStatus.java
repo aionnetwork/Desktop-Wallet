@@ -5,8 +5,8 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
-import org.aion.api.server.types.SyncInfo;
-import org.aion.wallet.WalletApi;
+import org.aion.wallet.connector.WalletBlockchainConnector;
+import org.aion.wallet.connector.dto.SyncInfoDTO;
 import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.TimerEvent;
 import org.aion.wallet.util.DataUpdater;
@@ -17,7 +17,7 @@ import java.util.ResourceBundle;
 
 public class SyncStatus implements Initializable {
 
-    private WalletApi walletApi = new WalletApi();
+    private WalletBlockchainConnector walletBlockchainConnector = new WalletBlockchainConnector();
 
     @FXML
     private ProgressBar syncProgressBar;
@@ -31,24 +31,23 @@ public class SyncStatus implements Initializable {
     }
 
     private void registerEventBusConsumer() {
-        final EventBusFactory eventBusFactory = EventBusFactory.getInstance();
-        eventBusFactory.getBus(DataUpdater.FOOTER_BUS_EVENT_ID).register(this);
+        EventBusFactory.getInstance().getBus(DataUpdater.FOOTER_BUS_EVENT_ID).register(this);
     }
 
     @Subscribe
     private void handleConnectivityStatusEvent(TimerEvent event) {
-        SyncInfo syncInfo = walletApi.getSync();
+        SyncInfoDTO syncInfo = walletBlockchainConnector.getSyncInfo();
         setSyncBarProgress(syncInfo);
         setSyncStatus(syncInfo);
     }
 
-    private void setSyncStatus(SyncInfo syncInfo) {
+    private void setSyncStatus(SyncInfoDTO syncInfo) {
         progressBarLabel.setText(SyncStatusFormatter.formatSyncStatus(syncInfo));
     }
 
-    private void setSyncBarProgress(SyncInfo syncInfo) {
-        if (syncInfo != null && syncInfo.networkBestBlkNumber > 0) {
-            syncProgressBar.setProgress((double) syncInfo.chainBestBlkNumber / syncInfo.networkBestBlkNumber);
+    private void setSyncBarProgress(SyncInfoDTO syncInfo) {
+        if (syncInfo != null && syncInfo.getNetworkBestBlkNumber() > 0) {
+            syncProgressBar.setProgress((double) syncInfo.getChainBestBlkNumber() / syncInfo.getNetworkBestBlkNumber());
         }
     }
 }

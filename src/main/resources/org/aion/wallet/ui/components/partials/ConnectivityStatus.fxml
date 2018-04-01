@@ -11,7 +11,7 @@
     <ImageView fx:id="connectedImage" fitHeight="45.0" fitWidth="40.0" layoutX="7.0" layoutY="2.0" pickOnBounds="true" preserveRatio="true" visible="false">
         <Image url="@../icons/icon-connected-50.png"/>
     </ImageView>
-    <ImageView fx:id="disConnectedImage" fitHeight="45.0" fitWidth="40.0" layoutX="7.0" layoutY="2.0" pickOnBounds="true" preserveRatio="true" visible="true">
+    <ImageView fx:id="disConnectedImage" fitHeight="45.0" fitWidth="40.0" layoutX="7.0" layoutY="2.0" pickOnBounds="true" preserveRatio="true">
         <Image url="@../icons/icon-disconnected-50.png"/>
     </ImageView>
     <Label fx:id="connectivityLabel" layoutX="47.0" layoutY="15.0" text="Connection status..."/>

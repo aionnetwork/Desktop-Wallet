@@ -40,7 +40,7 @@ public class MainWindow extends Application {
     private double xOffset;
     private double yOffset;
     private Stage stage;
-    private Timer timer;
+    private final Timer timer = new Timer();
 
     @Override
     public void start(final Stage stage) throws IOException {
@@ -70,8 +70,7 @@ public class MainWindow extends Application {
         panes.put(HeaderPaneButtonEvent.Type.HISTORY, scene.lookup("#historyPane"));
         panes.put(HeaderPaneButtonEvent.Type.SETTINGS, scene.lookup("#settingsPane"));
 
-        timer = new Timer();
-        timer.schedule(new DataUpdater(), WalletUtils.BLOCK_MINING_TIME, WalletUtils.BLOCK_MINING_TIME);
+        timer.schedule(new DataUpdater(), WalletUtils.BLOCK_MINING_TIME_MILLIS, WalletUtils.BLOCK_MINING_TIME_MILLIS);
     }
 
     private void registerEventBusConsumer() {
@@ -115,10 +114,8 @@ public class MainWindow extends Application {
     private void shutDown() {
         Platform.exit();
         Executors.newSingleThreadExecutor().submit(() -> System.exit(0));
-        if(timer != null) {
-            timer.cancel();
-            timer.purge();
-        }
+        timer.cancel();
+        timer.purge();
     }
 
     private void handleMousePressed(final MouseEvent event) {
