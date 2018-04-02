@@ -12,6 +12,7 @@ import javafx.scene.layout.Pane;
 import javafx.stage.Popup;
 import org.aion.api.server.ApiAion;
 import org.aion.wallet.WalletApi;
+import org.aion.wallet.connector.WalletBlockchainConnector;
 import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
 import org.aion.wallet.util.BalanceFormatter;
@@ -50,12 +51,12 @@ public class ContentPane implements Initializable{
     @FXML
     private ListView<String> accountListView;
 
-    private final ApiAion aionWallet = new WalletApi();
+    private WalletBlockchainConnector walletBlockchainConnector = new WalletBlockchainConnector();
 
     private void reloadWalletView() {
         ObservableList<String> accountListViewItems = accountListView.getItems();
         accountListViewItems.clear();
-        List<String> accounts = aionWallet.getAccounts();
+        List<String> accounts = walletBlockchainConnector.getAccounts();
         for(String account : accounts) {
             accountListViewItems.add(account + " - " + BalanceFormatter.formatBalance(getAccountBalance(account)));
         }
@@ -63,7 +64,7 @@ public class ContentPane implements Initializable{
     private BigInteger getAccountBalance(String account) {
         BigInteger balance = null;
         try {
-            balance = aionWallet.getBalance(account);
+            balance = walletBlockchainConnector.getBalance(account);
         } catch (Exception e) {
             e.printStackTrace();
         }

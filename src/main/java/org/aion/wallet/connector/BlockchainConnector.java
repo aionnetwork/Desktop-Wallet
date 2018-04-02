@@ -1,11 +1,13 @@
 package org.aion.wallet.connector;
 
 import org.aion.wallet.connector.dto.SendRequestDTO;
+import org.aion.wallet.connector.dto.SyncInfoDTO;
 import org.aion.wallet.connector.dto.TransactionDTO;
 import org.aion.wallet.connector.dto.UnlockableAccount;
 import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
 
+import java.math.BigInteger;
 import java.util.List;
 
 public interface BlockchainConnector {
@@ -14,4 +16,7 @@ public interface BlockchainConnector {
     List<String> getAccounts();
     TransactionDTO getTransaction(String txHash) throws NotFoundException;
     List<TransactionDTO> getLatestTransactions(String address);
+    boolean getConnectionStatusByConnectedPeers();
+    SyncInfoDTO getSyncInfo();
+    BigInteger getBalance(String address) throws Exception;
 }

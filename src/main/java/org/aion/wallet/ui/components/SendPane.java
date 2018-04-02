@@ -107,7 +107,7 @@ public class SendPane implements Initializable {
     private void displayTxStatus(final String txHash) {
         txStatusLabel.setText("Transaction pending");
         final Timer timer = new Timer();
-        timer.schedule(new TransactionStatusTimedTask(timer, txHash, MAX_TX_STATUS_RETRY_COUNT), BLOCK_MINING_TIME, BLOCK_MINING_TIME);
+        timer.schedule(new TransactionStatusTimedTask(timer, txHash, MAX_TX_STATUS_RETRY_COUNT), BLOCK_MINING_TIME_MILLIS, BLOCK_MINING_TIME_MILLIS);
     }
 
     private SendRequestDTO mapFormData() {

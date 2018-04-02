@@ -33,8 +33,7 @@
         <delete dir="${out.main}" includeEmptyDirs="true" includes="**/*/"/>
         <delete dir="${out.test}" includeEmptyDirs="true" includes="**/*/"/>
         <delete dir="${test.report.dir}"/>
-        <delete file="${dir.mod}/*.jar"/>
-        <delete file="${dir.mod}/updated/*.jar"/>
+        <delete dir="${dir.mod}/updated/"/>
     </target>
 
     <target name="test_build" depends="build">
@@ -88,9 +87,9 @@
                 debuglevel="source,lines,vars"
                 includeantruntime="false"
                 release="9"
-                srcdir="${src.main}"
+                srcdir="./"
                 destdir="${out.main}"
-                includes="**/*.java,module-info.java"
+                includes="src/main/java/**/*.java,module-info.java"
         >
             <modulepath>
                 <fileset dir="${dir.lib}" includes="*.jar"/>
