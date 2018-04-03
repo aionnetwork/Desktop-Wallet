@@ -1,3 +1,31 @@
 .anchor-pane {
-    -fx-background-color: #19364e;
+    -fx-background-color: WHITE;
+}
+
+.create-account-text {
+    -fx-text-fill: BLACK;
+    -fx-font-family: 'Open Sans Light';
+    -fx-font-size: 26px;
+}
+
+.add-account-buttons {
+    -fx-background-color: #40bded;
+    -fx-background-radius: 0,0,0,0;
+    -fx-text-fill: white;
+    -fx-font-family: 'Open Sans Bold';
+    -fx-font-size: 18px;
+}
+
+.add-account-input-fields {
+    -fx-background-color: #ececec;
+    -fx-background-radius: 0,0,0,0;
+    -fx-text-fill: black;
+    -fx-font-family: 'Open Sans Regular';
+    -fx-font-size: 16px;
+    -fx-prompt-text-fill: gray;
+}
+
+.error-input-fields {
+    -fx-text-box-border: red ;
+    -fx-focus-color: red ;
 }

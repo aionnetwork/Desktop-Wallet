@@ -1,16 +1,18 @@
 @font-face {
-    font-family: 'Open Sans', sans-serif;
+    font-family: 'Open Sans Regular';
     src: url('fonts/OpenSans-Regular.ttf');
 }
 @font-face {
-    font-family: 'Open Sans', sans-serif;
-    font-weight: bold;
+    font-family: 'Open Sans Bold';
     src: url('fonts/OpenSans-Bold.ttf');
 }
 @font-face {
-    font-family: 'Open Sans', sans-serif;
-    font-style: italic;
+    font-family: 'Open Sans Extra Bold Italic';
     src: url('fonts/OpenSans-ExtraBoldItalic.ttf');
+}
+@font-face {
+    font-family: 'Open Sans Light';
+    src: url('fonts/OpenSans-Light.ttf');
 }
 
 .main-stage {

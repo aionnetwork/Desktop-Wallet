@@ -3,9 +3,9 @@ package org.aion.wallet.ui.components.partials;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
-import javafx.scene.control.TextField;
+import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.Popup;
 import org.aion.mcf.account.Keystore;
@@ -17,22 +17,48 @@ import java.io.IOException;
 public class AddAccountDialog {
 
     @FXML
-    private TextField newPassword;
+    private PasswordField newPassword;
 
     @FXML
-    private TextField retypedPassword;
+    private PasswordField retypedPassword;
+
+    @FXML
+    private Label validationError;
 
     private final Popup popup = new Popup();
 
     public void createAccount() {
-        if (newPassword.getText() != null && retypedPassword.getText() != null && newPassword.getText().equals(retypedPassword.getText())) {
+        if (validateFields()) {
             Keystore.create(newPassword.getText());
+            EventBusFactory.getInstance().getBus(HeaderPaneButtonEvent.ID).post(new HeaderPaneButtonEvent(HeaderPaneButtonEvent.Type.HOME));
         }
-        EventBusFactory.getInstance().getBus(HeaderPaneButtonEvent.ID).post(new HeaderPaneButtonEvent(HeaderPaneButtonEvent.Type.HOME));
     }
 
-    public void unlockAccount() {
+    private boolean validateFields() {
+        resetValidation();
+        boolean result = newPassword.getText() != null && !newPassword.getText().isEmpty()
+                && retypedPassword.getText() != null && !retypedPassword.getText().isEmpty()
+                && newPassword.getText().equals(retypedPassword.getText());
+        if(!result) {
+            String error = "";
+            if(newPassword.getText().isEmpty() || retypedPassword.getText().isEmpty()) {
+                error = "Please complete the fields!";
+            }
+            else if(!newPassword.getText().equals(retypedPassword.getText())) {
+                error = "Passwords don't match!";
+            }
+            showInvalidFieldsError(error);
+        }
+        return result;
+    }
 
+    public void resetValidation() {
+        validationError.setVisible(false);
+    }
+
+    private void showInvalidFieldsError(String message) {
+        validationError.setVisible(true);
+        validationError.setText(message);
     }
 
     public void open(MouseEvent mouseEvent) {
