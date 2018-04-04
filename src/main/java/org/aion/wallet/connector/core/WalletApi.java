@@ -1,4 +1,4 @@
-package org.aion.wallet;
+package org.aion.wallet.connector.core;
 
 import org.aion.api.server.ApiAion;
 import org.aion.base.type.ITransaction;

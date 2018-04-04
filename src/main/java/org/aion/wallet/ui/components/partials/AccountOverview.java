@@ -6,7 +6,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ListView;
 import javafx.scene.input.MouseEvent;
-import org.aion.wallet.connector.WalletBlockchainConnector;
+import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
 import org.aion.wallet.util.BalanceFormatter;
@@ -22,7 +22,8 @@ public class AccountOverview implements Initializable{
 
     private AddAccountDialog addAccountDialog;
 
-    private final WalletBlockchainConnector walletBlockchainConnector = new WalletBlockchainConnector();
+    private  final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
+
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -45,7 +46,7 @@ public class AccountOverview implements Initializable{
     private void reloadWalletView() {
         ObservableList<String> accountListViewItems = accountListView.getItems();
         accountListViewItems.clear();
-        List<String> accounts = walletBlockchainConnector.getAccounts();
+        List<String> accounts = blockchainConnector.getAccounts();
         for(String account : accounts) {
             accountListViewItems.add(account + " - " + BalanceFormatter.formatBalance(getAccountBalance(account)));
         }
@@ -53,7 +54,7 @@ public class AccountOverview implements Initializable{
     private BigInteger getAccountBalance(String account) {
         BigInteger balance = null;
         try {
-            balance = walletBlockchainConnector.getBalance(account);
+            balance = blockchainConnector.getBalance(account);
         } catch (Exception e) {
             e.printStackTrace();
         }

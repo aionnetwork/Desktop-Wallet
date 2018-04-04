@@ -1,4 +1,4 @@
-package org.aion.wallet.connector;
+package org.aion.wallet.connector.core;
 
 import org.aion.api.server.ApiAion;
 import org.aion.api.server.types.ArgTxCall;
@@ -6,7 +6,7 @@ import org.aion.api.server.types.SyncInfo;
 import org.aion.base.type.Address;
 import org.aion.base.util.ByteUtil;
 import org.aion.base.util.TypeConverter;
-import org.aion.wallet.WalletApi;
+import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.connector.dto.SendRequestDTO;
 import org.aion.wallet.connector.dto.SyncInfoDTO;
 import org.aion.wallet.connector.dto.TransactionDTO;
@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class WalletBlockchainConnector implements BlockchainConnector {
+public class CoreBlockchainConnector implements BlockchainConnector {
 
     private final static ApiAion aionApi = new WalletApi();
 
@@ -31,16 +31,14 @@ public class WalletBlockchainConnector implements BlockchainConnector {
         if (dto == null || !dto.isValid()) {
             throw new ValidationException("Invalid transaction request data");
         }
+        if (!unlock(dto)) {
+            throw new ValidationException("Failed to unlock wallet");
+        }
         ArgTxCall transactionParams = new ArgTxCall(Address.wrap(ByteUtil.hexStringToBytes(dto.getFrom()))
                 , Address.wrap(ByteUtil.hexStringToBytes(dto.getTo())), dto.getData(),
                 dto.getNonce(), dto.getValue(), dto.getNrg(), dto.getNrgPrice());
 
         return TypeConverter.toJsonHex(aionApi.sendTransaction(transactionParams));
-    }
-
-    @Override
-    public boolean unlock(UnlockableAccount account) {
-        return aionApi.unlockAccount(account.getAddress(), account.getPassword(), WalletUtils.DEFAULT_WALLET_UNLOCK_DURATION);
     }
 
     @Override
@@ -75,6 +73,10 @@ public class WalletBlockchainConnector implements BlockchainConnector {
     @Override
     public BigInteger getBalance(String address) throws Exception {
         return aionApi.getBalance(address);
+    }
+
+    private boolean unlock(UnlockableAccount account) {
+        return aionApi.unlockAccount(account.getAddress(), account.getPassword(), WalletUtils.DEFAULT_WALLET_UNLOCK_DURATION);
     }
 
     private SyncInfoDTO mapSyncInfo(SyncInfo sync) {

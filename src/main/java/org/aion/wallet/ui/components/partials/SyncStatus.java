@@ -5,7 +5,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
-import org.aion.wallet.connector.WalletBlockchainConnector;
+import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.connector.dto.SyncInfoDTO;
 import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.TimerEvent;
@@ -17,7 +17,7 @@ import java.util.ResourceBundle;
 
 public class SyncStatus implements Initializable {
 
-    private WalletBlockchainConnector walletBlockchainConnector = new WalletBlockchainConnector();
+    private BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
 
     @FXML
     private ProgressBar syncProgressBar;
@@ -36,7 +36,7 @@ public class SyncStatus implements Initializable {
 
     @Subscribe
     private void handleConnectivityStatusEvent(TimerEvent event) {
-        SyncInfoDTO syncInfo = walletBlockchainConnector.getSyncInfo();
+        SyncInfoDTO syncInfo = blockchainConnector.getSyncInfo();
         setSyncBarProgress(syncInfo);
         setSyncStatus(syncInfo);
     }

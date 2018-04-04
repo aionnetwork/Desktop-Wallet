@@ -9,7 +9,6 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import org.aion.wallet.connector.BlockchainConnector;
-import org.aion.wallet.connector.WalletBlockchainConnector;
 import org.aion.wallet.connector.dto.TransactionDTO;
 import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
@@ -23,7 +22,7 @@ import java.util.stream.Collectors;
 
 public class HistoryPane implements Initializable {
 
-    private final BlockchainConnector blockchainConnector = new WalletBlockchainConnector();
+    private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
     @FXML
     private TableView<TxRow> txListOverview;
 
