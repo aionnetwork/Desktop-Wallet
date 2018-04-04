@@ -15,7 +15,7 @@
             </Label>
         </VBox>
         <VBox layoutY="50.0" prefHeight="240.0" prefWidth="833.0">
-            <ComboBox fx:id="fromInput" prefHeight="26.0" prefWidth="833.0" promptText="From" />
+            <Label fx:id="fromLabel" prefHeight="26.0" prefWidth="833.0" />
             <PasswordField fx:id="passwordInput" promptText="Password" />
             <TextField fx:id="toInput" promptText="To" />
             <TextField fx:id="nrgInput" promptText="Energy" />

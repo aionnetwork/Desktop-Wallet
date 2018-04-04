@@ -2,10 +2,8 @@ package org.aion.wallet.ui.components;
 
 import com.google.common.eventbus.Subscribe;
 import javafx.application.Platform;
-import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
@@ -14,10 +12,11 @@ import org.aion.log.AionLoggerFactory;
 import org.aion.log.LogEnum;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.connector.dto.SendRequestDTO;
+import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.ui.events.EventBusFactory;
-import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
+import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.util.BalanceFormatter;
 import org.slf4j.Logger;
 
@@ -35,7 +34,7 @@ public class SendPane implements Initializable {
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
 
     @FXML
-    private ComboBox<String> fromInput;
+    private Label fromLabel;
     @FXML
     private PasswordField passwordInput;
     @FXML
@@ -49,24 +48,22 @@ public class SendPane implements Initializable {
     @FXML
     private Label txStatusLabel;
 
+    private AccountDTO account;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         registerEventBusConsumer();
-        reloadAccounts();
         setDefaults();
     }
 
     @Subscribe
-    private void handleHeaderPaneButtonEvent(HeaderPaneButtonEvent event) {
-        if(!event.getType().equals(HeaderPaneButtonEvent.Type.SEND)){
-            return;
-        }
-        reloadAccounts();
+    private void handleAccountChanged(AccountDTO account) {
+        this.account = account;
+        fromLabel.setText("From " + account.getPublicAddress());
     }
 
     private void registerEventBusConsumer() {
-        EventBusFactory eventBusFactory = EventBusFactory.getInstance();
-        eventBusFactory.getBus(HeaderPaneButtonEvent.ID).register(this);
+        EventBusFactory.getInstance().getBus(EventPublisher.ACCOUNT_CHANGE_EVENT_ID).register(this);
     }
 
     private void setDefaults() {
@@ -78,11 +75,11 @@ public class SendPane implements Initializable {
         passwordInput.setText("");
     }
 
-    private void reloadAccounts() {
-        fromInput.setItems(FXCollections.observableArrayList(blockchainConnector.getAccounts()));
-    }
-
     public void onSendAionClicked() {
+        if(account == null) {
+            txStatusLabel.setText("You must select an account before sending Aion!");
+            return;
+        }
         try {
             final String txHash = sendAion();
             this.setDefaults();
@@ -107,7 +104,7 @@ public class SendPane implements Initializable {
 
     private SendRequestDTO mapFormData() {
         SendRequestDTO dto = new SendRequestDTO();
-        dto.setFrom((String) fromInput.getValue());
+        dto.setFrom(account.getPublicAddress());
         dto.setTo(toInput.getText());
         dto.setPassword(passwordInput.getText());
         dto.setNrg(TypeConverter.StringNumberAsBigInt(nrgInput.getText()).longValue());

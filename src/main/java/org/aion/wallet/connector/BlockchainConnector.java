@@ -5,6 +5,7 @@ import org.aion.wallet.connector.core.CoreBlockchainConnector;
 import org.aion.wallet.connector.dto.SendRequestDTO;
 import org.aion.wallet.connector.dto.SyncInfoDTO;
 import org.aion.wallet.connector.dto.TransactionDTO;
+import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
 
@@ -24,7 +25,7 @@ public interface BlockchainConnector {
 
     String sendTransaction(SendRequestDTO dto) throws ValidationException;
 
-    List<String> getAccounts();
+    List<AccountDTO> getAccounts();
 
     TransactionDTO getTransaction(String txHash) throws NotFoundException;
 

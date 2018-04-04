@@ -11,8 +11,10 @@ import org.aion.wallet.connector.dto.SendRequestDTO;
 import org.aion.wallet.connector.dto.SyncInfoDTO;
 import org.aion.wallet.connector.dto.TransactionDTO;
 import org.aion.wallet.connector.dto.UnlockableAccount;
+import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
+import org.aion.wallet.util.BalanceFormatter;
 import org.aion.wallet.util.WalletUtils;
 import org.aion.zero.impl.types.AionBlock;
 import org.aion.zero.types.AionTransaction;
@@ -42,8 +44,19 @@ public class CoreBlockchainConnector implements BlockchainConnector {
     }
 
     @Override
-    public List<String> getAccounts() {
-        return aionApi.getAccounts();
+    public List<AccountDTO> getAccounts() {
+        List<AccountDTO> accounts = new ArrayList<>();
+        for (String publicAddress : (List<String>)aionApi.getAccounts()) {
+            AccountDTO dto = new AccountDTO();
+            dto.setPublicAddress(publicAddress);
+            try {
+                dto.setBalance(BalanceFormatter.formatBalance(getBalance(publicAddress)));
+            }catch (Exception e) {
+                dto.setBalance(BalanceFormatter.formatBalance(BigInteger.ZERO));
+            }
+            accounts.add(dto);
+        }
+        return accounts;
     }
 
     @Override

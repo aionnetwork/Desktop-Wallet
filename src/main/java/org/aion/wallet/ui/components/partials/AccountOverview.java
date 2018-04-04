@@ -2,7 +2,6 @@ package org.aion.wallet.ui.components.partials;
 
 import com.google.common.eventbus.Subscribe;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ListView;
@@ -10,12 +9,11 @@ import javafx.scene.input.MouseEvent;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.ui.events.EventBusFactory;
+import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
-import org.aion.wallet.util.BalanceFormatter;
 
 import java.math.BigInteger;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -27,6 +25,8 @@ public class AccountOverview implements Initializable{
 
     private  final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
 
+    private AccountDTO account;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         addAccountDialog = new AddAccountDialog();
@@ -37,6 +37,14 @@ public class AccountOverview implements Initializable{
     private void registerEventBusConsumer() {
         EventBusFactory eventBusFactory = EventBusFactory.getInstance();
         eventBusFactory.getBus(HeaderPaneButtonEvent.ID).register(this);
+        EventBusFactory.getInstance().getBus(EventPublisher.ACCOUNT_CHANGE_EVENT_ID).register(this);
+    }
+
+    @Subscribe
+    private void handleAccountChanged(AccountDTO account) {
+        this.account = account;
+        // todo: don't reload the account list from blockchain connector
+        reloadWalletView();
     }
 
     @Subscribe
@@ -46,18 +54,16 @@ public class AccountOverview implements Initializable{
     }
 
     private void reloadWalletView() {
-        List<AccountDTO> accountListViewItems = new ArrayList<>();
-        List<String> accounts = blockchainConnector.getAccounts();
-        for(String account : accounts) {
-            AccountDTO dto = new AccountDTO();
-            dto.setPublicAddress(account);
-            dto.setBalance(BalanceFormatter.formatBalance(getAccountBalance(account)));
-            accountListViewItems.add(dto);
+        List<AccountDTO> accounts = blockchainConnector.getAccounts();
+        for (AccountDTO account : accounts) {
+            account.setActive(this.account != null && this.account.getPublicAddress().equals(account.getPublicAddress()));
         }
-
-        accountListViewItems.get(0).setActive(true);
-        accountListView.setItems(FXCollections.observableArrayList(accountListViewItems));
+        if (account == null && accounts.size() > 0) {
+            EventPublisher.fireAccountChanged(accounts.get(0));
+        }
+        accountListView.setItems(FXCollections.observableArrayList(accounts));
     }
+
     private BigInteger getAccountBalance(String account) {
         BigInteger balance = null;
         try {
@@ -65,7 +71,7 @@ public class AccountOverview implements Initializable{
         } catch (Exception e) {
             e.printStackTrace();
         }
-        if(balance != null) {
+        if (balance != null) {
             return balance;
         }
         return BigInteger.ZERO;

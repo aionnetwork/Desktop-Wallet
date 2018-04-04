@@ -5,9 +5,9 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import org.aion.wallet.dto.AccountDTO;
+import org.aion.wallet.ui.events.EventPublisher;
 
 import java.io.IOException;
 
@@ -41,11 +41,10 @@ public class AccountCellItem extends ListCell<AccountDTO> {
     protected void updateItem(AccountDTO item, boolean empty) {
         super.updateItem(item, empty);
 
-        if(empty) {
+        if (empty) {
             setText(null);
             setContentDisplay(ContentDisplay.TEXT_ONLY);
-        }
-        else {
+        } else {
             publicAddress.setText(item.getPublicAddress());
             balance.setText(item.getBalance() + " AION");
             connectedImage.setVisible(item.getActive());
@@ -55,6 +54,6 @@ public class AccountCellItem extends ListCell<AccountDTO> {
     }
 
     public void onDisconnectedClicked() {
-        System.out.println("MUIE BA PWLA");
+        EventPublisher.fireAccountChanged(this.getItem());
     }
 }

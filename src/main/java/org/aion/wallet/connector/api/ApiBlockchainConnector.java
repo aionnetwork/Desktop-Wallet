@@ -13,6 +13,7 @@ import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.connector.dto.SendRequestDTO;
 import org.aion.wallet.connector.dto.SyncInfoDTO;
 import org.aion.wallet.connector.dto.TransactionDTO;
+import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.util.WalletUtils;
@@ -52,7 +53,7 @@ public class ApiBlockchainConnector implements BlockchainConnector {
     }
 
     @Override
-    public List<String> getAccounts() {
+    public List<AccountDTO> getAccounts() {
         return Collections.emptyList();
     }
 
