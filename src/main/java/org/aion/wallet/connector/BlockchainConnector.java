@@ -5,7 +5,6 @@ import org.aion.wallet.connector.core.CoreBlockchainConnector;
 import org.aion.wallet.connector.dto.SendRequestDTO;
 import org.aion.wallet.connector.dto.SyncInfoDTO;
 import org.aion.wallet.connector.dto.TransactionDTO;
-import org.aion.wallet.connector.dto.UnlockableAccount;
 import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
 

@@ -80,7 +80,7 @@ public class ApiBlockchainConnector implements BlockchainConnector {
     }
 
     @Override
-    public BigInteger getBalance(String address) throws Exception {
+    public BigInteger getBalance(String address) {
         return aionApi.getChain().getBalance(new Address(address)).getObject();
     }
 

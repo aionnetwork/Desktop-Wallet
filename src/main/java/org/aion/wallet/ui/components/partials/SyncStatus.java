@@ -17,7 +17,7 @@ import java.util.ResourceBundle;
 
 public class SyncStatus implements Initializable {
 
-    private BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
+    private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
 
     @FXML
     private ProgressBar syncProgressBar;

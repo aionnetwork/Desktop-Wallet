@@ -18,6 +18,8 @@ public class ConnectivityStatus implements Initializable {
     private static final String CONNECTIVITY_STATUS_CONNECTED = "CONNECTED";
     private static final String CONNECTIVITY_STATUS_DISCONNECTED = "DISCONNECTED";
 
+    private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
+
     @FXML
     private ImageView connectedImage;
 
@@ -26,8 +28,6 @@ public class ConnectivityStatus implements Initializable {
 
     @FXML
     private Label connectivityLabel;
-
-    BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
