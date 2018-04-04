@@ -22,7 +22,7 @@ public class AccountOverview implements Initializable{
 
     private AddAccountDialog addAccountDialog;
 
-    private WalletBlockchainConnector walletBlockchainConnector = new WalletBlockchainConnector();
+    private final WalletBlockchainConnector walletBlockchainConnector = new WalletBlockchainConnector();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {

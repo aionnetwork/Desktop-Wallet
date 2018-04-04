@@ -16,6 +16,9 @@ import java.io.IOException;
 
 public class AddAccountDialog {
 
+    private static final double DEFAULT_ACCOUNT_DIALOG_HEIGHT = 400.0;
+    private static final double DEFAULT_ACCOUNT_DIALOG_WIDTH = 350.0;
+
     @FXML
     private PasswordField newPassword;
 
@@ -28,18 +31,12 @@ public class AddAccountDialog {
     private final Popup popup = new Popup();
 
     public void createAccount() {
+        resetValidation();
         if (validateFields()) {
             Keystore.create(newPassword.getText());
             EventBusFactory.getInstance().getBus(HeaderPaneButtonEvent.ID).post(new HeaderPaneButtonEvent(HeaderPaneButtonEvent.Type.HOME));
         }
-    }
-
-    private boolean validateFields() {
-        resetValidation();
-        boolean result = newPassword.getText() != null && !newPassword.getText().isEmpty()
-                && retypedPassword.getText() != null && !retypedPassword.getText().isEmpty()
-                && newPassword.getText().equals(retypedPassword.getText());
-        if(!result) {
+        else {
             String error = "";
             if(newPassword.getText().isEmpty() || retypedPassword.getText().isEmpty()) {
                 error = "Please complete the fields!";
@@ -49,7 +46,16 @@ public class AddAccountDialog {
             }
             showInvalidFieldsError(error);
         }
-        return result;
+    }
+
+    private boolean validateFields() {
+        if(newPassword == null || newPassword.getText() == null || retypedPassword == null || retypedPassword.getText() == null) {
+            return false;
+        }
+
+        return newPassword.getText() != null && !newPassword.getText().isEmpty()
+                && retypedPassword.getText() != null && !retypedPassword.getText().isEmpty()
+                && newPassword.getText().equals(retypedPassword.getText());
     }
 
     public void resetValidation() {
@@ -73,10 +79,24 @@ public class AddAccountDialog {
         }
 
         Node eventSource = (Node) mouseEvent.getSource();
-        popup.setX(eventSource.getScene().getWindow().getX() + eventSource.getScene().getWidth() / 2 - addAccountDialog.getPrefWidth() / 2);
-        popup.setY(eventSource.getScene().getWindow().getY() + eventSource.getScene().getHeight() / 2 - addAccountDialog.getPrefHeight() / 2);
+        popup.setX(eventSource.getScene().getWindow().getX() + eventSource.getScene().getWidth() / 2 - getAccountDialogWidth(addAccountDialog) / 2);
+        popup.setY(eventSource.getScene().getWindow().getY() + eventSource.getScene().getHeight() / 2 - getAccountDialogHeight(addAccountDialog) / 2);
         popup.getContent().addAll(addAccountDialog);
         popup.show(eventSource.getScene().getWindow());
+    }
+
+    private double getAccountDialogHeight(Pane addAccountDialog) {
+        if(addAccountDialog != null) {
+            return addAccountDialog.getPrefHeight();
+        }
+        return DEFAULT_ACCOUNT_DIALOG_HEIGHT;
+    }
+
+    private double getAccountDialogWidth(Pane addAccountDialog) {
+        if(addAccountDialog != null) {
+            return addAccountDialog.getPrefWidth();
+        }
+        return DEFAULT_ACCOUNT_DIALOG_WIDTH;
     }
 
     public void close() {
