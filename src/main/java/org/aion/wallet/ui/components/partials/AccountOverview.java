@@ -24,7 +24,6 @@ public class AccountOverview implements Initializable{
 
     private  final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
 
-
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         addAccountDialog = new AddAccountDialog();

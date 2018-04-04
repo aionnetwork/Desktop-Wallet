@@ -13,18 +13,26 @@ import java.util.List;
 
 public interface BlockchainConnector {
     String WALLET_API_ENABLED_FLAG = "wallet.api.enabled";
+
     static BlockchainConnector getInstance() {
-        if(Boolean.valueOf(System.getProperty(WALLET_API_ENABLED_FLAG))) {
+        if (Boolean.valueOf(System.getProperty(WALLET_API_ENABLED_FLAG))) {
             return new ApiBlockchainConnector();
         } else {
             return new CoreBlockchainConnector();
         }
     }
+
     String sendTransaction(SendRequestDTO dto) throws ValidationException;
+
     List<String> getAccounts();
+
     TransactionDTO getTransaction(String txHash) throws NotFoundException;
+
     List<TransactionDTO> getLatestTransactions(String address);
+
     boolean getConnectionStatusByConnectedPeers();
+
     SyncInfoDTO getSyncInfo();
+
     BigInteger getBalance(String address) throws Exception;
 }

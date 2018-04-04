@@ -5,6 +5,7 @@
 /build
 /pack
 /mod/updated
+/out
 
 #IDE
 *.iml
