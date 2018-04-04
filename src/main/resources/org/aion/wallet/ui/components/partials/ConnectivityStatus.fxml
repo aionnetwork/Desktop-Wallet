@@ -1,18 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
-
+<?import java.net.URL?>
 <AnchorPane prefHeight="46.0" prefWidth="200.0" xmlns="http://javafx.com/javafx/8.0.121"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="org.aion.wallet.ui.components.partials.ConnectivityStatus">
-    <ImageView fx:id="connectedImage" fitHeight="45.0" fitWidth="40.0" layoutX="7.0" layoutY="2.0" pickOnBounds="true" preserveRatio="true" visible="false">
-        <Image url="@../icons/icon-connected-50.png"/>
-    </ImageView>
-    <ImageView fx:id="disConnectedImage" fitHeight="45.0" fitWidth="40.0" layoutX="7.0" layoutY="2.0" pickOnBounds="true" preserveRatio="true">
-        <Image url="@../icons/icon-disconnected-50.png"/>
-    </ImageView>
-    <Label fx:id="connectivityLabel" layoutX="47.0" layoutY="15.0" text="Connection status..."/>
+    <stylesheets>
+        <URL value="@../footer-pane.css" />
+    </stylesheets>
+    <Label fx:id="connectivityLabel" styleClass="connected-label" layoutX="10.0" layoutY="10.0" text="Connection status..."/>
 </AnchorPane>

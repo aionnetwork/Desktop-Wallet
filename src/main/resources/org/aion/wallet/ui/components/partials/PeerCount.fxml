@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.control.Label?>
+<?import java.net.URL?>
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="org.aion.wallet.ui.components.partials.PeerCount"
+            prefHeight="46.0" prefWidth="100.0"
+            layoutX="200.0">
+    <stylesheets>
+        <URL value="@../footer-pane.css" />
+    </stylesheets>
+
+    <ImageView fitHeight="24.0" layoutX="0.0" layoutY="10.0" pickOnBounds="true" preserveRatio="true">
+        <Image url="@../icons/peers-256x256.png"/>
+    </ImageView>
+    <Label fx:id="peerCount" layoutX="30.0" layoutY="15.0" styleClass="footer-pane-text" text="0 peers" />
+</AnchorPane>

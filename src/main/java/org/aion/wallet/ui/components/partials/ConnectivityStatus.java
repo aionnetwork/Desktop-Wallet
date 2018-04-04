@@ -21,12 +21,6 @@ public class ConnectivityStatus implements Initializable {
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
 
     @FXML
-    private ImageView connectedImage;
-
-    @FXML
-    private ImageView disConnectedImage;
-
-    @FXML
     private Label connectivityLabel;
 
     @Override
@@ -42,18 +36,7 @@ public class ConnectivityStatus implements Initializable {
     @Subscribe
     private void handleConnectivityStatusEvent(TimerEvent event) {
         boolean connected = blockchainConnector.getConnectionStatusByConnectedPeers();
-        setConnectivityImage(connected);
         setConnectivityLabel(connected);
-    }
-
-    private void setConnectivityImage(boolean connected) {
-        if (connected) {
-            connectedImage.setVisible(true);
-            disConnectedImage.setVisible(false);
-        } else {
-            connectedImage.setVisible(false);
-            disConnectedImage.setVisible(true);
-        }
     }
 
     private void setConnectivityLabel(boolean connected) {

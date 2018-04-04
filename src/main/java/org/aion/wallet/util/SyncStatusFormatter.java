@@ -28,6 +28,10 @@ public class SyncStatusFormatter {
         return UNDEFINED;
     }
 
+    public static String formatSyncStatusByBlockNumbers(SyncInfoDTO syncInfo) {
+        return syncInfo.getChainBestBlkNumber() + "/" + syncInfo.getNetworkBestBlkNumber() + " total blocks";
+    }
+
     private static String getSyncStatusBySeconds(long seconds) {
         int minutes = (int) seconds / SECONDS_IN_A_MINUTE;
         int hours = (int) seconds / SECONDS_IN_A_HOUR;
