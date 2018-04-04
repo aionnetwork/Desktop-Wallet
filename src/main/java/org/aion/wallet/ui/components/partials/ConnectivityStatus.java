@@ -5,8 +5,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
-import org.aion.wallet.WalletApi;
-import org.aion.wallet.connector.WalletBlockchainConnector;
+import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.TimerEvent;
 import org.aion.wallet.util.DataUpdater;
@@ -19,6 +18,8 @@ public class ConnectivityStatus implements Initializable {
     private static final String CONNECTIVITY_STATUS_CONNECTED = "CONNECTED";
     private static final String CONNECTIVITY_STATUS_DISCONNECTED = "DISCONNECTED";
 
+    private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
+
     @FXML
     private ImageView connectedImage;
 
@@ -27,8 +28,6 @@ public class ConnectivityStatus implements Initializable {
 
     @FXML
     private Label connectivityLabel;
-
-    WalletBlockchainConnector walletBlockchainConnector = new WalletBlockchainConnector();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -42,7 +41,7 @@ public class ConnectivityStatus implements Initializable {
 
     @Subscribe
     private void handleConnectivityStatusEvent(TimerEvent event) {
-        boolean connected = walletBlockchainConnector.getConnectionStatusByConnectedPeers();
+        boolean connected = blockchainConnector.getConnectionStatusByConnectedPeers();
         setConnectivityImage(connected);
         setConnectivityLabel(connected);
     }

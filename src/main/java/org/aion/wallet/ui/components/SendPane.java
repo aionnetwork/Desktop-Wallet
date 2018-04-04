@@ -13,7 +13,6 @@ import org.aion.base.util.TypeConverter;
 import org.aion.log.AionLoggerFactory;
 import org.aion.log.LogEnum;
 import org.aion.wallet.connector.BlockchainConnector;
-import org.aion.wallet.connector.WalletBlockchainConnector;
 import org.aion.wallet.connector.dto.SendRequestDTO;
 import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
@@ -33,7 +32,7 @@ public class SendPane implements Initializable {
     private static final Logger log = AionLoggerFactory.getLogger(LogEnum.WLT.name());
     private static final int MAX_TX_STATUS_RETRY_COUNT = 6;
 
-    private final BlockchainConnector blockchainConnector = new WalletBlockchainConnector();
+    private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
 
     @FXML
     private ComboBox<String> fromInput;
@@ -96,10 +95,6 @@ public class SendPane implements Initializable {
 
     private String sendAion() throws ValidationException {
         SendRequestDTO dto = mapFormData();
-        txStatusLabel.setText("Unlocking wallet");
-        if (!blockchainConnector.unlock(dto)) {
-            throw new ValidationException("Failed to unlock wallet");
-        }
         txStatusLabel.setText("Sending transaction");
         return blockchainConnector.sendTransaction(dto);
     }

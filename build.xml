@@ -22,12 +22,6 @@
     <path id="classpath.test">
     </path>
 
-    <target name="clean_build" depends="clean">
-        <antcall target="build">
-            <param name="compile.debug" value="${compile.debug}"/>
-        </antcall>
-    </target>
-
 
     <target name="clean">
         <delete dir="${out.main}" includeEmptyDirs="true" includes="**/*/"/>
@@ -36,7 +30,7 @@
         <delete dir="${dir.mod}/updated/"/>
     </target>
 
-    <target name="test_build" depends="build">
+    <target name="test_build" depends="build_standalone">
         <mkdir dir="${out.test}"/>
         <javac
                 debug="on"
@@ -70,16 +64,16 @@
         </junit>
     </target>
 
-    <target name="build">
+    <target name="build_submodule">
         <mkdir dir="${out.main}"/>
         <mkdir dir="${dir.pack}"/>
         <condition property="parent.exists">
             <available file="${parent.mod}" type="dir"/>
         </condition>
-        <echo unless:set="parent.exists">standaloneMode</echo>
-        <echo if:set="parent.exists">submoduleMode</echo>
-        <mkdir if:set="parent.exists" dir="${dir.mod}/updated" />
-        <copy if:set="parent.exists" todir="${dir.mod}/updated">
+        <!--<fail unless:set="parent.exists">Can't build module in standalone mode</fail>-->
+
+        <mkdir dir="${dir.mod}/updated"/>
+        <copy todir="${dir.mod}/updated">
             <fileset dir="${parent.mod}" includes="mod*.jar" />
         </copy>
         <javac
@@ -89,12 +83,12 @@
                 release="9"
                 srcdir="./"
                 destdir="${out.main}"
+                excludes="src/main/java/org/aion/connector/api/**/*.java"
                 includes="src/main/java/**/*.java,module-info.java"
         >
             <modulepath>
-                <fileset dir="${dir.lib}" includes="*.jar"/>
-                <fileset if:set="parent.exists" dir="${dir.mod}" includes="*updated/*.jar"/>
-                <fileset unless:set="parent.exists" dir="${dir.mod}" includes="*.jar"/>
+                <fileset dir="${dir.lib}" excludes="*AionApi*.jar" includes="*.jar"/>
+                <fileset dir="${dir.mod}" includes="*updated/*.jar"/>
             </modulepath>
         </javac>
         <copy includeemptydirs="false" todir="${out.main}">
@@ -107,6 +101,42 @@
         />
         <move includeemptydirs="false" todir="${dir.pack}">
             <file file="modWallet.jar"/>
+        </move>
+        <delete dir="${dir.mod}/updated"/>
+    </target>
+
+    <target name="build_standalone">
+        <mkdir dir="${out.main}"/>
+        <mkdir dir="${dir.pack}"/>
+        <condition property="parent.exists">
+            <available file="${parent.mod}" type="dir"/>
+        </condition>
+
+        <javac
+                debug="${compile.debug}"
+                debuglevel="source,lines,vars"
+                includeantruntime="false"
+                release="9"
+                srcdir="./"
+                destdir="${out.main}"
+                excludes="src/main/java/org/aion/connector/core/**/*.java"
+                includes="src/main/java/**/*.java"
+        >
+            <modulepath>
+                <fileset dir="${dir.lib}" includes="*.jar"/>
+                <fileset dir="${dir.mod}" includes="*.jar"/>
+            </modulepath>
+        </javac>
+        <copy includeemptydirs="false" todir="${out.main}">
+            <fileset dir="${res.main}" id="**"/>
+        </copy>
+        <jar
+                destfile="aion_ui.jar"
+                filesetmanifest="mergewithoutmain"
+                basedir="${out.main}"
+        />
+        <move includeemptydirs="false" todir="${dir.pack}">
+            <file file="aion_ui.jar"/>
         </move>
     </target>
 
