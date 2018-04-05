@@ -4,36 +4,24 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.Pane?>
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
+<?import javafx.scene.layout.*?>
 <?import org.aion.wallet.ui.components.account.AccountCellFactory?>
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="org.aion.wallet.ui.components.partials.AccountOverview"
-            prefHeight="400.0" prefWidth="600.0">
 
-    <Pane layoutX="8.0" prefHeight="348.0" prefWidth="850.0">
-        <VBox prefHeight="50.0" prefWidth="833.0">
-            <Label prefHeight="50.0" prefWidth="400.0" text="Accounts overview" textFill="WHITE">
-                <font>
-                    <Font size="40.0"/>
-                </font>
-            </Label>
-        </VBox>
-        <VBox layoutY="50.0" prefHeight="240.0" prefWidth="833.0">
-            <ScrollPane prefHeight="240.0" prefWidth="633.0">
-                <ListView fx:id="accountListView" prefHeight="198.0" prefWidth="831.0"
-                          style="-fx-background-insets: 0; -fx-padding: 0;">
-                    <cellFactory>
-                        <AccountCellFactory/>
-                    </cellFactory>
-                </ListView>
-            </ScrollPane>
-        </VBox>
-    </Pane>
-    <Button layoutX="10.0" layoutY="260.0" mnemonicParsing="false" text="Add account"
-            onMouseClicked="#openAddAccountDialog"/>
+<?import javafx.scene.shape.Line?>
+<AnchorPane xmlns:fx="http://javafx.com/fxml" xmlns="http://javafx.com/javafx"
+            fx:controller="org.aion.wallet.ui.components.partials.AccountOverview">
+
+    <VBox alignment="CENTER" spacing="10">
+        <Label text="Accounts overview" styleClass="tile-label" alignment="CENTER"/>
+        <Line endX="400.0" startX="-400.0" styleClass="line"/>
+        <ScrollPane VBox.vgrow="NEVER" hbarPolicy="NEVER" vbarPolicy="NEVER" prefViewportHeight="240">
+            <ListView fx:id="accountListView" styleClass="accounts-list">
+                <cellFactory>
+                    <AccountCellFactory/>
+                </cellFactory>
+            </ListView>
+        </ScrollPane>
+        <Button mnemonicParsing="false" text="Add account" onMouseClicked="#openAddAccountDialog"/>
+    </VBox>
 
 </AnchorPane>

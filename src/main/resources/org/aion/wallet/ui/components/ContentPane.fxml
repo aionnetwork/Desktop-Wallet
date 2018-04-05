@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" id="contentPane"
+            stylesheets="@contentPane.css" xmlns="http://javafx.com/javafx/8.0.121" prefHeight="350"
+            AnchorPane.topAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.bottomAnchor="5">
+
+    <HBox alignment="CENTER" id="homePane" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
+        <fx:include source="partials/AccountOverview.fxml"/>
+    </HBox>
+
+    <HBox alignment="CENTER" id="sendPane" visible="false" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
+        <fx:include source="partials/SendPane.fxml"/>
+    </HBox>
+
+    <HBox alignment="CENTER" id="historyPane" visible="false" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
+        <fx:include source="partials/HistoryPane.fxml"/>
+    </HBox>
+
+    <HBox alignment="CENTER" id="receivePane" visible="false" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
+        <fx:include source="partials/ReceivePane.fxml"/>
+    </HBox>
+
+    <HBox alignment="CENTER" id="contractsPane" visible="false" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
+        <fx:include source="partials/ContractsPane.fxml"/>
+    </HBox>
+
+    <HBox id="settingsPane" visible="false" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
+        <fx:include source="partials/SettingsPane.fxml"/>
+    </HBox>
+
+</AnchorPane>

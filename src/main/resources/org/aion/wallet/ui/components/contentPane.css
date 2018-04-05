@@ -8,6 +8,8 @@
 
 .scroll-pane {
    -fx-background-color: transparent;
+   -fx-fit-to-height: false;
+   -fx-fit-to-width: true;
 }
 
 .main-text {
@@ -32,4 +34,20 @@
     -fx-text-fill: white;
     -fx-font-family: 'Open Sans Bold';
     -fx-font-size: 18px;
+}
+
+.accounts-list{
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+.tile-label {
+    -fx-text-fill: WHITE;
+    -fx-text-alignment: CENTER;
+    -fx-font-family: 'Open Sans Light';
+    -fx-font-size: 32px;
+}
+
+.line{
+    -fx-stroke: #40bded;
 }

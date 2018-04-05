@@ -1,41 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.*?>
 <?import java.net.URL?>
 <AnchorPane xmlns="http://javafx.com/javafx/8.0.162" xmlns:fx="http://javafx.com/fxml/1"
             maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
             prefHeight="500.0" prefWidth="850.0" styleClass="main-stage">
+
     <stylesheets>
         <URL value="@style.css"/>
     </stylesheets>
 
-    <fx:include source="components/HeaderPane.fxml"/>
-
-    <AnchorPane id="homePane" layoutY="100.0">
-        <fx:include source="components/AccountsPane.fxml"/>
+    <AnchorPane AnchorPane.topAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
+        <fx:include source="components/HeaderPane.fxml"/>
     </AnchorPane>
 
-    <AnchorPane id="sendPane" layoutY="100.0" visible="false">
-        <fx:include source="components/SendPane.fxml"/>
+    <AnchorPane AnchorPane.topAnchor="100" AnchorPane.bottomAnchor="50" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
+        <fx:include source="components/ContentPane.fxml"/>
     </AnchorPane>
 
-    <AnchorPane id="historyPane" layoutY="100.0" visible="false">
-        <fx:include source="components/HistoryPane.fxml"/>
-    </AnchorPane>
-
-    <AnchorPane id="receivePane" layoutY="100.0" visible="false">
-        <fx:include source="components/ReceivePane.fxml"/>
-    </AnchorPane>
-
-    <AnchorPane id="contractsPane" layoutY="100.0" visible="false">
-        <fx:include source="components/ContractsPane.fxml"/>
-    </AnchorPane>
-
-    <AnchorPane id="settingsPane" layoutY="100.0" visible="false">
-        <fx:include source="components/SettingsPane.fxml"/>
-    </AnchorPane>
-
-    <AnchorPane layoutY="455.0">
+    <AnchorPane AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
         <fx:include source="components/FooterPane.fxml"/>
     </AnchorPane>
+
 </AnchorPane>
