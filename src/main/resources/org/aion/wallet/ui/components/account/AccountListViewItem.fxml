@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<fx:root type="javafx.scene.control.ListCell" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+         stylesheets="@accountListViewItem.css" styleClass="account-item">
+    <graphic>
+        <HBox alignment="CENTER_LEFT">
+            <VBox prefWidth="120">
+                
+                <TextField text="Public address" styleClass="copyable-label"/>
+                <TextField text="Balance" styleClass="copyable-label"/>
+            </VBox>
+            <VBox>
+                <TextField fx:id="publicAddress" styleClass="copyable-label" editable="false"/>
+                <TextField fx:id="balance" styleClass="copyable-label" editable="false"/>
+            </VBox>
+            <HBox prefWidth="45.0">
+                <ImageView fx:id="connectedImage" fitHeight="45.0" fitWidth="40.0"
+                           pickOnBounds="true" preserveRatio="true"
+                           layoutX="7.0" layoutY="2.0">
+                    <Image url="@../icons/icon-connected-50.png"/>
+                </ImageView>
+                <ImageView fx:id="disconnectedImage" fitHeight="45.0" fitWidth="40.0"
+                           pickOnBounds="true" preserveRatio="true" visible="false"
+                           styleClass="clickable"
+                           layoutX="7.0" layoutY="2.0"
+                           onMouseClicked="#onDisconnectedClicked">
+                    <Image url="@../icons/icon-disconnected-50.png"/>
+                </ImageView>
+            </HBox>
+        </HBox>
+    </graphic>
+</fx:root>

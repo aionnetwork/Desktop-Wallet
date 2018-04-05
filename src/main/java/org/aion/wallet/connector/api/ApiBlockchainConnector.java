@@ -13,25 +13,33 @@ import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.connector.dto.SendRequestDTO;
 import org.aion.wallet.connector.dto.SyncInfoDTO;
 import org.aion.wallet.connector.dto.TransactionDTO;
+import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
-import org.aion.wallet.util.WalletUtils;
+import org.aion.wallet.util.AionConstants;
+import org.aion.wallet.util.BalanceFormatter;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class ApiBlockchainConnector implements BlockchainConnector {
 
-    private final static IAionAPI aionApi = AionAPIImpl.inst();
+    private final static IAionAPI API = AionAPIImpl.inst();
 
     public ApiBlockchainConnector() {
-        if (aionApi.isConnected()) {
+        if (API.isConnected()) {
             return;
         }
-        aionApi.connect(IAionAPI.LOCALHOST_URL, true);
+        API.connect(IAionAPI.LOCALHOST_URL, true);
+    }
+
+    private AccountDTO convertToAccountDto(Address address) {
+        AccountDTO dto = new AccountDTO(getCurrency());
+        dto.setPublicAddress(address.toString());
+        dto.setBalance(BalanceFormatter.formatBalance(getBalance(dto.getPublicAddress())));
+        return dto;
     }
 
     @Override
@@ -48,12 +56,12 @@ public class ApiBlockchainConnector implements BlockchainConnector {
                 .nrgPrice(dto.getNrgPrice())
                 .nrgLimit(dto.getNrg()).createTxArgs();
         byte[] privateKey = null;
-        return aionApi.getTx().sendSignedTransaction(txArgs, new ByteArrayWrapper(privateKey), dto.getPassword()).getObject();
+        return API.getTx().sendSignedTransaction(txArgs, new ByteArrayWrapper(privateKey), dto.getPassword()).getObject();
     }
 
     @Override
-    public List<String> getAccounts() {
-        return Collections.emptyList();
+    public List<AccountDTO> getAccounts() {
+        return ((List<Address>) API.getWallet().getAccounts().getObject()).stream().map(address -> convertToAccountDto(address)).collect(Collectors.toList());
     }
 
     @Override
@@ -63,25 +71,30 @@ public class ApiBlockchainConnector implements BlockchainConnector {
 
     @Override
     public List<TransactionDTO> getLatestTransactions(String address) {
-        return getTransactions(address, WalletUtils.MAX_BLOCKS_FOR_LATEST_TRANSACTIONS_QUERY);
+        return getTransactions(address, AionConstants.MAX_BLOCKS_FOR_LATEST_TRANSACTIONS_QUERY);
     }
 
     @Override
     public boolean getConnectionStatusByConnectedPeers() {
-        return aionApi.isConnected();
+        return API.isConnected();
     }
 
     @Override
     public SyncInfoDTO getSyncInfo() {
         SyncInfoDTO syncInfoDTO = new SyncInfoDTO();
-        syncInfoDTO.setChainBestBlkNumber(aionApi.getChain().blockNumber().getObject());
-        syncInfoDTO.setNetworkBestBlkNumber(aionApi.getChain().blockNumber().getObject());
+        syncInfoDTO.setChainBestBlkNumber(API.getChain().blockNumber().getObject());
+        syncInfoDTO.setNetworkBestBlkNumber(API.getChain().blockNumber().getObject());
         return syncInfoDTO;
     }
 
     @Override
     public BigInteger getBalance(String address) {
-        return aionApi.getChain().getBalance(new Address(address)).getObject();
+        return API.getChain().getBalance(new Address(address)).getObject();
+    }
+
+    @Override
+    public String getCurrency() {
+        return AionConstants.CCY;
     }
 
     private byte[] getPrivateKeyFromUTCKeystoreFile(byte[] key, String password) {
@@ -89,7 +102,7 @@ public class ApiBlockchainConnector implements BlockchainConnector {
     }
 
     private List<TransactionDTO> getTransactions(final String addr, long nrOfBlocksToCheck) {
-        Long latest = aionApi.getChain().blockNumber().getObject();
+        Long latest = API.getChain().blockNumber().getObject();
         long blockOffset = latest - nrOfBlocksToCheck;
         if (blockOffset < 0) {
             blockOffset = 0;
@@ -111,7 +124,7 @@ public class ApiBlockchainConnector implements BlockchainConnector {
     }
 
     private BlockDetails getBlockDetailsByNumber(Long number) {
-        return ((List<BlockDetails>) aionApi.getAdmin().getBlockDetailsByNumber(number.toString()).getObject()).get(0);
+        return ((List<BlockDetails>) API.getAdmin().getBlockDetailsByNumber(number.toString()).getObject()).get(0);
     }
 
     private TransactionDTO mapTransaction(TxDetails transaction) {

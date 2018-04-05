@@ -14,7 +14,7 @@
     </AnchorPane>
 
     <AnchorPane id="homePane" layoutY="100.0" prefHeight="350.0" prefWidth="850.0" visible="true">
-        <fx:include source="components/ContentPane.fxml"/>
+        <fx:include source="components/AccountsPane.fxml"/>
     </AnchorPane>
 
     <AnchorPane id="sendPane" layoutY="100.0" prefHeight="350.0" prefWidth="850.0" visible="false">

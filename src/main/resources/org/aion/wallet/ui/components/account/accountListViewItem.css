@@ -1,0 +1,9 @@
+.account-item {
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: #40bded;
+    -fx-background-color: #19364e;
+}
+
+.clickable:hover {
+    -fx-cursor: hand;
+}

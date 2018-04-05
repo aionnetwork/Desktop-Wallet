@@ -10,7 +10,9 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.connector.dto.TransactionDTO;
+import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.ui.events.EventBusFactory;
+import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
 import org.aion.wallet.util.AddressUtils;
 import org.aion.wallet.util.BalanceFormatter;
@@ -26,6 +28,8 @@ public class HistoryPane implements Initializable {
     @FXML
     private TableView<TxRow> txListOverview;
 
+    private AccountDTO account;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         registerEventBusConsumer();
@@ -35,15 +39,22 @@ public class HistoryPane implements Initializable {
 
     @Subscribe
     private void handleHeaderPaneButtonEvent(HeaderPaneButtonEvent event) {
-        if(!event.getType().equals(HeaderPaneButtonEvent.Type.HISTORY)){
+        if (!event.getType().equals(HeaderPaneButtonEvent.Type.HISTORY)) {
             return;
         }
+        reloadHistory();
+    }
+
+    @Subscribe
+    private void handleAccountChanged(AccountDTO account) {
+        this.account = account;
         reloadHistory();
     }
 
     private void registerEventBusConsumer() {
         EventBusFactory eventBusFactory = EventBusFactory.getInstance();
         eventBusFactory.getBus(HeaderPaneButtonEvent.ID).register(this);
+        EventBusFactory.getInstance().getBus(EventPublisher.ACCOUNT_CHANGE_EVENT_ID).register(this);
     }
 
     private void buildTableModel() {
@@ -58,13 +69,14 @@ public class HistoryPane implements Initializable {
     }
 
     private void reloadHistory() {
-        if(!blockchainConnector.getAccounts().isEmpty()) {
-            String me = blockchainConnector.getAccounts().get(0);
-            List<TxRow> txs = blockchainConnector.getLatestTransactions(me).stream()
-                    .map(t -> new TxRow(me, t))
-                    .collect(Collectors.toList());
-            txListOverview.setItems(FXCollections.observableList(txs));
+        if (account == null) {
+            return;
         }
+        String me = account.getPublicAddress();
+        List<TxRow> txs = blockchainConnector.getLatestTransactions(me).stream()
+                .map(t -> new TxRow(me, t))
+                .collect(Collectors.toList());
+        txListOverview.setItems(FXCollections.observableList(txs));
     }
 
     public static class TxRow {
@@ -73,7 +85,7 @@ public class HistoryPane implements Initializable {
         private final SimpleStringProperty value;
 
         private TxRow(String requestingAddress, TransactionDTO dto) {
-            boolean fromRequestingAddress =AddressUtils.equals(requestingAddress, dto.getFrom());
+            boolean fromRequestingAddress = AddressUtils.equals(requestingAddress, dto.getFrom());
             this.type = new SimpleStringProperty(fromRequestingAddress ? "to" : "from");
             this.address = new SimpleStringProperty(fromRequestingAddress ? dto.getTo() : dto.getFrom());
             this.value = new SimpleStringProperty(BalanceFormatter.formatBalance(dto.getValue()));
