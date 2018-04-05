@@ -4,7 +4,7 @@ import com.google.common.eventbus.Subscribe;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
-import org.aion.wallet.connector.core.CoreBlockchainConnector;
+import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.TimerEvent;
 import org.aion.wallet.util.DataUpdater;
@@ -16,7 +16,7 @@ public class PeerCount implements Initializable{
     @FXML
     private Label peerCount;
 
-    private final CoreBlockchainConnector blockchainConnector = new CoreBlockchainConnector();
+    private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
