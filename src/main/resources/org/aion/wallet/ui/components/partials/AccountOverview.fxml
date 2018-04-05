@@ -24,9 +24,10 @@
         </VBox>
         <VBox layoutY="50.0" prefHeight="240.0" prefWidth="833.0">
             <ScrollPane prefHeight="240.0" prefWidth="633.0">
-                <ListView fx:id="accountListView" prefHeight="198.0" prefWidth="831.0" style="-fx-background-insets: 0; -fx-padding: 0;">
+                <ListView fx:id="accountListView" prefHeight="198.0" prefWidth="831.0"
+                          style="-fx-background-insets: 0; -fx-padding: 0;">
                     <cellFactory>
-                        <AccountCellFactory />
+                        <AccountCellFactory/>
                     </cellFactory>
                 </ListView>
             </ScrollPane>

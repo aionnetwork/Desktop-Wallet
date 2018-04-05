@@ -8,7 +8,8 @@
 <HBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
       fx:controller="org.aion.wallet.ui.components.partials.WindowControls"
       styleClass="default"
-      prefHeight="23" prefWidth="46">
+      prefHeight="23" prefWidth="46"
+      AnchorPane.rightAnchor="0">
     <stylesheets>
         <URL value="@../header.css"/>
     </stylesheets>

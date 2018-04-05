@@ -11,8 +11,8 @@
         <HBox alignment="CENTER_LEFT">
             <VBox prefWidth="120">
                 
-                <TextField text="Public address" styleClass="copyable-label"/>
-                <TextField text="Balance" styleClass="copyable-label"/>
+                <TextField text="Public address" styleClass="copyable-label" editable="false"/>
+                <TextField text="Balance" styleClass="copyable-label" editable="false"/>
             </VBox>
             <VBox>
                 <TextField fx:id="publicAddress" styleClass="copyable-label" editable="false"/>

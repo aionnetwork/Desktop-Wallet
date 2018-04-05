@@ -17,7 +17,7 @@ public class UIUtils {
     private static final int SIZE_BUFFER = 20;
 
 
-    public static double computeTextWidth(final Font font, final String text) {
+    private static double computeTextWidth(final Font font, final String text) {
         HELPER.setText(text);
         HELPER.setFont(font);
 

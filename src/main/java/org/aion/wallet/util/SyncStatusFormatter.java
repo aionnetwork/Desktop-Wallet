@@ -34,7 +34,7 @@ public class SyncStatusFormatter {
         int days = (int) seconds / SECONDS_IN_A_DAY;
         String syncStatus = "";
         int unitsDisplayed = 0;
-        if(days > 0 && unitsDisplayed < SYNC_STATUS_DISPLAY_UNIT_LIMIT) {
+        if(days > 0) {
             syncStatus += days + " days ";
             unitsDisplayed++;
         }
@@ -48,7 +48,6 @@ public class SyncStatusFormatter {
         }
         if((int) seconds > 0 && unitsDisplayed < SYNC_STATUS_DISPLAY_UNIT_LIMIT) {
             syncStatus += (seconds - minutes * SECONDS_IN_A_MINUTE) + " seconds";
-            unitsDisplayed++;
         }
         return syncStatus;
     }
