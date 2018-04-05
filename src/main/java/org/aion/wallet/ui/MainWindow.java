@@ -17,14 +17,14 @@ import org.aion.log.LogEnum;
 import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
 import org.aion.wallet.ui.events.WindowControlsEvent;
+import org.aion.wallet.util.AionConstants;
 import org.aion.wallet.util.DataUpdater;
-import org.aion.wallet.util.WalletUtils;
 import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Timer;
 import java.util.Map;
+import java.util.Timer;
 import java.util.concurrent.Executors;
 
 public class MainWindow extends Application {
@@ -70,7 +70,7 @@ public class MainWindow extends Application {
         panes.put(HeaderPaneButtonEvent.Type.HISTORY, scene.lookup("#historyPane"));
         panes.put(HeaderPaneButtonEvent.Type.SETTINGS, scene.lookup("#settingsPane"));
 
-        timer.schedule(new DataUpdater(), WalletUtils.BLOCK_MINING_TIME_MILLIS, WalletUtils.BLOCK_MINING_TIME_MILLIS);
+        timer.schedule(new DataUpdater(), AionConstants.BLOCK_MINING_TIME_MILLIS, AionConstants.BLOCK_MINING_TIME_MILLIS);
     }
 
     private void registerEventBusConsumer() {

@@ -1,9 +1,18 @@
 package org.aion.wallet.dto;
 
 public class AccountDTO {
+    private String currency;
     private String publicAddress;
     private String balance;
     private boolean active;
+
+    public AccountDTO(final String currency) {
+        this.currency = currency;
+    }
+
+    public String getCurrency() {
+        return currency;
+    }
 
     public String getPublicAddress() {
         return publicAddress;

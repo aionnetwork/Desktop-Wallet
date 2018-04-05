@@ -36,4 +36,6 @@ public interface BlockchainConnector {
     SyncInfoDTO getSyncInfo();
 
     BigInteger getBalance(String address) throws Exception;
+
+    String getCurrency();
 }

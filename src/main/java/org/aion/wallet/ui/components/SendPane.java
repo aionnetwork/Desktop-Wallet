@@ -8,8 +8,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import org.aion.base.util.TypeConverter;
-import org.aion.log.AionLoggerFactory;
-import org.aion.log.LogEnum;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.connector.dto.SendRequestDTO;
 import org.aion.wallet.dto.AccountDTO;
@@ -17,18 +15,16 @@ import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.EventPublisher;
+import org.aion.wallet.util.AionConstants;
 import org.aion.wallet.util.BalanceFormatter;
-import org.slf4j.Logger;
 
 import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import static org.aion.wallet.util.WalletUtils.*;
-
 public class SendPane implements Initializable {
-    private static final Logger log = AionLoggerFactory.getLogger(LogEnum.WLT.name());
+
     private static final int MAX_TX_STATUS_RETRY_COUNT = 6;
 
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
@@ -59,7 +55,7 @@ public class SendPane implements Initializable {
     @Subscribe
     private void handleAccountChanged(AccountDTO account) {
         this.account = account;
-        fromLabel.setText("From " + account.getPublicAddress());
+        fromLabel.setText("From: " + account.getPublicAddress());
     }
 
     private void registerEventBusConsumer() {
@@ -67,8 +63,8 @@ public class SendPane implements Initializable {
     }
 
     private void setDefaults() {
-        nrgInput.setText(DEFAULT_NRG);
-        nrgPriceInput.setText(DEFAULT_NRG_PRICE);
+        nrgInput.setText(AionConstants.DEFAULT_NRG);
+        nrgPriceInput.setText(AionConstants.DEFAULT_NRG_PRICE);
 
         toInput.setText("");
         valueInput.setText("");
@@ -76,7 +72,7 @@ public class SendPane implements Initializable {
     }
 
     public void onSendAionClicked() {
-        if(account == null) {
+        if (account == null) {
             txStatusLabel.setText("You must select an account before sending Aion!");
             return;
         }
@@ -99,7 +95,14 @@ public class SendPane implements Initializable {
     private void displayTxStatus(final String txHash) {
         txStatusLabel.setText("Transaction pending");
         final Timer timer = new Timer();
-        timer.schedule(new TransactionStatusTimedTask(timer, txHash, MAX_TX_STATUS_RETRY_COUNT), BLOCK_MINING_TIME_MILLIS, BLOCK_MINING_TIME_MILLIS);
+        timer.schedule(
+                new TransactionStatusTimedTask(
+                        timer,
+                        txHash,
+                        MAX_TX_STATUS_RETRY_COUNT),
+                AionConstants.BLOCK_MINING_TIME_MILLIS,
+                AionConstants.BLOCK_MINING_TIME_MILLIS
+        );
     }
 
     private SendRequestDTO mapFormData() {
