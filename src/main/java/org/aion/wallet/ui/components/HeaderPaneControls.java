@@ -1,16 +1,20 @@
 package org.aion.wallet.ui.components;
 
+import com.google.common.eventbus.Subscribe;
 import javafx.collections.ObservableList;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
+import javafx.scene.control.TextField;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.VBox;
 import org.aion.log.AionLoggerFactory;
 import org.aion.log.LogEnum;
+import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.ui.events.EventBusFactory;
+import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
 import org.slf4j.Logger;
 
@@ -30,30 +34,39 @@ public class HeaderPaneControls implements Initializable {
     private static final String AION_URL = "http://www.aion.network";
     private static final String STYLE_DEFAULT = "default";
     private static final String STYLE_PRESSED = "pressed";
+    private static final double DEFAULT_ACCOUNT_WIDTH = 520;
+    private static final double DEFAULT_BALANCE_WIDTH = 180;
+
+    private final Map<Node, HeaderPaneButtonEvent> headerButtons = new HashMap<>();
 
     @FXML
-    private AnchorPane homeButton;
+    private TextField accountBalance;
     @FXML
-    private AnchorPane sendButton;
+    private TextField activeAccount;
     @FXML
-    private AnchorPane receiveButton;
+    private VBox homeButton;
     @FXML
-    private AnchorPane historyButton;
+    private VBox sendButton;
     @FXML
-    private AnchorPane contractsButton;
+    private VBox receiveButton;
     @FXML
-    private AnchorPane settingsButton;
-
-    private final Map<AnchorPane, HeaderPaneButtonEvent> headerButtons = new HashMap<>();
+    private VBox historyButton;
+    @FXML
+    private VBox contractsButton;
+    @FXML
+    private VBox settingsButton;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        EventBusFactory.getInstance().getBus(EventPublisher.ACCOUNT_CHANGE_EVENT_ID).register(this);
         headerButtons.put(homeButton, new HeaderPaneButtonEvent(HeaderPaneButtonEvent.Type.HOME));
         headerButtons.put(sendButton, new HeaderPaneButtonEvent(HeaderPaneButtonEvent.Type.SEND));
         headerButtons.put(receiveButton, new HeaderPaneButtonEvent(HeaderPaneButtonEvent.Type.RECEIVE));
         headerButtons.put(historyButton, new HeaderPaneButtonEvent(HeaderPaneButtonEvent.Type.HISTORY));
         headerButtons.put(contractsButton, new HeaderPaneButtonEvent(HeaderPaneButtonEvent.Type.CONTRACTS));
         headerButtons.put(settingsButton, new HeaderPaneButtonEvent(HeaderPaneButtonEvent.Type.SETTINGS));
+        activeAccount.setPrefWidth(DEFAULT_ACCOUNT_WIDTH);
+        accountBalance.setPrefWidth(DEFAULT_BALANCE_WIDTH);
 
         clickButton(homeButton);
     }
@@ -67,7 +80,7 @@ public class HeaderPaneControls implements Initializable {
     }
 
     public void handleButtonPressed(final MouseEvent pressed) {
-        for (final AnchorPane headerButton : headerButtons.keySet()) {
+        for (final Node headerButton : headerButtons.keySet()) {
             ObservableList<String> styleClass = headerButton.getStyleClass();
             styleClass.clear();
             if (pressed.getSource().equals(headerButton)) {
@@ -91,5 +104,12 @@ public class HeaderPaneControls implements Initializable {
 
     private void sendPressedEvent(final HeaderPaneButtonEvent event) {
         EventBusFactory.getInstance().getBus(HeaderPaneButtonEvent.ID).post(event);
+    }
+
+    @Subscribe
+    private void handleAccountChanged(AccountDTO account) {
+        activeAccount.setText(account.getPublicAddress());
+        accountBalance.setText(account.getBalance() + account.getCurrency());
+        accountBalance.requestFocus();
     }
 }

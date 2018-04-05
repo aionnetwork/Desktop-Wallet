@@ -59,7 +59,7 @@ public class HistoryPane implements Initializable {
 
     private void buildTableModel() {
         TableColumn<TxRow, String> typeCol = new TableColumn<>("Type");
-        TableColumn<TxRow, String> addrCol = new TableColumn<>("Addr");
+        TableColumn<TxRow, String> addrCol = new TableColumn<>("Address");
         TableColumn<TxRow, String> valueCol = new TableColumn<>("Value");
         typeCol.setCellValueFactory(new PropertyValueFactory<>("type"));
         addrCol.setCellValueFactory(new PropertyValueFactory<>("address"));

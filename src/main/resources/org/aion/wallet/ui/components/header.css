@@ -1,19 +1,46 @@
 .default{
-    -fx-background-color: #19364e;
+    -fx-background-color: white;
 }
 
 .pressed{
-    -fx-background-color: #2bc0ec;
+    -fx-background-color: #40bded;
 }
 
-.header-label{
-    -fx-text-fill: black;
+.header-button-label {
+    -fx-text-fill: BLACK;
     -fx-text-alignment: CENTER;
+    -fx-font-family: 'Open Sans Regular';
+    -fx-font-size: 18px;
+}
+
+.header-button-label-pressed {
+    -fx-text-fill: #40bded;
+    -fx-text-alignment: CENTER;
+    -fx-font-family: 'Open Sans Regular';
+    -fx-font-size: 18px;
+}
+
+.header-account-label {
+    -fx-text-fill: BLACK;
+    -fx-text-alignment: CENTER;
+    -fx-font-family: 'Open Sans Bold';
+    -fx-font-size: 14px;
+}
+
+.header-account-info {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0px;
+    -fx-text-fill: BLACK;
+    -fx-text-alignment: CENTER;
+    -fx-font-family: 'Open Sans Light';
+    -fx-font-size: 14px;
+    -fx-display-caret: false;
 }
 
 #logo:hover {
     -fx-cursor: hand;
 }
-AnchorPane:hover {
+
+.header-button-label:hover {
     -fx-cursor: hand;
 }

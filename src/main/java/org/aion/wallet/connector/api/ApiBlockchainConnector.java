@@ -61,7 +61,7 @@ public class ApiBlockchainConnector implements BlockchainConnector {
 
     @Override
     public List<AccountDTO> getAccounts() {
-        return ((List<Address>) API.getWallet().getAccounts().getObject()).stream().map(address -> convertToAccountDto(address)).collect(Collectors.toList());
+        return ((List<Address>) API.getWallet().getAccounts().getObject()).stream().map(this::convertToAccountDto).collect(Collectors.toList());
     }
 
     @Override

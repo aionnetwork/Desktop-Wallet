@@ -58,7 +58,7 @@ public class AddAccountDialog {
                 && newPassword.getText().equals(retypedPassword.getText());
     }
 
-    public void resetValidation() {
+    private void resetValidation() {
         validationError.setVisible(false);
     }
 

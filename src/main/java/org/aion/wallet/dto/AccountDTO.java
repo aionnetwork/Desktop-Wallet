@@ -1,7 +1,7 @@
 package org.aion.wallet.dto;
 
 public class AccountDTO {
-    private String currency;
+    private final String currency;
     private String publicAddress;
     private String balance;
     private boolean active;
