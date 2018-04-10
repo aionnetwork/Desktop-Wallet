@@ -9,3 +9,27 @@
 .scroll-pane {
    -fx-background-color: transparent;
 }
+
+.main-text {
+    -fx-text-fill: white;
+    -fx-font-family: 'Open Sans Light';
+    -fx-font-size: 32px;
+    -fx-text-alignment: CENTER;
+}
+
+.input-fields {
+    -fx-background-color: #ececec;
+    -fx-background-radius: 0,0,0,0;
+    -fx-text-fill: black;
+    -fx-font-family: 'Open Sans Regular';
+    -fx-font-size: 16px;
+    -fx-prompt-text-fill: gray;
+}
+
+.button {
+    -fx-background-color: #40bded;
+    -fx-background-radius: 0,0,0,0;
+    -fx-text-fill: white;
+    -fx-font-family: 'Open Sans Bold';
+    -fx-font-size: 18px;
+}

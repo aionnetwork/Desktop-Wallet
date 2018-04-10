@@ -1,30 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.*?>
-<?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.Pane?>
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
-<?import javafx.scene.layout.HBox?>
-<AnchorPane id="sendPane" styleClass="main-pane" stylesheets="@mainPane.css" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.aion.wallet.ui.components.SendPane">
+<?import javafx.scene.layout.*?>
+<?import java.net.URL?>
+<AnchorPane id="sendPane" styleClass="main-pane" stylesheets="@mainPane.css"
+            xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.aion.wallet.ui.components.SendPane"
+            prefWidth="850.0" prefHeight="348.0">
+    <stylesheets>
+        <URL value="@contentPane.css" />
+    </stylesheets>
     <Pane layoutX="8.0">
         <HBox>
             <VBox>
-                <Label prefHeight="50.0" prefWidth="400.0" text="Send aion" textFill="WHITE">
-                    <font>
-                        <Font size="40.0"/>
-                    </font>
-                </Label>
-                <VBox>
-                    <Label fx:id="fromLabel" prefHeight="26.0" prefWidth="833.0"/>
-                    <PasswordField fx:id="passwordInput" promptText="Password"/>
-                    <TextField fx:id="toInput" promptText="To"/>
-                    <TextField fx:id="nrgInput" promptText="Energy"/>
-                    <TextField fx:id="nrgPriceInput" promptText="Energy price"/>
-                    <TextField fx:id="valueInput" promptText="Amount to send"/>
+                <Label prefHeight="50.0" text="Send funds" styleClass="main-text" />
+                <VBox spacing="5.0" prefWidth="830.0">
+                    <Label fx:id="fromLabel" prefHeight="26.0" prefWidth="830.0"/>
+                    <PasswordField fx:id="passwordInput" promptText="Password" styleClass="input-fields"/>
+                    <TextField fx:id="toInput" promptText="To" styleClass="input-fields"/>
+                    <TextField fx:id="nrgInput" promptText="Energy" styleClass="input-fields"/>
+                    <TextField fx:id="nrgPriceInput" promptText="Energy price" styleClass="input-fields"/>
+                    <TextField fx:id="valueInput" promptText="Amount to send" styleClass="input-fields"/>
                     <Label fx:id="txStatusLabel"/>
                 </VBox>
-                <Button mnemonicParsing="false" onMouseClicked="#onSendAionClicked" text="Send aion"/>
+                <Button mnemonicParsing="false" onMouseClicked="#onSendAionClicked" text="Send aion" styleClass="button"/>
             </VBox>
         </HBox>
 
