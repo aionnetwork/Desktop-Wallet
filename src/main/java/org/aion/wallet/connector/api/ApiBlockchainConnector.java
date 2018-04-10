@@ -94,17 +94,13 @@ public class ApiBlockchainConnector implements BlockchainConnector {
 
     @Override
     public int getPeerCount() {
-        return 0;
+        return ((List) API.getNet().getActiveNodes().getObject()).size();
     }
 
     @Override
     public String getCurrency() {
         return AionConstants.CCY;
     }
-
-//    private byte[] getPrivateKeyFromUTCKeystoreFile(byte[] key, String password) {
-//        return KeystoreFormat.fromKeystore(key, password).getPrivKeyBytes();
-//    }
 
     private List<TransactionDTO> getTransactions(final String addr, long nrOfBlocksToCheck) {
         Long latest = API.getChain().blockNumber().getObject();

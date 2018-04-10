@@ -38,5 +38,6 @@ public interface BlockchainConnector {
     BigInteger getBalance(String address) throws Exception;
 
     int getPeerCount();
+
     String getCurrency();
 }
