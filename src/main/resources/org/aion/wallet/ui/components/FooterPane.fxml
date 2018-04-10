@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.control.Label?>
+<AnchorPane prefHeight="46.0" prefWidth="850.0" styleClass="anchor-pane" stylesheets="@footer-pane.css" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1">
 
-
-<AnchorPane prefHeight="46.0" prefWidth="850.0"
-            styleClass="anchor-pane"
-            stylesheets="@footer-pane.css"
-            xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1">
-
-    <fx:include source="partials/SyncStatus.fxml" />
     <fx:include source="partials/ConnectivityStatus.fxml" />
+    <fx:include source="partials/PeerCount.fxml" />
+    <fx:include source="partials/SyncStatus.fxml" />
+    <Label layoutX="650.0" layoutY="15.0" styleClass="footer-pane-text" text="AION Desktop Wallet v1.0" />
 
 </AnchorPane>

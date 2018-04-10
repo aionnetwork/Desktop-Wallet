@@ -42,7 +42,7 @@ public class SyncStatus implements Initializable {
     }
 
     private void setSyncStatus(SyncInfoDTO syncInfo) {
-        progressBarLabel.setText(SyncStatusFormatter.formatSyncStatus(syncInfo));
+        progressBarLabel.setText(SyncStatusFormatter.formatSyncStatusByBlockNumbers(syncInfo));
     }
 
     private void setSyncBarProgress(SyncInfoDTO syncInfo) {

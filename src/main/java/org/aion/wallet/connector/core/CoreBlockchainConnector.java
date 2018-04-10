@@ -97,6 +97,11 @@ public class CoreBlockchainConnector implements BlockchainConnector {
         return API.unlockAccount(account.getAddress(), account.getPassword(), AionConstants.DEFAULT_WALLET_UNLOCK_DURATION);
     }
 
+    @Override
+    public int getPeerCount() {
+        return API.peerCount();
+    }
+
     private SyncInfoDTO mapSyncInfo(SyncInfo sync) {
         SyncInfoDTO syncInfoDTO = new SyncInfoDTO();
         syncInfoDTO.setChainBestBlkNumber(sync.chainBestBlkNumber);
