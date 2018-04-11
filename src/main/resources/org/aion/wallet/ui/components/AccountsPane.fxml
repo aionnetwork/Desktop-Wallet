@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<?import javafx.scene.layout.AnchorPane?>
-<AnchorPane id="contentPane" stylesheets="@contentPane.css"
-            xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1">
-    <fx:include source="partials/AccountOverview.fxml" />
-</AnchorPane>

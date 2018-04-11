@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Line?>
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" stylesheets="@../contentPane.css"
+            xmlns="http://javafx.com/javafx/8.0.162" fx:controller="org.aion.wallet.ui.components.ReceivePane">
+
+    <VBox alignment="TOP_CENTER" spacing="10">
+        <Label alignment="CENTER" styleClass="tile-label" text="Receive"/>
+        <Line endX="400.0" startX="-400.0" styleClass="line"/>
+        <ScrollPane hbarPolicy="NEVER" prefViewportHeight="250" prefViewportWidth="830" vbarPolicy="NEVER"
+                    VBox.vgrow="NEVER"/>
+    </VBox>
+
+</AnchorPane>

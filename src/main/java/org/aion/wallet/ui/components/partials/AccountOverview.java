@@ -49,17 +49,16 @@ public class AccountOverview implements Initializable{
 
     @Subscribe
     private void handleHeaderPaneButtonEvent(HeaderPaneButtonEvent event) {
-        reloadWalletView();
-        addAccountDialog.close();
+        if (event.getType().equals(HeaderPaneButtonEvent.Type.HOME)) {
+            reloadWalletView();
+            addAccountDialog.close();
+        }
     }
 
     private void reloadWalletView() {
         List<AccountDTO> accounts = blockchainConnector.getAccounts();
         for (AccountDTO account : accounts) {
             account.setActive(this.account != null && this.account.getPublicAddress().equals(account.getPublicAddress()));
-        }
-        if (account == null && accounts.size() > 0) {
-            EventPublisher.fireAccountChanged(accounts.get(0));
         }
         accountListView.setItems(FXCollections.observableArrayList(accounts));
     }

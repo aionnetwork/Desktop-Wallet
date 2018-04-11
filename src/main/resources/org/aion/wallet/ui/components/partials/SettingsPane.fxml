@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.Line?>
+<AnchorPane stylesheets="@../contentPane.css"
+            xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.aion.wallet.ui.components.SettingsPane">
+
+    <VBox AnchorPane.topAnchor="0" AnchorPane.leftAnchor="10" AnchorPane.rightAnchor="10" AnchorPane.bottomAnchor="0"
+          alignment="CENTER" spacing="10">
+        <Label text="Settings" styleClass="tile-label" alignment="CENTER"/>
+        <Line endX="400.0" startX="-400.0" styleClass="line"/>
+        <ScrollPane VBox.vgrow="NEVER" hbarPolicy="NEVER" vbarPolicy="NEVER" prefViewportHeight="250"
+                    prefViewportWidth="830"/>
+    </VBox>
+
+</AnchorPane>

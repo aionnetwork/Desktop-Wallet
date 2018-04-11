@@ -19,7 +19,7 @@
 }
 
 .main-stage {
-    -fx-background-color: transparent;
+    -fx-background-color: #40bded;
 }
 
 .label {
@@ -30,6 +30,6 @@
 .copyable-label, .copyable-label:focused {
     -fx-background-color: transparent;
     -fx-background-insets: 0px;
-    -fx-text-fill:white;
+    -fx-text-fill: white;
     -fx-display-caret: false;
 }

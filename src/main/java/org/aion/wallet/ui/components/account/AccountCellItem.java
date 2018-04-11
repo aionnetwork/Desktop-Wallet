@@ -40,7 +40,6 @@ public class AccountCellItem extends ListCell<AccountDTO> {
     @Override
     protected void updateItem(AccountDTO item, boolean empty) {
         super.updateItem(item, empty);
-
         if (empty) {
             setText(null);
             setContentDisplay(ContentDisplay.TEXT_ONLY);
@@ -54,8 +53,6 @@ public class AccountCellItem extends ListCell<AccountDTO> {
             setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
         }
     }
-
-    public void doNothing(){}
 
     public void onDisconnectedClicked() {
         EventPublisher.fireAccountChanged(this.getItem());
