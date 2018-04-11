@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class CoreBlockchainConnector implements BlockchainConnector {
+public class CoreBlockchainConnector extends BlockchainConnector {
 
     private final static ApiAion API = new WalletApi();
 
@@ -105,6 +105,11 @@ public class CoreBlockchainConnector implements BlockchainConnector {
     @Override
     public String getCurrency() {
         return AionConstants.CCY;
+    }
+
+    @Override
+    public AccountDTO addKeystoreUTCFile(byte[] file, String password) throws ValidationException{
+        throw new ValidationException("Unsupported operation");
     }
 
     private boolean unlock(UnlockableAccount account) {

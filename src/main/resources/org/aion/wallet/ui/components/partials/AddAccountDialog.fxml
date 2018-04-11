@@ -17,7 +17,7 @@
     </ImageView>
 
     <Button layoutX="80.0" layoutY="100.0" prefHeight="50.0" prefWidth="200.0" styleClass="add-account-buttons"
-            text="Import"/>
+            text="Import" onMouseClicked="#uploadKeystoreFile"/>
 
     <Label layoutX="170.0" layoutY="160.0" text="or"/>
 

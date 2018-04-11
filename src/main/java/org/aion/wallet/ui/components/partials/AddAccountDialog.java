@@ -19,6 +19,8 @@ public class AddAccountDialog {
     private static final double DEFAULT_ACCOUNT_DIALOG_HEIGHT = 400.0;
     private static final double DEFAULT_ACCOUNT_DIALOG_WIDTH = 350.0;
 
+    private ImportAccountDialog importAccountDialog = new ImportAccountDialog();
+
     @FXML
     private PasswordField newPassword;
 
@@ -46,6 +48,10 @@ public class AddAccountDialog {
             }
             showInvalidFieldsError(error);
         }
+    }
+
+    public void uploadKeystoreFile(MouseEvent e) {
+        importAccountDialog.open(e);
     }
 
     private boolean validateFields() {
