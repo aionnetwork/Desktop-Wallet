@@ -3,6 +3,7 @@
 <?import javafx.scene.layout.*?>
 <AnchorPane xmlns:fx="http://javafx.com/fxml/1" id="contentPane" stylesheets="@contentPane.css"
             xmlns="http://javafx.com/javafx/8.0.121">
+            AnchorPane.topAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.bottomAnchor="0">
 
     <fx:include source="partials/AccountsOverview.fxml" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0"/>
     <fx:include source="partials/SendPane.fxml" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0"/>

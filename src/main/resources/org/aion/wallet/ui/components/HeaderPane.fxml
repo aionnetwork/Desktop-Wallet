@@ -31,7 +31,7 @@
                     <TextField fx:id="accountBalance" styleClass="header-account-info" editable="false"/>
                 </VBox>
             </HBox>
-            <HBox alignment="BOTTOM_CENTER" spacing="20">
+            <HBox alignment="BOTTOM_CENTER" spacing="50">
                 <VBox alignment="BOTTOM_CENTER" fx:id="homeButton" onMouseClicked="#handleButtonPressed">
                     <fx:include source="buttons/HomeButton.fxml"/>
                 </VBox>
@@ -44,9 +44,9 @@
                 <VBox alignment="BOTTOM_CENTER" fx:id="historyButton" onMouseClicked="#handleButtonPressed">
                     <fx:include source="buttons/HistoryButton.fxml"/>
                 </VBox>
-                <VBox alignment="BOTTOM_CENTER" fx:id="contractsButton" onMouseClicked="#handleButtonPressed">
-                    <fx:include source="buttons/ContractsButton.fxml"/>
-                </VBox>
+                <!--<VBox alignment="BOTTOM_CENTER" fx:id="contractsButton" onMouseClicked="#handleButtonPressed">-->
+                    <!--<fx:include source="buttons/ContractsButton.fxml"/>-->
+                <!--</VBox>-->
                 <VBox alignment="BOTTOM_CENTER" fx:id="settingsButton" onMouseClicked="#handleButtonPressed">
                     <fx:include source="buttons/SettingsButton.fxml"/>
                 </VBox>

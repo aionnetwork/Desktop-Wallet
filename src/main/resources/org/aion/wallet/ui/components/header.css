@@ -3,18 +3,15 @@
 }
 
 .pressed{
-    -fx-background-color: #40bded;
+    -fx-border-color: #40bded;
+    -fx-border-width: 0 0 5 0;
+    -fx-text-fill: WHITE;
+    -fx-text-alignment: CENTER;
+    -fx-font-family: 'Open Sans Regular';
 }
 
 .header-button-label {
     -fx-text-fill: BLACK;
-    -fx-text-alignment: CENTER;
-    -fx-font-family: 'Open Sans Regular';
-    -fx-font-size: 18px;
-}
-
-.header-button-label-pressed {
-    -fx-text-fill: #40bded;
     -fx-text-alignment: CENTER;
     -fx-font-family: 'Open Sans Regular';
     -fx-font-size: 18px;

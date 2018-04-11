@@ -65,8 +65,8 @@ public class HeaderPaneControls implements Initializable {
     private VBox receiveButton;
     @FXML
     private VBox historyButton;
-    @FXML
-    private VBox contractsButton;
+//    @FXML
+//    private VBox contractsButton;
     @FXML
     private VBox settingsButton;
 
@@ -77,7 +77,7 @@ public class HeaderPaneControls implements Initializable {
         headerButtons.put(sendButton, new HeaderPaneButtonEvent(HeaderPaneButtonEvent.Type.SEND));
         headerButtons.put(receiveButton, new HeaderPaneButtonEvent(HeaderPaneButtonEvent.Type.RECEIVE));
         headerButtons.put(historyButton, new HeaderPaneButtonEvent(HeaderPaneButtonEvent.Type.HISTORY));
-        headerButtons.put(contractsButton, new HeaderPaneButtonEvent(HeaderPaneButtonEvent.Type.CONTRACTS));
+//        headerButtons.put(contractsButton, new HeaderPaneButtonEvent(HeaderPaneButtonEvent.Type.CONTRACTS));
         headerButtons.put(settingsButton, new HeaderPaneButtonEvent(HeaderPaneButtonEvent.Type.SETTINGS));
         activeAccount.setPrefWidth(DEFAULT_ACCOUNT_WIDTH);
         accountBalance.setPrefWidth(DEFAULT_BALANCE_WIDTH);
