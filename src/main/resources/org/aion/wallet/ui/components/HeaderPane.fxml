@@ -23,31 +23,31 @@
         <VBox alignment="BOTTOM_CENTER" spacing="20">
             <HBox alignment="TOP_CENTER" spacing="20">
                 <VBox>
-                    <Label text="Account" styleClass="header-account-label"/>
+                    <Label id="activeAccountLabel" text="Account" styleClass="header-account-label" visible="false"/>
                     <TextField fx:id="activeAccount" styleClass="header-account-info" editable="false"/>
                 </VBox>
                 <VBox>
-                    <Label text="Balance" styleClass="header-account-label"/>
+                    <Label id="activeAccountBalanceLabel" text="Balance" styleClass="header-account-label" visible="false"/>
                     <TextField fx:id="accountBalance" styleClass="header-account-info" editable="false"/>
                 </VBox>
             </HBox>
-            <HBox alignment="BOTTOM_CENTER" spacing="50">
-                <VBox alignment="BOTTOM_CENTER" fx:id="homeButton" onMouseClicked="#handleButtonPressed">
+            <HBox alignment="BOTTOM_CENTER" spacing="0">
+                <VBox alignment="BOTTOM_CENTER" fx:id="homeButton" prefWidth="150.0" onMouseClicked="#handleButtonPressed">
                     <fx:include source="buttons/HomeButton.fxml"/>
                 </VBox>
-                <VBox alignment="BOTTOM_CENTER" fx:id="sendButton" onMouseClicked="#handleButtonPressed">
+                <VBox alignment="BOTTOM_CENTER" fx:id="sendButton" prefWidth="150.0" onMouseClicked="#handleButtonPressed">
                     <fx:include source="buttons/SendButton.fxml"/>
                 </VBox>
-                <VBox alignment="BOTTOM_CENTER" fx:id="receiveButton" onMouseClicked="#handleButtonPressed">
+                <VBox alignment="BOTTOM_CENTER" fx:id="receiveButton" prefWidth="150.0" onMouseClicked="#handleButtonPressed">
                     <fx:include source="buttons/ReceiveButton.fxml"/>
                 </VBox>
-                <VBox alignment="BOTTOM_CENTER" fx:id="historyButton" onMouseClicked="#handleButtonPressed">
+                <VBox alignment="BOTTOM_CENTER" fx:id="historyButton" prefWidth="150.0" onMouseClicked="#handleButtonPressed">
                     <fx:include source="buttons/HistoryButton.fxml"/>
                 </VBox>
                 <!--<VBox alignment="BOTTOM_CENTER" fx:id="contractsButton" onMouseClicked="#handleButtonPressed">-->
                     <!--<fx:include source="buttons/ContractsButton.fxml"/>-->
                 <!--</VBox>-->
-                <VBox alignment="BOTTOM_CENTER" fx:id="settingsButton" onMouseClicked="#handleButtonPressed">
+                <VBox alignment="BOTTOM_CENTER" fx:id="settingsButton" prefWidth="150.0" onMouseClicked="#handleButtonPressed">
                     <fx:include source="buttons/SettingsButton.fxml"/>
                 </VBox>
             </HBox>

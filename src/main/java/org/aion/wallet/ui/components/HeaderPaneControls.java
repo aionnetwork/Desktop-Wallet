@@ -58,6 +58,10 @@ public class HeaderPaneControls implements Initializable {
     @FXML
     private TextField activeAccount;
     @FXML
+    private Label activeAccountLabel;
+    @FXML
+    private Label activeAccountBalanceLabel;
+    @FXML
     private VBox homeButton;
     @FXML
     private VBox sendButton;
@@ -104,12 +108,21 @@ public class HeaderPaneControls implements Initializable {
             styleClass.clear();
             if (pressed.getSource().equals(headerButton)) {
                 styleClass.add(STYLE_PRESSED);
+                setStyleToChildren(headerButton, "header-button-label-pressed");
                 HeaderPaneButtonEvent headerPaneButtonEvent = headerButtons.get(headerButton);
                 sendPressedEvent(headerPaneButtonEvent);
             } else {
                 styleClass.add(STYLE_DEFAULT);
+                setStyleToChildren(headerButton, "header-button-label");
             }
         }
+    }
+
+    private void setStyleToChildren(Node headerButton, String styleClassToSet) {
+        VBox vbox = (VBox) ((VBox) headerButton).getChildren().get(0);
+        ObservableList<String> styleClass = vbox.getChildren().get(0).getStyleClass();
+        styleClass.clear();
+        styleClass.add(styleClassToSet);
     }
 
     private void clickButton(final Node button) {
@@ -127,8 +140,10 @@ public class HeaderPaneControls implements Initializable {
 
     @Subscribe
     private void handleAccountChanged(final AccountDTO account) {
+        activeAccountLabel.setVisible(true);
         activeAccount.setText(account.getPublicAddress());
         accountBalance.setText(account.getBalance() + CCY_SEPARATOR + account.getCurrency());
+        activeAccountBalanceLabel.setVisible(true);
     }
 
     @Subscribe
