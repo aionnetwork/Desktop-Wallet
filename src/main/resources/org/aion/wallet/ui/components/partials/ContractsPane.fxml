@@ -2,12 +2,12 @@
 
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Line?>
-<AnchorPane stylesheets="@../contentPane.css"
-            xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="org.aion.wallet.ui.components.ContractsPane">
+<HBox xmlns:fx="http://javafx.com/fxml/1" id="contractsPane" visible="false" alignment="CENTER"
+      stylesheets="@../contentPane.css" xmlns="http://javafx.com/javafx/8.0.121"
+      fx:controller="org.aion.wallet.ui.components.ContractsController" fx:id="parent">
 
     <VBox alignment="TOP_CENTER" spacing="10">
         <Label text="Contracts" styleClass="tile-label" alignment="CENTER"/>
@@ -15,5 +15,4 @@
         <ScrollPane VBox.vgrow="NEVER" hbarPolicy="NEVER" vbarPolicy="NEVER" prefViewportHeight="250"
                     prefViewportWidth="830"/>
     </VBox>
-
-</AnchorPane>
+</HBox>

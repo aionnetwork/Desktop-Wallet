@@ -23,7 +23,7 @@ import java.util.ResourceBundle;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class SendPane implements Initializable {
+public class SendController implements Initializable {
 
     private static final int MAX_TX_STATUS_RETRY_COUNT = 6;
 
@@ -59,10 +59,11 @@ public class SendPane implements Initializable {
     }
 
     private void registerEventBusConsumer() {
-        EventBusFactory.getInstance().getBus(EventPublisher.ACCOUNT_CHANGE_EVENT_ID).register(this);
+        EventBusFactory.getBus(EventPublisher.ACCOUNT_CHANGE_EVENT_ID).register(this);
     }
 
     private void setDefaults() {
+        fromLabel.setText("Please select an account!");
         nrgInput.setText(AionConstants.DEFAULT_NRG);
         nrgPriceInput.setText(AionConstants.DEFAULT_NRG_PRICE);
 

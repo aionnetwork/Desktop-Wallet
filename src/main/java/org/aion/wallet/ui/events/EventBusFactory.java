@@ -11,14 +11,13 @@ public class EventBusFactory {
 
     private final Map<String, EventBus> busMap = new HashMap<>();
 
-    public static EventBusFactory getInstance() {
-        return INSTANCE;
+    public static EventBus getBus(final String identifier) {
+        return INSTANCE.getBusById(identifier);
     }
 
-    private EventBusFactory() {
-    }
+    private EventBusFactory() {}
 
-    public EventBus getBus(final String identifier) {
+    private EventBus getBusById(final String identifier) {
         return busMap.computeIfAbsent(identifier, EventBus::new);
     }
 }

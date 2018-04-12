@@ -1,10 +1,10 @@
 package org.aion.wallet.ui.components;
 
 import com.google.common.eventbus.Subscribe;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
-public class HistoryPane implements Initializable {
+public class HistoryController extends AbstractController {
 
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
     @FXML
@@ -30,31 +30,43 @@ public class HistoryPane implements Initializable {
 
     private AccountDTO account;
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        registerEventBusConsumer();
+
+    protected void internalInit(final URL location, final ResourceBundle resources) {
         buildTableModel();
-        reloadHistory();
+        refreshView();
     }
 
     @Subscribe
-    private void handleHeaderPaneButtonEvent(HeaderPaneButtonEvent event) {
-        if (!event.getType().equals(HeaderPaneButtonEvent.Type.HISTORY)) {
-            return;
+    private void handleHeaderPaneButtonEvent(final HeaderPaneButtonEvent event) {
+        if (event.getType().equals(HeaderPaneButtonEvent.Type.HISTORY)) {
+            refreshView();
         }
-        reloadHistory();
     }
 
     @Subscribe
-    private void handleAccountChanged(AccountDTO account) {
+    private void handleAccountChanged(final AccountDTO account) {
         this.account = account;
-        reloadHistory();
+        refreshView();
     }
 
-    private void registerEventBusConsumer() {
-        EventBusFactory eventBusFactory = EventBusFactory.getInstance();
-        eventBusFactory.getBus(HeaderPaneButtonEvent.ID).register(this);
-        EventBusFactory.getInstance().getBus(EventPublisher.ACCOUNT_CHANGE_EVENT_ID).register(this);
+    protected void registerEventBusConsumer() {
+        super.registerEventBusConsumer();
+        EventBusFactory.getBus(HeaderPaneButtonEvent.ID).register(this);
+        EventBusFactory.getBus(EventPublisher.ACCOUNT_CHANGE_EVENT_ID).register(this);
+    }
+
+    @Override
+    protected void refreshView() {
+        Platform.runLater(() -> {
+            if (account == null) {
+                return;
+            }
+            String me = account.getPublicAddress();
+            List<TxRow> txs = blockchainConnector.getLatestTransactions(me).stream()
+                    .map(t -> new TxRow(me, t))
+                    .collect(Collectors.toList());
+            txListOverview.setItems(FXCollections.observableList(txs));
+        });
     }
 
     private void buildTableModel() {
@@ -68,23 +80,12 @@ public class HistoryPane implements Initializable {
         txListOverview.getColumns().addAll(typeCol, addrCol, valueCol);
     }
 
-    private void reloadHistory() {
-        if (account == null) {
-            return;
-        }
-        String me = account.getPublicAddress();
-        List<TxRow> txs = blockchainConnector.getLatestTransactions(me).stream()
-                .map(t -> new TxRow(me, t))
-                .collect(Collectors.toList());
-        txListOverview.setItems(FXCollections.observableList(txs));
-    }
-
     public static class TxRow {
         private final SimpleStringProperty type;
         private final SimpleStringProperty address;
         private final SimpleStringProperty value;
 
-        private TxRow(String requestingAddress, TransactionDTO dto) {
+        private TxRow(final String requestingAddress, final TransactionDTO dto) {
             boolean fromRequestingAddress = AddressUtils.equals(requestingAddress, dto.getFrom());
             this.type = new SimpleStringProperty(fromRequestingAddress ? "to" : "from");
             this.address = new SimpleStringProperty(fromRequestingAddress ? dto.getTo() : dto.getFrom());
@@ -95,7 +96,7 @@ public class HistoryPane implements Initializable {
             return type.get();
         }
 
-        public void setType(String type) {
+        public void setType(final String type) {
             this.type.setValue(type);
         }
 
@@ -103,7 +104,7 @@ public class HistoryPane implements Initializable {
             return address.get();
         }
 
-        public void setAddress(String address) {
+        public void setAddress(final String address) {
             this.address.setValue(address);
         }
 
@@ -111,7 +112,7 @@ public class HistoryPane implements Initializable {
             return value.get();
         }
 
-        public void setValue(String value) {
+        public void setValue(final String value) {
             this.value.setValue(value);
         }
 

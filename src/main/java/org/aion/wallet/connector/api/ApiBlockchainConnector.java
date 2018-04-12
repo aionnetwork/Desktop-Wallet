@@ -8,7 +8,6 @@ import org.aion.api.type.TxDetails;
 import org.aion.base.type.Address;
 import org.aion.base.util.ByteArrayWrapper;
 import org.aion.base.util.TypeConverter;
-import org.aion.mcf.account.KeystoreFormat;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.connector.dto.SendRequestDTO;
 import org.aion.wallet.connector.dto.SyncInfoDTO;

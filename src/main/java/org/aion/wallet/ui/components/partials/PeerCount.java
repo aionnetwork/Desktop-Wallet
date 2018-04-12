@@ -24,7 +24,7 @@ public class PeerCount implements Initializable{
     }
 
     private void registerEventBusConsumer() {
-        EventBusFactory.getInstance().getBus(DataUpdater.FOOTER_BUS_EVENT_ID).register(this);
+        EventBusFactory.getBus(DataUpdater.UI_DATA_REFRESH).register(this);
     }
 
     @Subscribe
