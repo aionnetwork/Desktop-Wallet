@@ -10,7 +10,7 @@ import org.aion.wallet.ui.events.WindowControlsEvent;
 public class WindowControls {
 
     private final WindowControlsEvent closeEvent = new WindowControlsEvent(WindowControlsEvent.Type.CLOSE, null);
-    private final EventBus eventBus = EventBusFactory.getInstance().getBus(WindowControlsEvent.ID);
+    private final EventBus eventBus = EventBusFactory.getBus(WindowControlsEvent.ID);
 
     @FXML
     private void minimize(final MouseEvent mouseEvent) {

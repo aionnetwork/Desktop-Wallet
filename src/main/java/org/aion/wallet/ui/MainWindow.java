@@ -63,7 +63,7 @@ public class MainWindow extends Application {
         stage.setScene(scene);
         stage.show();
 
-        panes.put(HeaderPaneButtonEvent.Type.HOME, scene.lookup("#homePane"));
+        panes.put(HeaderPaneButtonEvent.Type.OVERVIEW, scene.lookup("#overviewPane"));
         panes.put(HeaderPaneButtonEvent.Type.SEND, scene.lookup("#sendPane"));
         panes.put(HeaderPaneButtonEvent.Type.RECEIVE, scene.lookup("#receivePane"));
         panes.put(HeaderPaneButtonEvent.Type.CONTRACTS, scene.lookup("#contractsPane"));
@@ -74,9 +74,8 @@ public class MainWindow extends Application {
     }
 
     private void registerEventBusConsumer() {
-        final EventBusFactory eventBusFactory = EventBusFactory.getInstance();
-        eventBusFactory.getBus(WindowControlsEvent.ID).register(this);
-        eventBusFactory.getBus(HeaderPaneButtonEvent.ID).register(this);
+        EventBusFactory.getBus(WindowControlsEvent.ID).register(this);
+        EventBusFactory.getBus(HeaderPaneButtonEvent.ID).register(this);
     }
 
     @Subscribe

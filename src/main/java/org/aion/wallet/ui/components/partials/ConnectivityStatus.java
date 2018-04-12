@@ -4,7 +4,6 @@ import com.google.common.eventbus.Subscribe;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
-import javafx.scene.image.ImageView;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.TimerEvent;
@@ -16,6 +15,7 @@ import java.util.ResourceBundle;
 public class ConnectivityStatus implements Initializable {
 
     private static final String CONNECTIVITY_STATUS_CONNECTED = "CONNECTED";
+
     private static final String CONNECTIVITY_STATUS_DISCONNECTED = "DISCONNECTED";
 
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
@@ -29,8 +29,7 @@ public class ConnectivityStatus implements Initializable {
     }
 
     private void registerEventBusConsumer() {
-        final EventBusFactory eventBusFactory = EventBusFactory.getInstance();
-        eventBusFactory.getBus(DataUpdater.FOOTER_BUS_EVENT_ID).register(this);
+        EventBusFactory.getBus(DataUpdater.UI_DATA_REFRESH).register(this);
     }
 
     @Subscribe

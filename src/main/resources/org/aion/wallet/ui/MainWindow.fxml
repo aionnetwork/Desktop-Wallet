@@ -10,16 +10,10 @@
         <URL value="@style.css"/>
     </stylesheets>
 
-    <AnchorPane AnchorPane.topAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
-        <fx:include source="components/HeaderPane.fxml"/>
-    </AnchorPane>
+    <fx:include source="components/HeaderPane.fxml" AnchorPane.topAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0"/>
 
-    <AnchorPane AnchorPane.topAnchor="100" AnchorPane.bottomAnchor="50" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
-        <fx:include source="components/ContentPane.fxml"/>
-    </AnchorPane>
+    <fx:include source="components/ContentPane.fxml" AnchorPane.topAnchor="100" AnchorPane.bottomAnchor="50" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0"/>
 
-    <AnchorPane AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
-        <fx:include source="components/FooterPane.fxml"/>
-    </AnchorPane>
+    <fx:include source="components/FooterPane.fxml" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0"/>
 
 </AnchorPane>

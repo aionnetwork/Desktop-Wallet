@@ -34,7 +34,7 @@ public class AddAccountDialog {
         resetValidation();
         if (validateFields()) {
             Keystore.create(newPassword.getText());
-            EventBusFactory.getInstance().getBus(HeaderPaneButtonEvent.ID).post(new HeaderPaneButtonEvent(HeaderPaneButtonEvent.Type.HOME));
+            EventBusFactory.getBus(HeaderPaneButtonEvent.ID).post(new HeaderPaneButtonEvent(HeaderPaneButtonEvent.Type.OVERVIEW));
         }
         else {
             String error = "";

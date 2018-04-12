@@ -5,9 +5,9 @@
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.shape.Line?>
-<AnchorPane id="contentPane" stylesheets="@../contentPane.css"
-            xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="org.aion.wallet.ui.components.HistoryPane">
+<HBox id="historyPane" stylesheets="@../contentPane.css" visible="false" alignment="CENTER"
+      xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="org.aion.wallet.ui.components.HistoryController" fx:id="parent">
 
     <VBox AnchorPane.topAnchor="0" AnchorPane.leftAnchor="10" AnchorPane.rightAnchor="10" AnchorPane.bottomAnchor="0"
           alignment="CENTER" spacing="10">
@@ -17,5 +17,4 @@
             <TableView fx:id="txListOverview"/>
         </ScrollPane>
     </VBox>
-
-</AnchorPane>
+</HBox>

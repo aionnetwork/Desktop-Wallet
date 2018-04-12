@@ -4,7 +4,7 @@ public class AionConstants {
 
     private AionConstants() {}
 
-    public final static String CCY = " AION";
+    public final static String CCY = "AION";
 
     public static final String DEFAULT_NRG = "100000";
 
@@ -14,7 +14,7 @@ public class AionConstants {
 
     public static final Long BLOCK_MINING_TIME_MILLIS = BLOCK_MINING_TIME_SECONDS * 1000L;
 
-    public static final Integer MAX_BLOCKS_FOR_LATEST_TRANSACTIONS_QUERY = 500;
+    public static final Integer MAX_BLOCKS_FOR_LATEST_TRANSACTIONS_QUERY = 1000;
 
     // todo: will we be able to access this from AccountManager?
 
