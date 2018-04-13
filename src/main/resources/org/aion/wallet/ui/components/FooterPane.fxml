@@ -4,7 +4,7 @@
 <?import javafx.scene.layout.*?>
 <AnchorPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.121"
             stylesheets="@footer-pane.css" styleClass="anchor-pane"
-            AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" prefHeight="46" prefWidth="500">
+            AnchorPane.topAnchor="510" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" prefWidth="500">
 
         <fx:include source="partials/ConnectivityStatus.fxml"/>
         <fx:include source="partials/PeerCount.fxml"/>

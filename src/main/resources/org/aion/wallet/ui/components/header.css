@@ -43,6 +43,10 @@
     -fx-cursor: hand;
 }
 
+.clickable:hover {
+    -fx-cursor: hand;
+}
+
 .header-button-label:hover {
     -fx-cursor: hand;
 }

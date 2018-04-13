@@ -7,11 +7,15 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import org.aion.api.sol.impl.Uint;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.util.UIUtils;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.file.Paths;
 
 public class AccountCellItem extends ListCell<AccountDTO> {
     @FXML
@@ -23,6 +27,7 @@ public class AccountCellItem extends ListCell<AccountDTO> {
 
     public AccountCellItem() {
         loadFXML();
+        publicAddress.setPrefWidth(575);
     }
 
     private void loadFXML() {
@@ -44,11 +49,15 @@ public class AccountCellItem extends ListCell<AccountDTO> {
             setContentDisplay(ContentDisplay.TEXT_ONLY);
         } else {
             publicAddress.setText(item.getPublicAddress());
-            UIUtils.setWidth(publicAddress);
             balance.setText(item.getBalance() + item.getCurrency());
             UIUtils.setWidth(balance);
             if(item.getActive()) {
-                accountSelectButton.setImage(new Image("@../icons/icon-connected-50.png"));
+                final InputStream resource = getClass().getResourceAsStream("../icons/icon-connected-50.png");
+                accountSelectButton.setImage(new Image(resource));
+            }
+            else {
+                final InputStream resource = getClass().getResourceAsStream("../icons/icon-disconnected-50.png");
+                accountSelectButton.setImage(new Image(resource));
             }
 
             setContentDisplay(ContentDisplay.GRAPHIC_ONLY);

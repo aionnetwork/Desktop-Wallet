@@ -5,7 +5,7 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import java.net.URL?>
-<AnchorPane prefHeight="400.0" prefWidth="350.0" styleClass="anchor-pane" xmlns="http://javafx.com/javafx/8.0.121"
+<AnchorPane prefHeight="450.0" prefWidth="350.0" styleClass="anchor-pane" xmlns="http://javafx.com/javafx/8.0.121"
             xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.aion.wallet.ui.components.partials.AddAccountDialog">
 
     <stylesheets>
@@ -22,13 +22,15 @@
     <Label layoutX="170.0" layoutY="160.0" text="or"/>
 
     <Label layoutX="90.0" layoutY="185.0" styleClass="create-account-text" text="Create account"/>
-    <PasswordField fx:id="newPassword" layoutX="40.0" layoutY="235.0" onMouseClicked="#resetValidation"
+    <TextField fx:id="newAccountName" layoutX="40.0" layoutY="235.0" prefWidth="275.0"
+                styleClass="add-account-input-fields" promptText="Account name"/>
+    <PasswordField fx:id="newPassword" layoutX="40.0" layoutY="285.0" onMouseClicked="#resetValidation"
                    prefWidth="275.0" promptText="New password" styleClass="add-account-input-fields"/>
-    <PasswordField fx:id="retypedPassword" layoutX="40.0" layoutY="285.0" onMouseClicked="#resetValidation"
+    <PasswordField fx:id="retypedPassword" layoutX="40.0" layoutY="335.0" onMouseClicked="#resetValidation"
                    prefWidth="275.0" promptText="Retype your password" styleClass="add-account-input-fields"/>
-    <Label fx:id="validationError" layoutX="40.0" layoutY="320.0" prefWidth="275.0" text="ERROR" textFill="orangered"
+    <Label fx:id="validationError" layoutX="40.0" layoutY="380.0" prefWidth="275.0" text="ERROR" textFill="orangered"
            visible="false"/>
-    <Button layoutX="40.0" layoutY="345.0" mnemonicParsing="false" onMouseClicked="#createAccount" prefWidth="275.0"
+    <Button layoutX="40.0" layoutY="400.0" mnemonicParsing="false" onMouseClicked="#createAccount" prefWidth="275.0"
             styleClass="add-account-buttons" text="Submit"/>
 
 </AnchorPane>

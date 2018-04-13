@@ -1,5 +1,7 @@
 .anchor-pane {
     -fx-background-color: WHITE;
+    -fx-border-color: #ececec;
+    -fx-border-width: 1 1 1 1;
 }
 
 .create-account-text {

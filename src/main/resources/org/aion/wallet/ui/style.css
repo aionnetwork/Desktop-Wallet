@@ -8,7 +8,7 @@
     src: url('fonts/OpenSans-Bold.ttf');
 }
 
-@font-face {
+@font-face {``
     font-family: 'Open Sans Extra Bold Italic';
     src: url('fonts/OpenSans-ExtraBoldItalic.ttf');
 }
@@ -20,10 +20,12 @@
 
 .main-stage {
     -fx-background-color: WHITE;
+    -fx-border-color: #ececec;
+    -fx-border-width: 1 1 1 1;
 }
 
 .label {
-    -fx-text-fill: WHITE;
+    -fx-text-fill: BLACK;
     -fx-text-alignment: CENTER;
 }
 
