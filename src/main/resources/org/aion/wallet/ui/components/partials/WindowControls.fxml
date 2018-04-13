@@ -7,20 +7,20 @@
 <?import java.net.URL?>
 <HBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
       fx:controller="org.aion.wallet.ui.components.partials.WindowControls"
-      styleClass="default" prefHeight="23" prefWidth="46" AnchorPane.rightAnchor="0">
+      styleClass="default" prefHeight="25" prefWidth="46" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="10">
 
     <stylesheets>
         <URL value="@../header.css"/>
     </stylesheets>
 
     <AnchorPane onMouseClicked="#minimize">
-        <ImageView fitHeight="23.0" fitWidth="23.0" pickOnBounds="true" preserveRatio="true">
+        <ImageView fitHeight="30.0" fitWidth="30.0" styleClass="clickable" pickOnBounds="true" preserveRatio="true">
             <Image url="@../icons/minimize-50.png"/>
         </ImageView>
     </AnchorPane>
 
     <AnchorPane onMouseClicked="#close">
-        <ImageView fitHeight="23.0" fitWidth="23.0" pickOnBounds="true" preserveRatio="true">
+        <ImageView fitHeight="30.0" fitWidth="30.0" styleClass="clickable" pickOnBounds="true" preserveRatio="true">
             <Image url="@../icons/shutdown-50.png"/>
         </ImageView>
     </AnchorPane>

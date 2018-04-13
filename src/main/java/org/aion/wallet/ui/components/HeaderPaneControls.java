@@ -6,6 +6,7 @@ import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
@@ -18,6 +19,7 @@ import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
 import org.aion.wallet.ui.events.TimerEvent;
+import org.aion.wallet.util.UIUtils;
 import org.aion.wallet.util.BalanceFormatter;
 import org.aion.wallet.util.DataUpdater;
 import org.slf4j.Logger;
@@ -43,9 +45,7 @@ public class HeaderPaneControls implements Initializable {
 
     private static final String STYLE_PRESSED = "pressed";
 
-    private static final double DEFAULT_ACCOUNT_WIDTH = 520;
 
-    private static final double DEFAULT_BALANCE_WIDTH = 180;
 
     private static final String CCY_SEPARATOR = " ";
 
@@ -58,6 +58,8 @@ public class HeaderPaneControls implements Initializable {
     @FXML
     private TextField activeAccount;
     @FXML
+    private Label activeAccountLabel;
+    @FXML
     private VBox homeButton;
     @FXML
     private VBox sendButton;
@@ -65,8 +67,8 @@ public class HeaderPaneControls implements Initializable {
     private VBox receiveButton;
     @FXML
     private VBox historyButton;
-    @FXML
-    private VBox contractsButton;
+//    @FXML
+//    private VBox contractsButton;
     @FXML
     private VBox settingsButton;
 
@@ -77,10 +79,8 @@ public class HeaderPaneControls implements Initializable {
         headerButtons.put(sendButton, new HeaderPaneButtonEvent(HeaderPaneButtonEvent.Type.SEND));
         headerButtons.put(receiveButton, new HeaderPaneButtonEvent(HeaderPaneButtonEvent.Type.RECEIVE));
         headerButtons.put(historyButton, new HeaderPaneButtonEvent(HeaderPaneButtonEvent.Type.HISTORY));
-        headerButtons.put(contractsButton, new HeaderPaneButtonEvent(HeaderPaneButtonEvent.Type.CONTRACTS));
+//        headerButtons.put(contractsButton, new HeaderPaneButtonEvent(HeaderPaneButtonEvent.Type.CONTRACTS));
         headerButtons.put(settingsButton, new HeaderPaneButtonEvent(HeaderPaneButtonEvent.Type.SETTINGS));
-        activeAccount.setPrefWidth(DEFAULT_ACCOUNT_WIDTH);
-        accountBalance.setPrefWidth(DEFAULT_BALANCE_WIDTH);
 
         clickButton(homeButton);
     }
@@ -104,12 +104,21 @@ public class HeaderPaneControls implements Initializable {
             styleClass.clear();
             if (pressed.getSource().equals(headerButton)) {
                 styleClass.add(STYLE_PRESSED);
+                setStyleToChildren(headerButton, "header-button-label-pressed");
                 HeaderPaneButtonEvent headerPaneButtonEvent = headerButtons.get(headerButton);
                 sendPressedEvent(headerPaneButtonEvent);
             } else {
                 styleClass.add(STYLE_DEFAULT);
+                setStyleToChildren(headerButton, "header-button-label");
             }
         }
+    }
+
+    private void setStyleToChildren(Node headerButton, String styleClassToSet) {
+        VBox vbox = (VBox) ((VBox) headerButton).getChildren().get(0);
+        ObservableList<String> styleClass = vbox.getChildren().get(0).getStyleClass();
+        styleClass.clear();
+        styleClass.add(styleClassToSet);
     }
 
     private void clickButton(final Node button) {
@@ -127,8 +136,12 @@ public class HeaderPaneControls implements Initializable {
 
     @Subscribe
     private void handleAccountChanged(final AccountDTO account) {
+        accountBalance.setVisible(true);
+        activeAccountLabel.setVisible(true);
         activeAccount.setText(account.getPublicAddress());
         accountBalance.setText(account.getBalance() + CCY_SEPARATOR + account.getCurrency());
+        UIUtils.setWidth(activeAccount);
+        UIUtils.setWidth(accountBalance);
     }
 
     @Subscribe

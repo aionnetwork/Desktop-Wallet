@@ -3,16 +3,14 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.shape.Line?>
-<HBox xmlns:fx="http://javafx.com/fxml/1" id="settingsPane" visible="false" alignment="CENTER"
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" id="settingsPane" visible="false"
       stylesheets="@../contentPane.css" xmlns="http://javafx.com/javafx/8.0.121"
       fx:controller="org.aion.wallet.ui.components.SettingsController" fx:id="parent">
 
-    <VBox AnchorPane.topAnchor="0" AnchorPane.leftAnchor="10" AnchorPane.rightAnchor="10" AnchorPane.bottomAnchor="0"
-          alignment="CENTER" spacing="10">
+    <VBox AnchorPane.leftAnchor="10" AnchorPane.rightAnchor="10" AnchorPane.topAnchor="25"
+          alignment="TOP_CENTER" spacing="10">
         <Label text="Settings" styleClass="tile-label" alignment="CENTER"/>
-        <Line endX="400.0" startX="-400.0" styleClass="line"/>
         <ScrollPane VBox.vgrow="NEVER" hbarPolicy="NEVER" vbarPolicy="NEVER" prefViewportHeight="250"
                     prefViewportWidth="830"/>
     </VBox>
-</HBox>
+</AnchorPane>

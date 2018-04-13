@@ -8,7 +8,7 @@
     src: url('fonts/OpenSans-Bold.ttf');
 }
 
-@font-face {
+@font-face {``
     font-family: 'Open Sans Extra Bold Italic';
     src: url('fonts/OpenSans-ExtraBoldItalic.ttf');
 }
@@ -19,17 +19,19 @@
 }
 
 .main-stage {
-    -fx-background-color: #40bded;
+    -fx-background-color: WHITE;
+    -fx-border-color: #ececec;
+    -fx-border-width: 1 1 1 1;
 }
 
 .label {
-    -fx-text-fill: WHITE;
+    -fx-text-fill: BLACK;
     -fx-text-alignment: CENTER;
 }
 
 .copyable-label, .copyable-label:focused {
     -fx-background-color: transparent;
     -fx-background-insets: 0px;
-    -fx-text-fill: white;
+    -fx-text-fill: BLACK;
     -fx-display-caret: false;
 }

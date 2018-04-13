@@ -7,13 +7,13 @@
 <?import java.net.URL?>
 <AnchorPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="org.aion.wallet.ui.components.partials.PeerCount" prefWidth="150.0">
+            fx:controller="org.aion.wallet.ui.components.partials.PeerCount">
     <stylesheets>
         <URL value="@../footer-pane.css" />
     </stylesheets>
 
-    <HBox AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.leftAnchor="0"
-          alignment="CENTER" spacing="5">
+    <HBox AnchorPane.topAnchor="10" AnchorPane.bottomAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.leftAnchor="175"
+          alignment="CENTER" spacing="5" prefWidth="200">
         <ImageView fitHeight="24.0" pickOnBounds="true" preserveRatio="true">
             <Image url="@../icons/peers-256x256.png"/>
         </ImageView>

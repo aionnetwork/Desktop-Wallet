@@ -1,5 +1,7 @@
 #contentPane {
-    -fx-background-color: #19364e;
+    -fx-background-color: WHITE;
+    -fx-border-color:#40bded;
+    -fx-border-width: 1 0 1 0;
 }
 
 .scroll-pane > .viewport {
@@ -13,7 +15,7 @@
 }
 
 .main-text {
-    -fx-text-fill: white;
+    -fx-text-fill: black;
     -fx-font-family: 'Open Sans Light';
     -fx-font-size: 32px;
     -fx-text-alignment: CENTER;
@@ -42,7 +44,7 @@
 }
 
 .tile-label {
-    -fx-text-fill: WHITE;
+    -fx-text-fill: BLACK;
     -fx-text-alignment: CENTER;
     -fx-font-family: 'Open Sans Light';
     -fx-font-size: 32px;
