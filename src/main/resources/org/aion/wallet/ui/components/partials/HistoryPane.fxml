@@ -12,7 +12,7 @@
           alignment="TOP_CENTER" spacing="10">
         <Label text="Transaction History" styleClass="tile-label" alignment="CENTER"/>
         <ScrollPane VBox.vgrow="NEVER" hbarPolicy="NEVER" vbarPolicy="NEVER" prefViewportHeight="250" prefViewportWidth="830">
-            <TableView fx:id="txListOverview"/>
+            <TableView fx:id="txTable"/>
         </ScrollPane>
     </VBox>
 </AnchorPane>

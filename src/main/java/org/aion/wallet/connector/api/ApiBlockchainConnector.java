@@ -1,5 +1,6 @@
 package org.aion.wallet.connector.api;
 
+import com.google.common.eventbus.Subscribe;
 import org.aion.api.IAionAPI;
 import org.aion.api.impl.AionAPIImpl;
 import org.aion.api.type.BlockDetails;
@@ -15,6 +16,9 @@ import org.aion.wallet.connector.dto.TransactionDTO;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
+import org.aion.wallet.storage.WalletStorage;
+import org.aion.wallet.ui.events.EventBusFactory;
+import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.util.AionConstants;
 import org.aion.wallet.util.BalanceFormatter;
 
@@ -27,18 +31,20 @@ public class ApiBlockchainConnector implements BlockchainConnector {
 
     private final static IAionAPI API = AionAPIImpl.inst();
 
-    public ApiBlockchainConnector() {
+    private final WalletStorage walletStorage = WalletStorage.getInstance();
+
+    public ApiBlockchainConnector(){
         if (API.isConnected()) {
             return;
         }
         API.connect(IAionAPI.LOCALHOST_URL, true);
+        EventBusFactory.getBus(EventPublisher.ACCOUNT_CHANGE_EVENT_ID).register(this);
     }
 
-    private AccountDTO convertToAccountDto(Address address) {
-        AccountDTO dto = new AccountDTO(getCurrency());
-        dto.setPublicAddress(address.toString());
-        dto.setBalance(BalanceFormatter.formatBalance(getBalance(dto.getPublicAddress())));
-        return dto;
+    public AccountDTO getAccount(final String publicAddress) {
+        final String name = walletStorage.getAccountName(publicAddress);
+        final String balance = BalanceFormatter.formatBalance(getBalance(publicAddress));
+        return new AccountDTO(name, publicAddress, balance, getCurrency());
     }
 
     @Override
@@ -61,6 +67,11 @@ public class ApiBlockchainConnector implements BlockchainConnector {
     @Override
     public List<AccountDTO> getAccounts() {
         return ((List<Address>) API.getWallet().getAccounts().getObject()).stream().map(this::convertToAccountDto).collect(Collectors.toList());
+    }
+
+    private AccountDTO convertToAccountDto(Address address) {
+        final String publicAddress = address.toString();
+        return getAccount(publicAddress);
     }
 
     @Override
@@ -99,6 +110,21 @@ public class ApiBlockchainConnector implements BlockchainConnector {
     @Override
     public String getCurrency() {
         return AionConstants.CCY;
+    }
+
+    @Override
+    public void close() {
+        walletStorage.save();
+        API.destroyApi();
+    }
+
+    @Subscribe
+    private void handleAccountChanged(final AccountDTO account) {
+        if (!account.getName().equalsIgnoreCase(walletStorage.getAccountName(account.getPublicAddress()))) {
+            walletStorage.setAccountName(account.getPublicAddress(), account.getName());
+            final String name = walletStorage.getAccountName(account.getPublicAddress());
+            System.out.println(name);
+        }
     }
 
     private List<TransactionDTO> getTransactions(final String addr, long nrOfBlocksToCheck) {

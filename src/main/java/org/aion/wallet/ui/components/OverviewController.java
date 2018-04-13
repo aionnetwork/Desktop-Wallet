@@ -17,20 +17,18 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 public class OverviewController extends AbstractController {
+
+    private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
     @FXML
     private ListView<AccountDTO> accountListView;
-
     private AddAccountDialog addAccountDialog;
-
-    private  final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
-
     private AccountDTO account;
 
 
     @Override
     public void internalInit(final URL location, final ResourceBundle resources) {
         addAccountDialog = new AddAccountDialog();
-        refreshView();
+        reloadAccounts();
     }
 
     @Override
@@ -40,11 +38,10 @@ public class OverviewController extends AbstractController {
         EventBusFactory.getBus(EventPublisher.ACCOUNT_CHANGE_EVENT_ID).register(this);
     }
 
-    @Override
-    protected void refreshView() {
+    protected void reloadAccounts() {
         List<AccountDTO> accounts = blockchainConnector.getAccounts();
         for (AccountDTO account : accounts) {
-            account.setActive(this.account != null && this.account.getPublicAddress().equals(account.getPublicAddress()));
+            account.setActive(this.account != null && this.account.equals(account));
         }
         accountListView.setItems(FXCollections.observableArrayList(accounts));
     }
@@ -53,7 +50,7 @@ public class OverviewController extends AbstractController {
     private void handleAccountChanged(AccountDTO account) {
         this.account = account;
         // todo: don't reload the account list from blockchain connector
-        refreshView();
+        reloadAccounts();
     }
 
     @Subscribe

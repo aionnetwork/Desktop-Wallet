@@ -29,7 +29,7 @@ public abstract class AbstractController implements Initializable {
     @Subscribe
     private void handleConnectivityStatusEvent(final TimerEvent event) {
         if (isInView()) {
-            refresh();
+            refreshView();
         }
     }
 
@@ -37,14 +37,8 @@ public abstract class AbstractController implements Initializable {
         return parent.isVisible();
     }
 
-    private void refresh() {
-        final long start = System.nanoTime();
-        refreshView();
-        final long end = System.nanoTime();
-        System.out.println("Refreshed " + this.getClass().getSimpleName() + " in " + (end - start) / 1e9 + "s");
+    protected void refreshView() {
     }
 
     protected abstract void internalInit(final URL location, final ResourceBundle resources);
-
-    protected abstract void refreshView();
 }

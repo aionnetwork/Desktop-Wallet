@@ -55,7 +55,7 @@ public class SendController implements Initializable {
     @Subscribe
     private void handleAccountChanged(AccountDTO account) {
         this.account = account;
-        fromLabel.setText("From: " + account.getPublicAddress());
+        fromLabel.setText("From: " + account.getName());
     }
 
     private void registerEventBusConsumer() {

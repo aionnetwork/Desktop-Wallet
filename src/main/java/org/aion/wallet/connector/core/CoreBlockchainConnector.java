@@ -1,5 +1,6 @@
 package org.aion.wallet.connector.core;
 
+import com.google.common.eventbus.Subscribe;
 import org.aion.api.server.ApiAion;
 import org.aion.api.server.types.ArgTxCall;
 import org.aion.api.server.types.SyncInfo;
@@ -14,8 +15,11 @@ import org.aion.wallet.connector.dto.UnlockableAccount;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
-import org.aion.wallet.util.BalanceFormatter;
+import org.aion.wallet.storage.WalletStorage;
+import org.aion.wallet.ui.events.EventBusFactory;
+import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.util.AionConstants;
+import org.aion.wallet.util.BalanceFormatter;
 import org.aion.zero.impl.types.AionBlock;
 import org.aion.zero.types.AionTransaction;
 
@@ -27,6 +31,12 @@ import java.util.stream.Collectors;
 public class CoreBlockchainConnector implements BlockchainConnector {
 
     private final static ApiAion API = new WalletApi();
+
+    private final WalletStorage walletStorage = WalletStorage.getInstance();
+
+    public CoreBlockchainConnector() {
+        EventBusFactory.getBus(EventPublisher.ACCOUNT_CHANGE_EVENT_ID).register(this);
+    }
 
     @Override
     public String sendTransaction(SendRequestDTO dto) throws ValidationException {
@@ -45,18 +55,22 @@ public class CoreBlockchainConnector implements BlockchainConnector {
 
     @Override
     public List<AccountDTO> getAccounts() {
-        List<AccountDTO> accounts = new ArrayList<>();
-        for (String publicAddress : (List<String>) API.getAccounts()) {
-            AccountDTO dto = new AccountDTO(getCurrency());
-            dto.setPublicAddress(publicAddress);
-            try {
-                dto.setBalance(BalanceFormatter.formatBalance(getBalance(publicAddress)));
-            }catch (Exception e) {
-                dto.setBalance(BalanceFormatter.formatBalance(BigInteger.ZERO));
-            }
-            accounts.add(dto);
+        final List<AccountDTO> accounts = new ArrayList<>();
+        for (final String publicAddress : (List<String>) API.getAccounts()) {
+            accounts.add(getAccount(publicAddress));
         }
         return accounts;
+    }
+
+    public AccountDTO getAccount(final String publicAddress) {
+        final String name = walletStorage.getAccountName(publicAddress);
+        String balance;
+        try {
+            balance = BalanceFormatter.formatBalance(getBalance(publicAddress));
+        } catch (Exception e) {
+            balance = BalanceFormatter.formatBalance(BigInteger.ZERO);
+        }
+        return new AccountDTO(name, getCurrency(), publicAddress, balance);
     }
 
     @Override
@@ -100,6 +114,16 @@ public class CoreBlockchainConnector implements BlockchainConnector {
     @Override
     public int getPeerCount() {
         return API.peerCount();
+    }
+
+    @Subscribe
+    private void handleAccountChanged(final AccountDTO account) {
+        walletStorage.setAccountName(account.getPublicAddress(), account.getName());
+    }
+
+    @Override
+    public void close() {
+        walletStorage.save();
     }
 
     private SyncInfoDTO mapSyncInfo(SyncInfo sync) {

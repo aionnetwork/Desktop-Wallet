@@ -26,27 +26,29 @@ public class HistoryController extends AbstractController {
 
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
     @FXML
-    private TableView<TxRow> txListOverview;
+    private TableView<TxRow> txTable;
 
     private AccountDTO account;
 
 
     protected void internalInit(final URL location, final ResourceBundle resources) {
         buildTableModel();
-        refreshView();
+        reloadWalletView();
     }
 
     @Subscribe
     private void handleHeaderPaneButtonEvent(final HeaderPaneButtonEvent event) {
         if (event.getType().equals(HeaderPaneButtonEvent.Type.HISTORY)) {
-            refreshView();
+            reloadWalletView();
         }
     }
 
     @Subscribe
     private void handleAccountChanged(final AccountDTO account) {
         this.account = account;
-        refreshView();
+        if (isInView()) {
+            reloadWalletView();
+        }
     }
 
     protected void registerEventBusConsumer() {
@@ -55,8 +57,7 @@ public class HistoryController extends AbstractController {
         EventBusFactory.getBus(EventPublisher.ACCOUNT_CHANGE_EVENT_ID).register(this);
     }
 
-    @Override
-    protected void refreshView() {
+    private void reloadWalletView() {
         Platform.runLater(() -> {
             if (account == null) {
                 return;
@@ -65,31 +66,46 @@ public class HistoryController extends AbstractController {
             List<TxRow> txs = blockchainConnector.getLatestTransactions(me).stream()
                     .map(t -> new TxRow(me, t))
                     .collect(Collectors.toList());
-            txListOverview.setItems(FXCollections.observableList(txs));
+            txTable.setItems(FXCollections.observableList(txs));
         });
     }
 
     private void buildTableModel() {
         TableColumn<TxRow, String> typeCol = new TableColumn<>("Type");
+        TableColumn<TxRow, String> nameCol = new TableColumn<>("Name");
         TableColumn<TxRow, String> addrCol = new TableColumn<>("Address");
         TableColumn<TxRow, String> valueCol = new TableColumn<>("Value");
         typeCol.setCellValueFactory(new PropertyValueFactory<>("type"));
+        nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
         addrCol.setCellValueFactory(new PropertyValueFactory<>("address"));
         valueCol.setCellValueFactory(new PropertyValueFactory<>("value"));
+        typeCol.prefWidthProperty().bind(txTable.widthProperty().multiply(0.08));
+        nameCol.prefWidthProperty().bind(txTable.widthProperty().multiply(0.15));
+        addrCol.prefWidthProperty().bind(txTable.widthProperty().multiply(0.63));
+        valueCol.prefWidthProperty().bind(txTable.widthProperty().multiply(0.14));
 
-        txListOverview.getColumns().addAll(typeCol, addrCol, valueCol);
+        txTable.getColumns().addAll(typeCol, nameCol, addrCol, valueCol);
     }
 
-    public static class TxRow {
+    public class TxRow {
+
+        private static final String TO = "to";
+        private static final String FROM = "from";
+
         private final SimpleStringProperty type;
+        private final SimpleStringProperty name;
         private final SimpleStringProperty address;
         private final SimpleStringProperty value;
 
         private TxRow(final String requestingAddress, final TransactionDTO dto) {
-            boolean fromRequestingAddress = AddressUtils.equals(requestingAddress, dto.getFrom());
-            this.type = new SimpleStringProperty(fromRequestingAddress ? "to" : "from");
-            this.address = new SimpleStringProperty(fromRequestingAddress ? dto.getTo() : dto.getFrom());
-            this.value = new SimpleStringProperty(BalanceFormatter.formatBalance(dto.getValue()));
+            final AccountDTO fromAccount = blockchainConnector.getAccount(dto.getFrom());
+            final AccountDTO toAccount = blockchainConnector.getAccount(dto.getTo());
+            final String balance = BalanceFormatter.formatBalance(dto.getValue());
+            boolean isFromTx = AddressUtils.equals(requestingAddress, fromAccount.getPublicAddress());
+            this.type = new SimpleStringProperty(isFromTx ? TO : FROM);
+            this.name = new SimpleStringProperty(isFromTx ? toAccount.getName() : fromAccount.getName());
+            this.address = new SimpleStringProperty(isFromTx ? toAccount.getPublicAddress() : fromAccount.getPublicAddress());
+            this.value = new SimpleStringProperty(balance);
         }
 
         public String getType() {
@@ -98,6 +114,14 @@ public class HistoryController extends AbstractController {
 
         public void setType(final String type) {
             this.type.setValue(type);
+        }
+
+        public String getName() {
+            return name.get();
+        }
+
+        public void setName(final String name) {
+            this.name.setValue(name);
         }
 
         public String getAddress() {
