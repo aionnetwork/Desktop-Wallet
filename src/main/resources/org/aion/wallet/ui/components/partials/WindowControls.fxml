@@ -7,7 +7,7 @@
 <?import java.net.URL?>
 <HBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
       fx:controller="org.aion.wallet.ui.components.partials.WindowControls"
-      styleClass="default" prefHeight="25" prefWidth="46" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="10">
+      styleClass="default" prefHeight="25" prefWidth="46" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="0">
 
     <stylesheets>
         <URL value="@../header.css"/>
