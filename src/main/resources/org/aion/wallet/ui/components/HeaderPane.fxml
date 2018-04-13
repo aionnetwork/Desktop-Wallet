@@ -8,7 +8,7 @@
 <?import java.net.URL?>
 <AnchorPane styleClass="default" xmlns="http://javafx.com/javafx/8.0.162"
             xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.aion.wallet.ui.components.HeaderPaneControls"
-            AnchorPane.topAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.leftAnchor="0.0" prefHeight="125">
+            AnchorPane.topAnchor="0.0" AnchorPane.rightAnchor="10.0" AnchorPane.leftAnchor="0.0" prefHeight="125">
 
     <stylesheets>
         <URL value="@header.css" />

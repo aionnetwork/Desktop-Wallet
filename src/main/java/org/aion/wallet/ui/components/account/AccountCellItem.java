@@ -5,6 +5,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.ui.events.EventPublisher;
@@ -18,9 +19,7 @@ public class AccountCellItem extends ListCell<AccountDTO> {
     @FXML
     private TextField balance;
     @FXML
-    private ImageView connectedImage;
-    @FXML
-    private ImageView disconnectedImage;
+    private ImageView accountSelectButton;
 
     public AccountCellItem() {
         loadFXML();
@@ -48,8 +47,10 @@ public class AccountCellItem extends ListCell<AccountDTO> {
             UIUtils.setWidth(publicAddress);
             balance.setText(item.getBalance() + item.getCurrency());
             UIUtils.setWidth(balance);
-            connectedImage.setVisible(item.getActive());
-            disconnectedImage.setVisible(!item.getActive());
+            if(item.getActive()) {
+                accountSelectButton.setImage(new Image("@../icons/icon-connected-50.png"));
+            }
+
             setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
         }
     }

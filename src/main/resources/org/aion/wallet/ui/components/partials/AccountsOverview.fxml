@@ -4,17 +4,16 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.*?>
 <?import javafx.scene.shape.Line?>
 <?import org.aion.wallet.ui.components.account.AccountCellFactory?>
-<HBox id="overviewPane" alignment="CENTER"
-      xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
-      fx:controller="org.aion.wallet.ui.components.OverviewController" fx:id="parent">
+<AnchorPane id="overviewPane"
+            xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="org.aion.wallet.ui.components.OverviewController" fx:id="parent">
 
-    <VBox alignment="CENTER" spacing="10">
+    <VBox alignment="TOP_CENTER" spacing="10">
         <Label text="Accounts overview" styleClass="tile-label" alignment="CENTER"/>
-        <Line endX="400.0" startX="-400.0" styleClass="line"/>
+        <Line endX="415.0" startX="-400.0" styleClass="line"/>
         <ScrollPane VBox.vgrow="NEVER" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED" prefViewportHeight="240">
             <ListView fx:id="accountListView" styleClass="accounts-list">
                 <cellFactory>
@@ -23,6 +22,6 @@
             </ListView>
         </ScrollPane>
     </VBox>
-
-</HBox>
     <Button AnchorPane.topAnchor="320" AnchorPane.leftAnchor="10" mnemonicParsing="false" text="Add account" onMouseClicked="#openAddAccountDialog"/>
+</AnchorPane>
+

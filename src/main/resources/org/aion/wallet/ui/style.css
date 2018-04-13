@@ -30,6 +30,6 @@
 .copyable-label, .copyable-label:focused {
     -fx-background-color: transparent;
     -fx-background-insets: 0px;
-    -fx-text-fill: white;
+    -fx-text-fill: BLACK;
     -fx-display-caret: false;
 }
