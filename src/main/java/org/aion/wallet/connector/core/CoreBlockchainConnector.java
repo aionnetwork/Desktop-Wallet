@@ -70,7 +70,7 @@ public class CoreBlockchainConnector implements BlockchainConnector {
         } catch (Exception e) {
             balance = BalanceFormatter.formatBalance(BigInteger.ZERO);
         }
-        return new AccountDTO(name, getCurrency(), publicAddress, balance);
+        return new AccountDTO(name, publicAddress, balance, getCurrency());
     }
 
     @Override
