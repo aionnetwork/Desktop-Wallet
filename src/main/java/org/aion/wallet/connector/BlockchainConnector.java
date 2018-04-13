@@ -9,6 +9,7 @@ import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
 
@@ -23,21 +24,25 @@ public interface BlockchainConnector {
         }
     }
 
-    String sendTransaction(SendRequestDTO dto) throws ValidationException;
+    AccountDTO getAccount(final String address);
+
+    String sendTransaction(final SendRequestDTO dto) throws ValidationException;
 
     List<AccountDTO> getAccounts();
 
-    TransactionDTO getTransaction(String txHash) throws NotFoundException;
+    TransactionDTO getTransaction(final String txHash) throws NotFoundException;
 
-    List<TransactionDTO> getLatestTransactions(String address);
+    List<TransactionDTO> getLatestTransactions(final String address);
 
     boolean getConnectionStatusByConnectedPeers();
 
     SyncInfoDTO getSyncInfo();
 
-    BigInteger getBalance(String address) throws Exception;
+    BigInteger getBalance(final String address) throws Exception;
 
     int getPeerCount();
 
     String getCurrency();
+
+    void close();
 }

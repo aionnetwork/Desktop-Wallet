@@ -14,7 +14,7 @@ public class AionConstants {
 
     public static final Long BLOCK_MINING_TIME_MILLIS = BLOCK_MINING_TIME_SECONDS * 1000L;
 
-    public static final Integer MAX_BLOCKS_FOR_LATEST_TRANSACTIONS_QUERY = 1000;
+    public static final Integer MAX_BLOCKS_FOR_LATEST_TRANSACTIONS_QUERY = 5000;
 
     // todo: will we be able to access this from AccountManager?
 

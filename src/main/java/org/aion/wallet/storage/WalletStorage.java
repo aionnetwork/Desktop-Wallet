@@ -21,9 +21,19 @@ public class WalletStorage {
 
     private static final String ACCOUNT_NAME_PROP = ".name";
 
+    private static final WalletStorage INST;
+
+    static {
+        try {
+            INST = new WalletStorage();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private final Properties accountProperties;
 
-    public WalletStorage() throws IOException {
+    private WalletStorage() throws IOException {
         final Path dir = Paths.get(STORAGE_DIR);
         final Path path = Paths.get(ACCOUNTS_FILE);
         if (!Files.exists(dir)) {
@@ -38,6 +48,10 @@ public class WalletStorage {
 
     }
 
+    public static WalletStorage getInstance() {
+        return INST;
+    }
+
     public void save() {
         try (final OutputStream writer = Files.newOutputStream(Paths.get(ACCOUNTS_FILE))) {
             accountProperties.store(writer, LocalDateTime.now().toString());
@@ -47,7 +61,7 @@ public class WalletStorage {
     }
 
     public String getAccountName(final String address) {
-        return Optional.ofNullable(accountProperties.get(address + ACCOUNT_NAME_PROP)).map(Object::toString).orElse(null);
+        return Optional.ofNullable(accountProperties.get(address + ACCOUNT_NAME_PROP)).map(Object::toString).orElse("");
     }
 
     public void setAccountName(final String address, final String accountName) {

@@ -27,12 +27,12 @@ public class WalletStorageTest {
     private WalletStorage walletStorage;
 
     @Before
-    public void setUp() throws Exception{
+    public void setUp() {
         dir = Paths.get(STORAGE_DIR);
         file = Paths.get(ACCOUNTS_FILE);
         assertFalse(Files.exists(dir));
         assertFalse(Files.exists(file));
-        walletStorage = new WalletStorage();
+        walletStorage = WalletStorage.getInstance();
         assertTrue(Files.exists(dir));
         assertTrue(Files.exists(file));
     }
@@ -64,14 +64,14 @@ public class WalletStorageTest {
     }
 
     @Test
-    public void saveAccountName() throws IOException {
+    public void saveAccountName() {
         assertNull(walletStorage.getAccountName(ADDRESS));
         final String name = "some_name";
         walletStorage.setAccountName(ADDRESS, name);
         assertEquals(name, walletStorage.getAccountName(ADDRESS));
         walletStorage.save();
 
-        WalletStorage newStorage = new WalletStorage();
+        WalletStorage newStorage = WalletStorage.getInstance();
         assertEquals(name, newStorage.getAccountName(ADDRESS));
 
     }

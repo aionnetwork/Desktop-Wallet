@@ -15,6 +15,7 @@ import org.aion.log.AionLoggerFactory;
 import org.aion.log.LogEnum;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.dto.AccountDTO;
+import org.aion.wallet.storage.WalletStorage;
 import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
@@ -71,6 +72,8 @@ public class HeaderPaneControls implements Initializable {
 //    private VBox contractsButton;
     @FXML
     private VBox settingsButton;
+
+    private String accountAddress;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -138,7 +141,8 @@ public class HeaderPaneControls implements Initializable {
     private void handleAccountChanged(final AccountDTO account) {
         accountBalance.setVisible(true);
         activeAccountLabel.setVisible(true);
-        activeAccount.setText(account.getPublicAddress());
+        activeAccount.setText(account.getName());
+        accountAddress = account.getPublicAddress();
         accountBalance.setText(account.getBalance() + CCY_SEPARATOR + account.getCurrency());
         UIUtils.setWidth(activeAccount);
         UIUtils.setWidth(accountBalance);
@@ -146,8 +150,8 @@ public class HeaderPaneControls implements Initializable {
 
     @Subscribe
     private void handleConnectivityStatusEvent(final TimerEvent event) {
-        final String accountAddress = activeAccount.getText();
-        if (!accountAddress.isEmpty()) {
+        final String accountName = activeAccount.getText();
+        if (!accountName.isEmpty()) {
             Optional<BigInteger> balance = Optional.empty();
             try {
                 balance = Optional.ofNullable(blockchainConnector.getBalance(accountAddress));

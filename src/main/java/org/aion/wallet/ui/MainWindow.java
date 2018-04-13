@@ -14,6 +14,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import org.aion.log.AionLoggerFactory;
 import org.aion.log.LogEnum;
+import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
 import org.aion.wallet.ui.events.WindowControlsEvent;
@@ -112,6 +113,7 @@ public class MainWindow extends Application {
 
     private void shutDown() {
         Platform.exit();
+        BlockchainConnector.getInstance().close();
         Executors.newSingleThreadExecutor().submit(() -> System.exit(0));
         timer.cancel();
         timer.purge();
