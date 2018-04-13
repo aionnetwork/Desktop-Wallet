@@ -5,6 +5,7 @@ import com.google.common.eventbus.Subscribe;
 import org.aion.api.IAionAPI;
 import org.aion.api.impl.AionAPIImpl;
 import org.aion.api.type.BlockDetails;
+import org.aion.api.type.MsgRsp;
 import org.aion.api.type.TxArgs;
 import org.aion.api.type.TxDetails;
 import org.aion.base.type.Address;
@@ -63,14 +64,15 @@ public class ApiBlockchainConnector extends BlockchainConnector {
             throw new ValidationException("Invalid transaction request data");
         }
         TxArgs txArgs = new TxArgs.TxArgsBuilder()
-                .from(new Address(dto.getFrom()))
-                .to(new Address(dto.getTo()))
+                .from(new Address(TypeConverter.toJsonHex(dto.getFrom())))
+                .to(new Address(TypeConverter.toJsonHex(dto.getTo())))
                 .value(dto.getValue())
                 .nonce(dto.getNonce())
                 .data(new ByteArrayWrapper(dto.getData()))
                 .nrgPrice(dto.getNrgPrice())
                 .nrgLimit(dto.getNrg()).createTxArgs();
-        return API.getTx().sendSignedTransaction(txArgs, new ByteArrayWrapper(accounts.get(dto.getFrom()).getPrivateKey()), dto.getPassword()).getObject();
+        final String object = API.getTx().sendSignedTransaction(txArgs, new ByteArrayWrapper(accounts.get(dto.getFrom()).getPrivateKey()), dto.getPassword()).getObject();
+        return String.valueOf(object);
     }
 
     @Override
