@@ -27,6 +27,7 @@
     -fx-text-alignment: CENTER;
     -fx-font-family: 'Open Sans Regular';
     -fx-font-size: 18px;
+    -fx-padding: 0 0 0 10;
 }
 
 .header-account-info {

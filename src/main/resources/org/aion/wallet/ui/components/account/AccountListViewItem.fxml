@@ -20,7 +20,7 @@
                 <TextField fx:id="balance" styleClass="copyable-label" editable="false"/>
             </VBox>
             <HBox prefWidth="45.0">
-                <ImageView fx:id="accountSelectButton" fitHeight="45.0" fitWidth="40.0"
+                <ImageView fx:id="accountSelectButton" fitHeight="30.0" fitWidth="30.0"
                            pickOnBounds="true" preserveRatio="true"
                            styleClass="clickable"
                            onMouseClicked="#onDisconnectedClicked">
