@@ -4,10 +4,7 @@ import com.google.common.eventbus.Subscribe;
 import com.google.common.eventbus.Subscribe;
 import org.aion.api.IAionAPI;
 import org.aion.api.impl.AionAPIImpl;
-import org.aion.api.type.BlockDetails;
-import org.aion.api.type.MsgRsp;
-import org.aion.api.type.TxArgs;
-import org.aion.api.type.TxDetails;
+import org.aion.api.type.*;
 import org.aion.base.type.Address;
 import org.aion.base.util.ByteArrayWrapper;
 import org.aion.base.util.TypeConverter;
@@ -71,8 +68,13 @@ public class ApiBlockchainConnector extends BlockchainConnector {
                 .data(new ByteArrayWrapper(dto.getData()))
                 .nrgPrice(dto.getNrgPrice())
                 .nrgLimit(dto.getNrg()).createTxArgs();
-        final String object = API.getTx().sendSignedTransaction(txArgs, new ByteArrayWrapper(accounts.get(dto.getFrom()).getPrivateKey()), dto.getPassword()).getObject();
-        return String.valueOf(object);
+        final MsgRsp response = API.getTx().sendSignedTransaction(
+                txArgs,
+                new ByteArrayWrapper(accounts.get(dto.getFrom()).getPrivateKey()),
+                dto.getPassword()
+        ).getObject();
+
+        return String.valueOf(response.getTxHash());
     }
 
     @Override
@@ -104,7 +106,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     public SyncInfoDTO getSyncInfo() {
         SyncInfoDTO syncInfoDTO = new SyncInfoDTO();
         syncInfoDTO.setChainBestBlkNumber(API.getChain().blockNumber().getObject());
-        syncInfoDTO.setNetworkBestBlkNumber(API.getChain().blockNumber().getObject());
+        syncInfoDTO.setNetworkBestBlkNumber(((SyncInfo) API.getNet().syncInfo().getObject()).getNetworkBestBlock());
         return syncInfoDTO;
     }
 

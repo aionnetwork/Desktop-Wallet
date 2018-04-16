@@ -7,6 +7,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import org.aion.base.util.TypeConverter;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.util.UIUtils;
@@ -66,8 +67,7 @@ public class AccountCellItem extends ListCell<AccountDTO> {
             name.setContextMenu(contextMenu);
             edit.setOnAction(event -> name.setEditable(true));
 
-
-            publicAddress.setText(item.getPublicAddress());
+            publicAddress.setText(TypeConverter.toJsonHex(item.getPublicAddress()));
             balance.setText(item.getBalance() + item.getCurrency());
             UIUtils.setWidth(balance);
 

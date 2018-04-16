@@ -63,7 +63,7 @@ public class SendController implements Initializable {
     }
 
     private void setDefaults() {
-        fromLabel.setText("Please select an account!");
+        fromLabel.setText(account == null ? "Please select an account!" : account.getPublicAddress());
         nrgInput.setText(AionConstants.DEFAULT_NRG);
         nrgPriceInput.setText(AionConstants.DEFAULT_NRG_PRICE);
 
