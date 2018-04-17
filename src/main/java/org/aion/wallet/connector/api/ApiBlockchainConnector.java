@@ -1,7 +1,6 @@
 package org.aion.wallet.connector.api;
 
 import com.google.common.eventbus.Subscribe;
-import com.google.common.eventbus.Subscribe;
 import org.aion.api.IAionAPI;
 import org.aion.api.impl.AionAPIImpl;
 import org.aion.api.type.*;
@@ -24,7 +23,6 @@ import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.util.AionConstants;
 import org.aion.wallet.util.BalanceFormatter;
-import org.aion.wallet.util.AionConstants;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -36,12 +34,10 @@ import java.util.stream.Collectors;
 public class ApiBlockchainConnector extends BlockchainConnector {
 
     private final static IAionAPI API = AionAPIImpl.inst();
-
+    private final WalletStorage walletStorage = WalletStorage.getInstance();
     private Map<String, ExtendedAccountDTO> accounts = new HashMap<>();
 
-    private final WalletStorage walletStorage = WalletStorage.getInstance();
-
-    public ApiBlockchainConnector(){
+    public ApiBlockchainConnector() {
         if (API.isConnected()) {
             return;
         }
