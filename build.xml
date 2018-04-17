@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project basedir="." default="build" name="aion boot"
-         xmlns:if="ant:if" xmlns:unless="ant:unless">
+<project basedir="." default="build" name="aion ui">
     <property name="parent.mod" value="../mod"/>
+    <property name="project.name" value="aion_ui"/>
     <property name="dir.lib" value="./lib"/>
     <property name="dir.mod" value="./mod"/>
     <property name="dir.pack" value="./pack"/>
+    <property name="dir.script" value="./scripts"/>
     <property name="dir.main" value="./src/main"/>
     <property name="src.main" value="${dir.main}/java"/>
     <property name="res.main" value="${dir.main}/resources"/>
@@ -21,7 +22,6 @@
 
     <path id="classpath.test">
     </path>
-
 
     <target name="clean">
         <delete dir="${out.main}" includeEmptyDirs="true" includes="**/*/"/>
@@ -74,7 +74,7 @@
 
         <mkdir dir="${dir.mod}/updated"/>
         <copy todir="${dir.mod}/updated">
-            <fileset dir="${parent.mod}" includes="mod*.jar" />
+            <fileset dir="${parent.mod}" includes="mod*.jar"/>
         </copy>
         <javac
                 debug="${compile.debug}"
@@ -111,7 +111,6 @@
         <condition property="parent.exists">
             <available file="${parent.mod}" type="dir"/>
         </condition>
-
         <javac
                 debug="${compile.debug}"
                 debuglevel="source,lines,vars"
@@ -134,10 +133,34 @@
                 destfile="aion_ui.jar"
                 filesetmanifest="mergewithoutmain"
                 basedir="${out.main}"
-        />
+                excludes="native/">
+            <manifest>
+                <attribute name="Main-Class" value="org.aion.wallet.WalletApplication"/>
+            </manifest>
+        </jar>
         <move includeemptydirs="false" todir="${dir.pack}">
             <file file="aion_ui.jar"/>
         </move>
+    </target>
+
+    <target name="pack" depends="build_standalone">
+        <mkdir dir="${dir.pack}"/>
+        <delete file="${dir.pack}/aion_ui.tar.gz"/>
+        <tar destfile="${dir.pack}/aion_ui.tar.gz" longfile="gnu" compression="gzip">
+            <tarfileset dir="${dir.lib}" filemode="755" prefix="${project.name}/lib">
+                <include name="*.jar"/>
+            </tarfileset>
+            <tarfileset dir="${dir.mod}" filemode="755" prefix="${project.name}/mod">
+                <include name="*.jar"/>
+            </tarfileset>
+            <tarfileset dir="${dir.pack}" filemode="755" prefix="${project.name}/mod">
+                <include name="aion_ui.jar"/>
+            </tarfileset>
+            <tarfileset dir="${res.main}/native" filemode="755" prefix="${project.name}/native"/>
+            <tarfileset dir="${dir.script}" filemode="755" prefix="${project.name}">
+                <include name="aion_ui.sh"/>
+            </tarfileset>
+        </tar>
     </target>
 
 </project>
