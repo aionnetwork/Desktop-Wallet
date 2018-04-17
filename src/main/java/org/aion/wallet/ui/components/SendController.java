@@ -63,7 +63,7 @@ public class SendController implements Initializable {
     }
 
     private void setDefaults() {
-        fromLabel.setText("Please select an account!");
+        fromLabel.setText(account == null ? "Please select an account!" : account.getPublicAddress());
         nrgInput.setText(AionConstants.DEFAULT_NRG);
         nrgPriceInput.setText(AionConstants.DEFAULT_NRG_PRICE);
 
@@ -73,18 +73,19 @@ public class SendController implements Initializable {
     }
 
     public void onSendAionClicked() {
-        if (account == null) {
-            txStatusLabel.setText("You must select an account before sending Aion!");
-            return;
-        }
-        try {
-            final String txHash = sendAion();
-            this.setDefaults();
-            this.displayTxStatus(txHash);
-        } catch (ValidationException e) {
-            txStatusLabel.setText(e.getMessage() != null ? e.getMessage() : "An error has occured");
-        }
-
+        Platform.runLater(() -> {
+            if (account == null) {
+                txStatusLabel.setText("You must select an account before sending Aion!");
+                return;
+            }
+            try {
+                final String txHash = sendAion();
+                setDefaults();
+                displayTxStatus(txHash);
+            } catch (ValidationException e) {
+                txStatusLabel.setText(e.getMessage() != null ? e.getMessage() : "An error has occured");
+            }
+        });
     }
 
     private String sendAion() throws ValidationException {

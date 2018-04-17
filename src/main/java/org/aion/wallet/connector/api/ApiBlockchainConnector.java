@@ -1,19 +1,22 @@
 package org.aion.wallet.connector.api;
 
 import com.google.common.eventbus.Subscribe;
+import com.google.common.eventbus.Subscribe;
 import org.aion.api.IAionAPI;
 import org.aion.api.impl.AionAPIImpl;
-import org.aion.api.type.BlockDetails;
-import org.aion.api.type.TxArgs;
-import org.aion.api.type.TxDetails;
+import org.aion.api.type.*;
 import org.aion.base.type.Address;
 import org.aion.base.util.ByteArrayWrapper;
 import org.aion.base.util.TypeConverter;
+import org.aion.crypto.ECKey;
+import org.aion.mcf.account.KeystoreFormat;
+import org.aion.mcf.account.KeystoreItem;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.connector.dto.SendRequestDTO;
 import org.aion.wallet.connector.dto.SyncInfoDTO;
 import org.aion.wallet.connector.dto.TransactionDTO;
 import org.aion.wallet.dto.AccountDTO;
+import org.aion.wallet.dto.ExtendedAccountDTO;
 import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.storage.WalletStorage;
@@ -21,15 +24,20 @@ import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.util.AionConstants;
 import org.aion.wallet.util.BalanceFormatter;
+import org.aion.wallet.util.AionConstants;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
-public class ApiBlockchainConnector implements BlockchainConnector {
+public class ApiBlockchainConnector extends BlockchainConnector {
 
     private final static IAionAPI API = AionAPIImpl.inst();
+
+    private Map<String, ExtendedAccountDTO> accounts = new HashMap<>();
 
     private final WalletStorage walletStorage = WalletStorage.getInstance();
 
@@ -53,20 +61,25 @@ public class ApiBlockchainConnector implements BlockchainConnector {
             throw new ValidationException("Invalid transaction request data");
         }
         TxArgs txArgs = new TxArgs.TxArgsBuilder()
-                .from(new Address(dto.getFrom()))
-                .to(new Address(dto.getTo()))
+                .from(new Address(TypeConverter.toJsonHex(dto.getFrom())))
+                .to(new Address(TypeConverter.toJsonHex(dto.getTo())))
                 .value(dto.getValue())
                 .nonce(dto.getNonce())
                 .data(new ByteArrayWrapper(dto.getData()))
                 .nrgPrice(dto.getNrgPrice())
                 .nrgLimit(dto.getNrg()).createTxArgs();
-        byte[] privateKey = null;
-        return API.getTx().sendSignedTransaction(txArgs, new ByteArrayWrapper(privateKey), dto.getPassword()).getObject();
+        final MsgRsp response = API.getTx().sendSignedTransaction(
+                txArgs,
+                new ByteArrayWrapper(accounts.get(dto.getFrom()).getPrivateKey()),
+                dto.getPassword()
+        ).getObject();
+
+        return String.valueOf(response.getTxHash());
     }
 
     @Override
     public List<AccountDTO> getAccounts() {
-        return ((List<Address>) API.getWallet().getAccounts().getObject()).stream().map(this::convertToAccountDto).collect(Collectors.toList());
+        return new ArrayList<>(accounts.values());
     }
 
     private AccountDTO convertToAccountDto(Address address) {
@@ -93,7 +106,7 @@ public class ApiBlockchainConnector implements BlockchainConnector {
     public SyncInfoDTO getSyncInfo() {
         SyncInfoDTO syncInfoDTO = new SyncInfoDTO();
         syncInfoDTO.setChainBestBlkNumber(API.getChain().blockNumber().getObject());
-        syncInfoDTO.setNetworkBestBlkNumber(API.getChain().blockNumber().getObject());
+        syncInfoDTO.setNetworkBestBlkNumber(((SyncInfo) API.getNet().syncInfo().getObject()).getNetworkBestBlock());
         return syncInfoDTO;
     }
 
@@ -113,6 +126,27 @@ public class ApiBlockchainConnector implements BlockchainConnector {
     }
 
     @Override
+    public AccountDTO addKeystoreUTCFile(byte[] file, String password) throws ValidationException {
+        try {
+            ECKey key = KeystoreFormat.fromKeystore(file, password);
+            KeystoreItem keystoreItem = KeystoreItem.parse(file);
+            final String address = keystoreItem.getAddress();
+            final String name = walletStorage.getAccountName(address);
+            final String balance = BalanceFormatter.formatBalance(getBalance(address));
+            ExtendedAccountDTO account = new ExtendedAccountDTO(name, address, balance, getCurrency());
+            account.setPrivateKey(key.getPrivKeyBytes());
+            accounts.put(account.getPublicAddress(), account);
+            return account;
+        } catch (Exception e) {
+            throw new ValidationException("Unsupported key type");
+        }
+    }
+
+    private byte[] getPrivateKeyFromUTCKeystoreFile(byte[] key, String password) {
+        return KeystoreFormat.fromKeystore(key, password).getPrivKeyBytes();
+    }
+
+    @Override
     public void close() {
         walletStorage.save();
         API.destroyApi();
@@ -126,6 +160,7 @@ public class ApiBlockchainConnector implements BlockchainConnector {
             System.out.println(name);
         }
     }
+
 
     private List<TransactionDTO> getTransactions(final String addr, long nrOfBlocksToCheck) {
         Long latest = API.getChain().blockNumber().getObject();

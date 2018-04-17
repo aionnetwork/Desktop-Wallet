@@ -87,7 +87,7 @@
                 includes="src/main/java/**/*.java,module-info.java"
         >
             <modulepath>
-                <fileset dir="${dir.lib}" excludes="*AionApi*.jar" includes="*.jar"/>
+                <fileset dir="${dir.lib}" excludes="*AionApi*.jar,libRlp.jar" includes="*.jar"/>
                 <fileset dir="${dir.mod}" includes="*updated/*.jar"/>
             </modulepath>
         </javac>
