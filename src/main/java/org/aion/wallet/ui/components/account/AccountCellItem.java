@@ -7,8 +7,8 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import org.aion.base.util.TypeConverter;
 import javafx.scene.input.MouseEvent;
+import org.aion.base.util.TypeConverter;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.util.UIUtils;
@@ -17,6 +17,11 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class AccountCellItem extends ListCell<AccountDTO> {
+
+    private static final String ICON_CONNECTED = "/org/aion/wallet/ui/components/icons/icon-connected-50.png";
+
+    private static final String ICON_DISCONNECTED = "/org/aion/wallet/ui/components/icons/icon-disconnected-50.png";
+
     @FXML
     private TextField name;
     @FXML
@@ -88,10 +93,10 @@ public class AccountCellItem extends ListCell<AccountDTO> {
             UIUtils.setWidth(balance);
 
             if (item.isActive()) {
-                final InputStream resource = getClass().getResourceAsStream("../icons/icon-connected-50.png");
+                final InputStream resource = getClass().getResourceAsStream(ICON_CONNECTED);
                 accountSelectButton.setImage(new Image(resource));
             } else {
-                final InputStream resource = getClass().getResourceAsStream("../icons/icon-disconnected-50.png");
+                final InputStream resource = getClass().getResourceAsStream(ICON_DISCONNECTED);
                 accountSelectButton.setImage(new Image(resource));
             }
 
