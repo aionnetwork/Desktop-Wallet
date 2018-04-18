@@ -8,6 +8,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import org.aion.base.util.TypeConverter;
+import javafx.scene.input.MouseEvent;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.util.UIUtils;
@@ -24,6 +25,8 @@ public class AccountCellItem extends ListCell<AccountDTO> {
     private TextField balance;
     @FXML
     private ImageView accountSelectButton;
+    @FXML
+    private ImageView enterNameForSave;
 
     public AccountCellItem() {
         loadFXML();
@@ -37,6 +40,7 @@ public class AccountCellItem extends ListCell<AccountDTO> {
             loader.setRoot(this);
             loader.load();
             name.setOnKeyPressed(this::submitName);
+            name.setOnMouseExited(this::submitName);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -49,6 +53,18 @@ public class AccountCellItem extends ListCell<AccountDTO> {
             accountDTO.setName(name.getText());
             EventPublisher.fireAccountChanged(accountDTO);
             updateItem(accountDTO, false);
+            enterNameForSave.setVisible(false);
+            accountDTO.setActive(true);
+            updateItem(accountDTO, false);
+        }
+    }
+
+    private void submitName(MouseEvent event) {
+        if(name.getText() != null && getItem() != null && getItem().getName() != null
+        && name.getText().equals(getItem().getName())) {
+            enterNameForSave.setVisible(false);
+            name.getStyleClass().clear();
+            name.getStyleClass().add("name-input-fields");
         }
     }
 
@@ -85,5 +101,12 @@ public class AccountCellItem extends ListCell<AccountDTO> {
 
     public void onDisconnectedClicked() {
         EventPublisher.fireAccountChanged(this.getItem());
+    }
+
+    public void onNameFieldClicked() {
+        name.setEditable(true);
+        name.getStyleClass().clear();
+        name.getStyleClass().add("name-input-fields-selected");
+        enterNameForSave.setVisible(true);
     }
 }
