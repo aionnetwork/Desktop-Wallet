@@ -6,6 +6,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import org.aion.base.util.TypeConverter;
 import org.aion.wallet.connector.BlockchainConnector;
@@ -17,6 +18,7 @@ import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.util.AionConstants;
 import org.aion.wallet.util.BalanceFormatter;
+import org.aion.wallet.util.UIUtils;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -30,8 +32,6 @@ public class SendController implements Initializable {
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
 
     @FXML
-    private Label fromLabel;
-    @FXML
     private PasswordField passwordInput;
     @FXML
     private TextField toInput;
@@ -43,6 +43,14 @@ public class SendController implements Initializable {
     private TextField valueInput;
     @FXML
     private Label txStatusLabel;
+    @FXML
+    private TextArea accountAddress;
+    @FXML
+    private TextField accountBalance;
+    @FXML
+    private TextField equivalentEUR;
+    @FXML
+    private TextField equivalentUSD;
 
     private AccountDTO account;
 
@@ -55,7 +63,20 @@ public class SendController implements Initializable {
     @Subscribe
     private void handleAccountChanged(AccountDTO account) {
         this.account = account;
-        fromLabel.setText("From: " + account.getName());
+
+        accountAddress.setText(account.getPublicAddress());
+
+        accountBalance.setVisible(true);
+        accountBalance.setText(account.getBalance() + " " + AionConstants.CCY);
+        UIUtils.setWidth(accountBalance);
+
+        equivalentEUR.setVisible(true);
+        equivalentEUR.setText(Double.parseDouble(account.getBalance()) * AionConstants.AION_TO_EUR + " " + AionConstants.EUR_CCY);
+        UIUtils.setWidth(equivalentEUR);
+
+        equivalentUSD.setVisible(true);
+        equivalentUSD.setText(Double.parseDouble(account.getBalance()) * AionConstants.AION_TO_USD + " " + AionConstants.USD_CCY);
+        UIUtils.setWidth(equivalentUSD);
     }
 
     private void registerEventBusConsumer() {
@@ -63,7 +84,6 @@ public class SendController implements Initializable {
     }
 
     private void setDefaults() {
-        fromLabel.setText(account == null ? "Please select an account!" : account.getPublicAddress());
         nrgInput.setText(AionConstants.DEFAULT_NRG);
         nrgPriceInput.setText(AionConstants.DEFAULT_NRG_PRICE);
 

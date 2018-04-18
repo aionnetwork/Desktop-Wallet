@@ -19,4 +19,12 @@ public class AionConstants {
     // todo: will we be able to access this from AccountManager?
 
     public static final Integer DEFAULT_WALLET_UNLOCK_DURATION = 1000;
+
+    public static final String EUR_CCY = "EUR";
+
+    public static final String USD_CCY = "USD";
+
+    public static final double AION_TO_EUR = 2.46;
+
+    public static final double AION_TO_USD = 3.05;
 }
