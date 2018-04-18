@@ -53,3 +53,14 @@
 .line{
     -fx-stroke: #40bded;
 }
+
+.header-text {
+    -fx-font-family: 'Open Sans Bold';
+    -fx-font-size: 18px;
+}
+
+.paragraph-text {
+    -fx-font-family: 'Open Sans Regular';
+    -fx-font-size: 16px;
+}
+
