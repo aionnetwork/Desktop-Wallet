@@ -5,10 +5,11 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.Popup;
-import org.aion.mcf.account.Keystore;
+import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
 
@@ -22,6 +23,9 @@ public class AddAccountDialog {
     private ImportAccountDialog importAccountDialog = new ImportAccountDialog();
 
     @FXML
+    private TextField newAccountName;
+
+    @FXML
     private PasswordField newPassword;
 
     @FXML
@@ -31,11 +35,12 @@ public class AddAccountDialog {
     private Label validationError;
 
     private final Popup popup = new Popup();
+    private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
 
     public void createAccount() {
         resetValidation();
         if (validateFields()) {
-            Keystore.create(newPassword.getText());
+            blockchainConnector.createAccount(newPassword.getText(), newAccountName.getText());
             EventBusFactory.getBus(HeaderPaneButtonEvent.ID).post(new HeaderPaneButtonEvent(HeaderPaneButtonEvent.Type.OVERVIEW));
         }
         else {
