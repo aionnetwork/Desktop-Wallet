@@ -19,7 +19,7 @@ import org.aion.wallet.storage.WalletStorage;
 import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.util.AionConstants;
-import org.aion.wallet.util.BalanceFormatter;
+import org.aion.wallet.util.BalanceUtils;
 import org.aion.zero.impl.types.AionBlock;
 import org.aion.zero.types.AionTransaction;
 
@@ -66,9 +66,9 @@ public class CoreBlockchainConnector extends BlockchainConnector {
         final String name = walletStorage.getAccountName(publicAddress);
         String balance;
         try {
-            balance = BalanceFormatter.formatBalance(getBalance(publicAddress));
+            balance = BalanceUtils.formatBalance(getBalance(publicAddress));
         } catch (Exception e) {
-            balance = BalanceFormatter.formatBalance(BigInteger.ZERO);
+            balance = BalanceUtils.formatBalance(BigInteger.ZERO);
         }
         return new AccountDTO(name, publicAddress, balance, getCurrency());
     }

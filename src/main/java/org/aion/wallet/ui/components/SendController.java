@@ -17,7 +17,7 @@ import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.util.AionConstants;
-import org.aion.wallet.util.BalanceFormatter;
+import org.aion.wallet.util.BalanceUtils;
 import org.aion.wallet.util.UIUtils;
 
 import java.net.URL;
@@ -134,7 +134,7 @@ public class SendController implements Initializable {
         dto.setPassword(passwordInput.getText());
         dto.setNrg(TypeConverter.StringNumberAsBigInt(nrgInput.getText()).longValue());
         dto.setNrgPrice(TypeConverter.StringNumberAsBigInt(nrgPriceInput.getText()).longValue());
-        dto.setValue(BalanceFormatter.extractBalance(valueInput.getText()));
+        dto.setValue(BalanceUtils.extractBalance(valueInput.getText()));
         return dto;
     }
 

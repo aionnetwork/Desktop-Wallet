@@ -6,7 +6,7 @@ public class AccountDTO {
     private final String currency;
     private final String publicAddress;
     private final String balance;
-    private String name;
+    private String name; //TODO this has to be BigInteger
     private boolean active;
 
     public AccountDTO(final String name, final String publicAddress, final String balance, final String currency) {
