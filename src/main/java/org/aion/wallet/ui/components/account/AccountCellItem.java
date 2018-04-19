@@ -89,7 +89,7 @@ public class AccountCellItem extends ListCell<AccountDTO> {
             name.setContextMenu(contextMenu);
             edit.setOnAction(event -> name.setEditable(true));
 
-            publicAddress.setText(TypeConverter.toJsonHex(item.getPublicAddress()));
+            publicAddress.setText(item.getPublicAddress());
             balance.setText(item.getBalance() + BalanceUtils.CCY_SEPARATOR + item.getCurrency());
             UIUtils.setWidth(balance);
 

@@ -137,8 +137,8 @@ public class ApiBlockchainConnector extends BlockchainConnector {
             KeystoreItem keystoreItem = KeystoreItem.parse(file);
             final String address = keystoreItem.getAddress();
             return createExtendedAccountDTO(address, key.getPrivKeyBytes());
-        } catch (Exception e) {
-            throw new ValidationException("Unsupported key type");
+        } catch (final Exception e) {
+            throw new ValidationException("Could not open Keystore File");
         }
     }
 

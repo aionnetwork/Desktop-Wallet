@@ -33,6 +33,9 @@ public class ImportAccountDialog implements Initializable {
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
 
     @FXML
+    public TextField privateKeyInput;
+
+    @FXML
     private PasswordField privateKeyPassword;
 
     @FXML
@@ -70,14 +73,23 @@ public class ImportAccountDialog implements Initializable {
         keystoreFile = Files.readAllBytes(file.toPath());
     }
 
-    public void createAccount(MouseEvent mouseEvent) throws ValidationException {
+    public void importAccount(MouseEvent mouseEvent) {
         if (importKeystoreView.isVisible()) {
-            //todo: add validation
             String password = keystorePassword.getText();
-            AccountDTO account = blockchainConnector.addKeystoreUTCFile(keystoreFile, password);
-            EventPublisher.fireAccountChanged(account);
+            if (!password.isEmpty() && keystoreFile != null) {
+                AccountDTO account;
+                try {
+                    account = blockchainConnector.addKeystoreUTCFile(keystoreFile, password);
+                } catch (final ValidationException e) {
+                    e.printStackTrace();
+                    return;
+                }
+                EventPublisher.fireAccountChanged(account);
+            }
         } else {
             //todo: import private key
+            String password = privateKeyPassword.getText();
+            String privateKey = privateKeyInput.getText();
         }
         this.close(mouseEvent);
     }
