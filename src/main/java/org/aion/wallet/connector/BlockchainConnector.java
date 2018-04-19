@@ -42,7 +42,7 @@ public abstract class BlockchainConnector {
 
     public abstract SyncInfoDTO getSyncInfo();
 
-    public abstract BigInteger getBalance(final String address) throws Exception;
+    public abstract BigInteger getBalance(final String address);
 
     public abstract AccountDTO addKeystoreUTCFile(final byte[] file, final String password) throws ValidationException;
 

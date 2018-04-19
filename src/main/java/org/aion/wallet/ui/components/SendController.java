@@ -98,15 +98,11 @@ public class SendController implements Initializable {
     }
 
     private void refreshAccountBalance() {
-        if(this.account == null) {
+        if (this.account == null) {
             return;
         }
-        try {
-            this.account.setBalance(BalanceUtils.formatBalance(blockchainConnector.getBalance(this.account.getPublicAddress())));
-            setAccountBalanceText();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        this.account.setBalance(BalanceUtils.formatBalance(blockchainConnector.getBalance(this.account.getPublicAddress())));
+        setAccountBalanceText();
     }
 
     private void registerEventBusConsumer() {

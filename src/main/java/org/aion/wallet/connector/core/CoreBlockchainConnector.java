@@ -66,13 +66,7 @@ public class CoreBlockchainConnector extends BlockchainConnector {
 
     public AccountDTO getAccount(final String publicAddress) {
         final String name = walletStorage.getAccountName(publicAddress);
-        String balance;
-        try {
-            balance = BalanceUtils.formatBalance(getBalance(publicAddress));
-        } catch (Exception e) {
-            balance = BalanceUtils.formatBalance(BigInteger.ZERO);
-        }
-        return new AccountDTO(name, publicAddress, balance, getCurrency());
+        return new AccountDTO(name, publicAddress, BalanceUtils.formatBalance(getBalance(publicAddress)), getCurrency());
     }
 
     @Override
@@ -100,8 +94,13 @@ public class CoreBlockchainConnector extends BlockchainConnector {
     }
 
     @Override
-    public BigInteger getBalance(String address) {
-        return API.getBalance(address);
+    public BigInteger getBalance(String address){
+        try {
+            return API.getBalance(address);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return BigInteger.ZERO;
+        }
     }
 
     @Override
