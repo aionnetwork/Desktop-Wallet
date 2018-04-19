@@ -1,5 +1,7 @@
 package org.aion.wallet.dto;
 
+import org.aion.base.util.TypeConverter;
+
 import java.util.Objects;
 
 public class AccountDTO {
@@ -11,7 +13,7 @@ public class AccountDTO {
 
     public AccountDTO(final String name, final String publicAddress, final String balance, final String currency) {
         this.name = name;
-        this.publicAddress = publicAddress;
+        this.publicAddress = TypeConverter.toJsonHex(publicAddress);
         this.balance = balance;
         this.currency = currency;
     }
