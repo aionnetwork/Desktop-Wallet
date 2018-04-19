@@ -13,7 +13,7 @@ public class BalanceUtils {
 
     private static final int PRECISION = 18;
 
-    private static final BigDecimal WEI_MULTIPLIER = BigDecimal.valueOf(1000000000000000000L);
+    private static final BigDecimal WEI_MULTIPLIER = BigDecimal.valueOf(1E18);
 
     public static String formatBalance(final BigInteger balance) {
         if (BigInteger.ZERO.equals(balance)) {

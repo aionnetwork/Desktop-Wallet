@@ -3,7 +3,6 @@ package org.aion.wallet.connector.dto;
 import org.aion.base.util.ByteArrayWrapper;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.util.AddressUtils;
-import org.aion.wallet.util.BalanceUtils;
 import org.aion.wallet.util.ConfigUtils;
 
 import java.math.BigInteger;
@@ -13,7 +12,7 @@ public class SendRequestDTO implements UnlockableAccount {
     private String password;
     private String to;
     private Long nrg;
-    private Long nrgPrice;
+    private BigInteger nrgPrice;
     private BigInteger value;
 
     @Override
@@ -54,10 +53,10 @@ public class SendRequestDTO implements UnlockableAccount {
     }
 
     public Long getNrgPrice() {
-        return nrgPrice;
+        return nrgPrice.longValue();
     }
 
-    public void setNrgPrice(Long nrgPrice) {
+    public void setNrgPrice(BigInteger nrgPrice) {
         this.nrgPrice = nrgPrice;
     }
 
@@ -70,7 +69,7 @@ public class SendRequestDTO implements UnlockableAccount {
     }
 
     public BigInteger estimateValue() {
-        return value.add(BalanceUtils.extractBalance(nrgPrice + "").multiply(BigInteger.valueOf(nrg)));
+        return value.add(nrgPrice.multiply(BigInteger.valueOf(nrg)));
     }
 
     public byte[] getData() {
@@ -94,7 +93,7 @@ public class SendRequestDTO implements UnlockableAccount {
         if (nrg == null || nrg <= 0) {
             throw new ValidationException("Invalid nrg value");
         }
-        if (nrgPrice == null || nrgPrice <= 0) {
+        if (nrgPrice == null || nrgPrice.longValue() <= 0) {
             throw new ValidationException("Invalid nrg price");
         }
         if(ConfigUtils.isEmbedded() && (password == null || password.equals(""))) {

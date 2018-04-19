@@ -40,7 +40,7 @@ public abstract class BlockchainConnector {
         if (dto == null || !dto.validate()) {
             throw new ValidationException("Invalid transaction request data");
         }
-        if (dto.estimateValue().compareTo(getBalance(dto.getFrom())) <= 0) {
+        if (dto.estimateValue().compareTo(getBalance(dto.getFrom())) >= 0) {
             throw new ValidationException("Insufficient funds");
         }
         return sendTransactionInternal(dto);

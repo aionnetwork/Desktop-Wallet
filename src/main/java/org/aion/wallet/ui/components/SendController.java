@@ -62,7 +62,7 @@ public class SendController extends AbstractController {
     }
 
     @Subscribe
-    private void handleAccountChanged(AccountDTO account) {
+    private void handleAccountChanged(final AccountDTO account) {
         this.account = account;
 
         accountAddress.setText(account.getPublicAddress());
@@ -71,16 +71,20 @@ public class SendController extends AbstractController {
         setAccountBalanceText();
 
         equivalentEUR.setVisible(true);
-        equivalentEUR.setText(Double.parseDouble(account.getBalance()) * AionConstants.AION_TO_EUR + " " + AionConstants.EUR_CCY);
+        equivalentEUR.setText(convertBalanceToCcy(account, AionConstants.AION_TO_EUR) + " " + AionConstants.EUR_CCY);
         UIUtils.setWidth(equivalentEUR);
 
         equivalentUSD.setVisible(true);
-        equivalentUSD.setText(Double.parseDouble(account.getBalance()) * AionConstants.AION_TO_USD + " " + AionConstants.USD_CCY);
+        equivalentUSD.setText(convertBalanceToCcy(account, AionConstants.AION_TO_USD) + " " + AionConstants.USD_CCY);
         UIUtils.setWidth(equivalentUSD);
     }
 
+    private double convertBalanceToCcy(final AccountDTO account, final double exchangeRate) {
+        return Double.parseDouble(account.getBalance()) * exchangeRate;
+    }
+
     @Subscribe
-    private void handleHeaderPaneButtonEvent(HeaderPaneButtonEvent event) {
+    private void handleHeaderPaneButtonEvent(final HeaderPaneButtonEvent event) {
         if (event.getType().equals(HeaderPaneButtonEvent.Type.SEND)) {
             refreshAccountBalance();
         }
@@ -125,7 +129,7 @@ public class SendController extends AbstractController {
         }
         txStatusLabel.setText("Sending transaction...");
 
-        Task<String> sendTransactionTask = getApiTask(this::sendTransaction, dto);
+        final Task<String> sendTransactionTask = getApiTask(this::sendTransaction, dto);
 
         final EventHandler<WorkerStateEvent> successHandler = evt -> {
             setDefaults();
@@ -134,7 +138,7 @@ public class SendController extends AbstractController {
         runApiTask(
                 sendTransactionTask,
                 successHandler,
-                evt -> txStatusLabel.setText("An error has occurred" + sendTransactionTask.getException().getMessage()),
+                evt -> txStatusLabel.setText("An error has occurred: " + sendTransactionTask.getException().getMessage()),
                 getEmptyEvent()
         );
     }
@@ -148,25 +152,29 @@ public class SendController extends AbstractController {
     }
 
     private SendRequestDTO mapFormData() throws ValidationException {
-        SendRequestDTO dto = new SendRequestDTO();
+        final SendRequestDTO dto = new SendRequestDTO();
         dto.setFrom(account.getPublicAddress());
         dto.setTo(toInput.getText());
         dto.setPassword(passwordInput.getText());
+
         try {
             dto.setNrg(TypeConverter.StringNumberAsBigInt(nrgInput.getText()).longValue());
         } catch (NumberFormatException e) {
             throw new ValidationException("Nrg must be a valid number");
         }
+
         try {
-            dto.setNrgPrice(BalanceUtils.extractBalance(nrgPriceInput.getText()).longValue());
+            dto.setNrgPrice(TypeConverter.StringNumberAsBigInt(nrgPriceInput.getText()));
         } catch (NumberFormatException e) {
             throw new ValidationException("Nrg price must be a valid number");
         }
+
         try {
             dto.setValue(BalanceUtils.extractBalance(valueInput.getText()));
         } catch (NumberFormatException e) {
             throw new ValidationException("Value must be a number");
         }
+
         return dto;
     }
 
