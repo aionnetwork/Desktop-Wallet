@@ -8,27 +8,31 @@ import org.aion.wallet.connector.dto.TransactionDTO;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
+import org.aion.wallet.storage.WalletStorage;
 import org.aion.wallet.util.ConfigUtils;
 
 import java.math.BigInteger;
 import java.util.List;
 
 public abstract class BlockchainConnector {
-    private static BlockchainConnector connector;
+
+    private static BlockchainConnector INST;
+
+    private final WalletStorage walletStorage = WalletStorage.getInstance();
 
     public static BlockchainConnector getInstance() {
-        if (connector != null) {
-            return connector;
+        if (INST != null) {
+            return INST;
         }
         if (ConfigUtils.isEmbedded()) {
-            connector = new CoreBlockchainConnector();
+            INST = new CoreBlockchainConnector();
         } else {
-            connector = new ApiBlockchainConnector();
+            INST = new ApiBlockchainConnector();
         }
-        return connector;
+        return INST;
     }
 
-    public abstract AccountDTO createAccount(final String password, final String name);
+    public abstract void createAccount(final String password, final String name);
 
     public abstract AccountDTO getAccount(final String address);
 
@@ -41,6 +45,7 @@ public abstract class BlockchainConnector {
         }
         return sendTransactionInternal(dto);
     }
+
     protected abstract String sendTransactionInternal(final SendRequestDTO dto) throws ValidationException;
 
     public abstract List<AccountDTO> getAccounts();
@@ -62,5 +67,15 @@ public abstract class BlockchainConnector {
     // todo: Add balances with different currencies in AccountDTO
     public abstract String getCurrency();
 
-    public abstract void close();
+    public void close() {
+        walletStorage.save();
+    }
+
+    protected String getStoredAccountName(final String publicAddress) {
+        return walletStorage.getAccountName(publicAddress);
+    }
+
+    protected void storeAccountName(final String address, final String name) {
+        walletStorage.setAccountName(address, name);
+    }
 }

@@ -15,7 +15,6 @@ import org.aion.wallet.connector.dto.UnlockableAccount;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
-import org.aion.wallet.storage.WalletStorage;
 import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.util.AionConstants;
@@ -32,20 +31,16 @@ public class CoreBlockchainConnector extends BlockchainConnector {
 
     private final static WalletApi API = new WalletApi();
 
-    private final WalletStorage walletStorage = WalletStorage.getInstance();
-
     public CoreBlockchainConnector() {
         EventBusFactory.getBus(EventPublisher.ACCOUNT_CHANGE_EVENT_ID).register(this);
     }
 
-    public AccountDTO createAccount(final String password, final String name) {
+    public void createAccount(final String password, final String name) {
         final String address = Keystore.create(password);
         AccountDTO account = getAccount(address);
         account.setName(name);
-        walletStorage.setAccountName(address, name);
-        return account;
+        storeAccountName(address, name);
     }
-
 
     @Override
     protected String sendTransactionInternal(SendRequestDTO dto) throws ValidationException {
@@ -69,7 +64,7 @@ public class CoreBlockchainConnector extends BlockchainConnector {
     }
 
     public AccountDTO getAccount(final String publicAddress) {
-        final String name = walletStorage.getAccountName(publicAddress);
+        final String name = getStoredAccountName(publicAddress);
         return new AccountDTO(name, publicAddress, BalanceUtils.formatBalance(getBalance(publicAddress)), getCurrency());
     }
 
@@ -128,12 +123,7 @@ public class CoreBlockchainConnector extends BlockchainConnector {
 
     @Subscribe
     private void handleAccountChanged(final AccountDTO account) {
-        walletStorage.setAccountName(account.getPublicAddress(), account.getName());
-    }
-
-    @Override
-    public void close() {
-        walletStorage.save();
+        storeAccountName(account.getPublicAddress(), account.getName());
     }
 
     private SyncInfoDTO mapSyncInfo(SyncInfo sync) {

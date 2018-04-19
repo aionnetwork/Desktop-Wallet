@@ -20,7 +20,6 @@ import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.dto.ExtendedAccountDTO;
 import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
-import org.aion.wallet.storage.WalletStorage;
 import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.util.AionConstants;
@@ -34,7 +33,6 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     private final static IAionAPI API = AionAPIImpl.inst();
     private final Map<String, ExtendedAccountDTO> addressToAccount = new HashMap<>();
-    private final WalletStorage walletStorage = WalletStorage.getInstance();
 
     public ApiBlockchainConnector() {
         if (API.isConnected()) {
@@ -45,18 +43,17 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     }
 
     @Override
-    public AccountDTO createAccount(final String password, final String name) {
+    public void createAccount(final String password, final String name) {
         final ApiMsg response = API.getAccount().accountCreate(Collections.singletonList(password), true);
         final Key createdKey = ((List<Key>) response.getObject()).get(0);
         final String address = createdKey.getPubKey().toString();
         final ExtendedAccountDTO account = createExtendedAccountDTO(address, createdKey.getPriKey().toBytes());
         account.setName(name);
-        walletStorage.setAccountName(address, name);
-        return account;
+        storeAccountName(address, name);
     }
 
     public AccountDTO getAccount(final String publicAddress) {
-        final String name = walletStorage.getAccountName(publicAddress);
+        final String name = getStoredAccountName(publicAddress);
         final String balance = BalanceUtils.formatBalance(getBalance(publicAddress));
         return new AccountDTO(name, publicAddress, balance, getCurrency());
     }
@@ -146,7 +143,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     }
 
     private ExtendedAccountDTO createExtendedAccountDTO(final String address, final byte[] privKeyBytes) {
-        final String name = walletStorage.getAccountName(address);
+        final String name = getStoredAccountName(address);
         final String balance = BalanceUtils.formatBalance(getBalance(address));
         ExtendedAccountDTO account = new ExtendedAccountDTO(name, address, balance, getCurrency());
         account.setPrivateKey(privKeyBytes);
@@ -166,15 +163,15 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     @Override
     public void close() {
-        walletStorage.save();
+        super.close();
         API.destroyApi();
     }
 
     @Subscribe
     private void handleAccountChanged(final AccountDTO account) {
-        if (!account.getName().equalsIgnoreCase(walletStorage.getAccountName(account.getPublicAddress()))) {
-            walletStorage.setAccountName(account.getPublicAddress(), account.getName());
-            final String name = walletStorage.getAccountName(account.getPublicAddress());
+        if (!account.getName().equalsIgnoreCase(getStoredAccountName(account.getPublicAddress()))) {
+            storeAccountName(account.getPublicAddress(), account.getName());
+            final String name = getStoredAccountName(account.getPublicAddress());
             System.out.println(name);
         }
     }
