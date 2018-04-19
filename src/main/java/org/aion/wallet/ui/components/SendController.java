@@ -16,6 +16,7 @@ import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.EventPublisher;
+import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
 import org.aion.wallet.util.AionConstants;
 import org.aion.wallet.util.BalanceUtils;
 import org.aion.wallet.util.UIUtils;
@@ -67,8 +68,7 @@ public class SendController implements Initializable {
         accountAddress.setText(account.getPublicAddress());
 
         accountBalance.setVisible(true);
-        accountBalance.setText(account.getBalance() + " " + AionConstants.CCY);
-        UIUtils.setWidth(accountBalance);
+        setAccountBalanceText();
 
         equivalentEUR.setVisible(true);
         equivalentEUR.setText(Double.parseDouble(account.getBalance()) * AionConstants.AION_TO_EUR + " " + AionConstants.EUR_CCY);
@@ -79,7 +79,33 @@ public class SendController implements Initializable {
         UIUtils.setWidth(equivalentUSD);
     }
 
+    @Subscribe
+    private void handleHeaderPaneButtonEvent(HeaderPaneButtonEvent event) {
+        if (event.getType().equals(HeaderPaneButtonEvent.Type.SEND)) {
+            refreshAccountBalance();
+        }
+    }
+
+    private void setAccountBalanceText() {
+        accountBalance.setText(account.getBalance() + " " + AionConstants.CCY);
+        UIUtils.setWidth(accountBalance);
+
+    }
+
+    private void refreshAccountBalance() {
+        if(this.account == null) {
+            return;
+        }
+        try {
+            this.account.setBalance(BalanceUtils.formatBalance(blockchainConnector.getBalance(this.account.getPublicAddress())));
+            setAccountBalanceText();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private void registerEventBusConsumer() {
+        EventBusFactory.getBus(HeaderPaneButtonEvent.ID).register(this);
         EventBusFactory.getBus(EventPublisher.ACCOUNT_CHANGE_EVENT_ID).register(this);
     }
 
