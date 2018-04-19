@@ -77,6 +77,11 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     @Override
     public List<AccountDTO> getAccounts() {
+        for (Map.Entry<String, ExtendedAccountDTO> entry : accounts.entrySet()) {
+            ExtendedAccountDTO account = entry.getValue();
+            account.setBalance(BalanceUtils.formatBalance(getBalance(account.getPublicAddress())));
+            entry.setValue(account);
+        }
         return new ArrayList<>(accounts.values());
     }
 
