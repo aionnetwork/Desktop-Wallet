@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 
 public class CoreBlockchainConnector extends BlockchainConnector {
 
-    private final static ApiAion API = new WalletApi();
+    private final static WalletApi API = new WalletApi();
 
     private final WalletStorage walletStorage = WalletStorage.getInstance();
 
