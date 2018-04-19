@@ -8,7 +8,6 @@ import javafx.fxml.FXML;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
-import org.aion.base.util.TypeConverter;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.connector.dto.TransactionDTO;
 import org.aion.wallet.dto.AccountDTO;
@@ -110,8 +109,7 @@ public class HistoryController extends AbstractController {
             boolean isFromTx = AddressUtils.equals(requestingAddress, fromAccount.getPublicAddress());
             this.type = new SimpleStringProperty(isFromTx ? TO : FROM);
             this.name = new SimpleStringProperty(isFromTx ? toAccount.getName() : fromAccount.getName());
-            this.address = new SimpleStringProperty(isFromTx ? TypeConverter.toJsonHex(toAccount.getPublicAddress())
-                    : TypeConverter.toJsonHex(fromAccount.getPublicAddress()));
+            this.address = new SimpleStringProperty(isFromTx ? toAccount.getPublicAddress() : fromAccount.getPublicAddress());
             this.value = new SimpleStringProperty(balance);
         }
 

@@ -44,9 +44,9 @@
             <AnchorPane AnchorPane.bottomAnchor="0">
                 <HBox spacing="10.0">
                     <Button prefHeight="50.0" prefWidth="130.0" styleClass="add-account-buttons"
-                            text="close" onMouseClicked="#close"/>
+                            text="Import" onMouseClicked="#importAccount"/>
                     <Button prefHeight="50.0" prefWidth="130.0" styleClass="add-account-buttons"
-                            text="Import" onMouseClicked="#createAccount"/>
+                            text="Close" onMouseClicked="#close"/>
                 </HBox>
             </AnchorPane>
         </AnchorPane>
