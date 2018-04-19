@@ -38,6 +38,10 @@
     -fx-font-size: 18px;
 }
 
+.button .disabled{
+    -fx-background-color: #ececec;
+}
+
 .accounts-list{
     -fx-background-insets: 0;
     -fx-padding: 0;
@@ -76,7 +80,7 @@
     -fx-border-width: 0 0 1 0;
 }
 
-.private-address-textarea {
+.address-textarea {
     -fx-control-inner-background: #ececec;
     -fx-background-insets: 0px;
     -fx-text-fill: BLACK;
