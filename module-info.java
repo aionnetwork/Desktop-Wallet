@@ -1,6 +1,8 @@
 module aion.wallet{
 
     requires aion.apiserver;
+    requires aion.crypto;
+    requires aion.zero;
     requires aion.zero.impl;
     requires aion.log;
     requires aion.base;
@@ -12,6 +14,7 @@ module aion.wallet{
     requires javafx.controls;
     requires java.desktop;
     requires slf4j.api;
+    requires guava;
 
     exports org.aion.wallet;
     exports org.aion.wallet.ui;

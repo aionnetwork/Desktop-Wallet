@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import java.net.URL?>
+<AnchorPane prefHeight="46.0" xmlns="http://javafx.com/javafx/8.0.121"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.aion.wallet.ui.components.partials.ConnectivityStatus">
+    <stylesheets>
+        <URL value="@../footer-pane.css" />
+    </stylesheets>
+    <Label fx:id="connectivityLabel" styleClass="connected-label" text="Connection status..."
+           AnchorPane.bottomAnchor="10" AnchorPane.topAnchor="10" AnchorPane.leftAnchor="10"/>
+
+</AnchorPane>

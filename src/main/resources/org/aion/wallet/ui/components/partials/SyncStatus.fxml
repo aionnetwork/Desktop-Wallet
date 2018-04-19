@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import java.net.URL?>
+<?import javafx.scene.layout.HBox?>
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1"
+            xmlns="http://javafx.com/javafx/8.0.121" fx:controller="org.aion.wallet.ui.components.partials.SyncStatus">
+
+    <stylesheets>
+        <URL value="@../footer-pane.css"/>
+    </stylesheets>
+
+    <HBox AnchorPane.topAnchor="10" AnchorPane.bottomAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.leftAnchor="400"
+          alignment="CENTER" spacing="5" prefWidth="200">
+        <ImageView fitHeight="24.0" pickOnBounds="true" preserveRatio="true">
+            <Image url="@../icons/total_blocks-256x256.png"/>
+        </ImageView>
+        <Label id="progressBarLabel" fx:id="progressBarLabel" styleClass="footer-pane-text"
+               text="How behind is the sync?"/>
+    </HBox>
+
+</AnchorPane>

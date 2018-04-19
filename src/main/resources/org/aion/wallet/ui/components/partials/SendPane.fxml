@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" id="sendPane" stylesheets="@../contentPane.css"
+            visible="false" xmlns="http://javafx.com/javafx/8.0.121"
+            fx:controller="org.aion.wallet.ui.components.SendController" fx:id="parent">
+
+    <VBox alignment="TOP_CENTER" spacing="10" AnchorPane.leftAnchor="10" AnchorPane.rightAnchor="10" AnchorPane.topAnchor="15">
+        <Label text="Send" styleClass="tile-label" alignment="CENTER"/>
+        <HBox spacing="10">
+            <VBox prefWidth="415.0" spacing="5">
+                <Label text="Account information" styleClass="header-text" />
+                <Label text="Account address" styleClass="paragraph-text" />
+                <HBox>
+                    <TextArea fx:id="accountAddress" editable="false" styleClass="address-textarea" wrapText="true" prefRowCount="2" prefColumnCount="25"/>
+                </HBox>
+                <Label text="Account balance" styleClass="header-text" />
+                <HBox>
+                    <TextField fx:id="accountBalance" editable="false" styleClass="balance-value" visible="false"/>
+                </HBox>
+                <Label text="Equivalent values" styleClass="header-text"/>
+                <HBox>
+                    <TextField fx:id="equivalentEUR" editable="false" styleClass="balance-value" visible="false" />
+                </HBox>
+                <HBox>
+                    <TextField fx:id="equivalentUSD" editable="false" styleClass="balance-value" visible="false" />
+                </HBox>
+            </VBox>
+            <VBox spacing="5" prefWidth="400.0">
+                <Label text="New transaction" styleClass="header-text" />
+                <PasswordField fx:id="passwordInput" promptText="Password" styleClass="input-fields"/>
+                <TextField fx:id="toInput" promptText="To address" styleClass="input-fields"/>
+                <TextField fx:id="nrgInput" promptText="Energy" styleClass="input-fields"/>
+                <TextField fx:id="nrgPriceInput" promptText="Energy price" styleClass="input-fields"/>
+                <TextField fx:id="valueInput" promptText="Amount to send" styleClass="input-fields"/>
+                <Label fx:id="txStatusLabel"/>
+                <HBox>
+                    <Button prefWidth="400.0" mnemonicParsing="false" onMouseClicked="#onSendAionClicked" text="Generate transaction" styleClass="button"/>
+                </HBox>
+            </VBox>
+        </HBox>
+    </VBox>
+</AnchorPane>
