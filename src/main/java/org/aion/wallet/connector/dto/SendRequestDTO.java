@@ -12,7 +12,7 @@ public class SendRequestDTO implements UnlockableAccount {
     private String password;
     private String to;
     private Long nrg;
-    private Long nrgPrice;
+    private BigInteger nrgPrice;
     private BigInteger value;
 
     @Override
@@ -53,10 +53,10 @@ public class SendRequestDTO implements UnlockableAccount {
     }
 
     public Long getNrgPrice() {
-        return nrgPrice;
+        return nrgPrice.longValue();
     }
 
-    public void setNrgPrice(Long nrgPrice) {
+    public void setNrgPrice(BigInteger nrgPrice) {
         this.nrgPrice = nrgPrice;
     }
 
@@ -69,7 +69,7 @@ public class SendRequestDTO implements UnlockableAccount {
     }
 
     public BigInteger estimateValue() {
-        return value.add(BigInteger.valueOf(nrg * nrgPrice));
+        return value.add(nrgPrice.multiply(BigInteger.valueOf(nrg)));
     }
 
     public byte[] getData() {
@@ -93,7 +93,7 @@ public class SendRequestDTO implements UnlockableAccount {
         if (nrg == null || nrg <= 0) {
             throw new ValidationException("Invalid nrg value");
         }
-        if (nrgPrice == null || nrgPrice <= 0) {
+        if (nrgPrice == null || nrgPrice.longValue() <= 0) {
             throw new ValidationException("Invalid nrg price");
         }
         if(ConfigUtils.isEmbedded() && (password == null || password.equals(""))) {

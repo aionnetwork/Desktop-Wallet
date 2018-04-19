@@ -1,9 +1,9 @@
 package org.aion.wallet.ui.components;
 
 import com.google.common.eventbus.Subscribe;
-import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -59,16 +59,21 @@ public class HistoryController extends AbstractController {
     }
 
     private void reloadWalletView() {
-        Platform.runLater(() -> {
-            if (account == null) {
-                return;
-            }
-            String me = account.getPublicAddress();
-            List<TxRow> txs = blockchainConnector.getLatestTransactions(me).stream()
-                    .map(t -> new TxRow(me, t))
-                    .collect(Collectors.toList());
-            txTable.setItems(FXCollections.observableList(txs));
-        });
+        if (account == null) {
+            return;
+        }
+        final Task<List<TxRow>> getTransactionsTask = getApiTask(
+                address -> blockchainConnector.getLatestTransactions(address).stream()
+                        .map(t -> new TxRow(address, t))
+                        .collect(Collectors.toList()), account.getPublicAddress()
+        );
+
+        runApiTask(
+                getTransactionsTask,
+                event -> txTable.setItems(FXCollections.observableList(getTransactionsTask.getValue())),
+                getEmptyEvent(),
+                getEmptyEvent()
+        );
     }
 
     private void buildTableModel() {

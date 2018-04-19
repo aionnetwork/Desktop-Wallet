@@ -11,17 +11,17 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
-import org.aion.log.AionLoggerFactory;
 import org.aion.api.log.LogEnum;
+import org.aion.log.AionLoggerFactory;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
 import org.aion.wallet.ui.events.TimerEvent;
-import org.aion.wallet.util.UIUtils;
 import org.aion.wallet.util.BalanceUtils;
 import org.aion.wallet.util.DataUpdater;
+import org.aion.wallet.util.UIUtils;
 import org.slf4j.Logger;
 
 import java.awt.*;
@@ -44,10 +44,6 @@ public class HeaderPaneControls implements Initializable {
     private static final String STYLE_DEFAULT = "default";
 
     private static final String STYLE_PRESSED = "pressed";
-
-
-
-    private static final String CCY_SEPARATOR = " ";
 
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
 
@@ -142,7 +138,7 @@ public class HeaderPaneControls implements Initializable {
         activeAccountLabel.setVisible(true);
         activeAccount.setText(account.getName());
         accountAddress = account.getPublicAddress();
-        accountBalance.setText(account.getBalance() + CCY_SEPARATOR + account.getCurrency());
+        accountBalance.setText(account.getBalance() + BalanceUtils.CCY_SEPARATOR + account.getCurrency());
         UIUtils.setWidth(activeAccount);
         UIUtils.setWidth(accountBalance);
     }
@@ -151,17 +147,17 @@ public class HeaderPaneControls implements Initializable {
     private void handleConnectivityStatusEvent(final TimerEvent event) {
         final String accountName = activeAccount.getText();
         if (!accountName.isEmpty()) {
-            Optional<BigInteger> balance = Optional.empty();
+            Optional<BigInteger> balance;
             balance = Optional.ofNullable(blockchainConnector.getBalance(accountAddress));
-            final String[] text = accountBalance.getText().split(CCY_SEPARATOR);
+            final String[] text = accountBalance.getText().split(BalanceUtils.CCY_SEPARATOR);
             final String currency = text[1];
             balance.ifPresent(bigInteger -> updateNewBalance(currency, bigInteger));
         }
     }
 
     private void updateNewBalance(final String currency, final BigInteger bigInteger) {
-        final String newBalance = BalanceUtils.formatBalance(bigInteger) + CCY_SEPARATOR + currency;
-        if (newBalance.equalsIgnoreCase(accountBalance.getText())) {
+        final String newBalance = BalanceUtils.formatBalance(bigInteger) + BalanceUtils.CCY_SEPARATOR + currency;
+        if (!newBalance.equalsIgnoreCase(accountBalance.getText())) {
             accountBalance.setText(newBalance);
         }
     }
