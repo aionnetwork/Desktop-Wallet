@@ -19,6 +19,7 @@ import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
 import org.aion.wallet.util.AionConstants;
 import org.aion.wallet.util.BalanceUtils;
+import org.aion.wallet.util.ConfigUtils;
 import org.aion.wallet.util.UIUtils;
 
 import java.net.URL;
@@ -59,6 +60,10 @@ public class SendController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         registerEventBusConsumer();
         setDefaults();
+        if (!ConfigUtils.isEmbedded()) {
+            passwordInput.setVisible(false);
+            passwordInput.setManaged(false);
+        }
     }
 
     @Subscribe
@@ -93,15 +98,11 @@ public class SendController implements Initializable {
     }
 
     private void refreshAccountBalance() {
-        if(this.account == null) {
+        if (this.account == null) {
             return;
         }
-        try {
-            this.account.setBalance(BalanceUtils.formatBalance(blockchainConnector.getBalance(this.account.getPublicAddress())));
-            setAccountBalanceText();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        this.account.setBalance(BalanceUtils.formatBalance(blockchainConnector.getBalance(this.account.getPublicAddress())));
+        setAccountBalanceText();
     }
 
     private void registerEventBusConsumer() {
@@ -111,7 +112,7 @@ public class SendController implements Initializable {
 
     private void setDefaults() {
         nrgInput.setText(AionConstants.DEFAULT_NRG);
-        nrgPriceInput.setText(AionConstants.DEFAULT_NRG_PRICE);
+        nrgPriceInput.setText(BalanceUtils.formatBalance(AionConstants.DEFAULT_NRG_PRICE));
 
         toInput.setText("");
         valueInput.setText("");
@@ -153,14 +154,26 @@ public class SendController implements Initializable {
         );
     }
 
-    private SendRequestDTO mapFormData() {
+    private SendRequestDTO mapFormData() throws ValidationException {
         SendRequestDTO dto = new SendRequestDTO();
         dto.setFrom(account.getPublicAddress());
         dto.setTo(toInput.getText());
         dto.setPassword(passwordInput.getText());
-        dto.setNrg(TypeConverter.StringNumberAsBigInt(nrgInput.getText()).longValue());
-        dto.setNrgPrice(TypeConverter.StringNumberAsBigInt(nrgPriceInput.getText()).longValue());
-        dto.setValue(BalanceUtils.extractBalance(valueInput.getText()));
+        try {
+            dto.setNrg(TypeConverter.StringNumberAsBigInt(nrgInput.getText()).longValue());
+        } catch (NumberFormatException e) {
+            throw new ValidationException("Nrg must be a valid number");
+        }
+        try {
+            dto.setNrgPrice(BalanceUtils.extractBalance(nrgPriceInput.getText()).longValue());
+        } catch (NumberFormatException e) {
+            throw new ValidationException("Nrg price must be a valid number");
+        }
+        try {
+            dto.setValue(BalanceUtils.extractBalance(valueInput.getText()));
+        } catch (NumberFormatException e) {
+            throw new ValidationException("Value must be a number");
+        }
         return dto;
     }
 

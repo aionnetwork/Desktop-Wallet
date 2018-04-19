@@ -8,29 +8,38 @@ import org.aion.wallet.connector.dto.TransactionDTO;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
+import org.aion.wallet.util.ConfigUtils;
 
 import java.math.BigInteger;
 import java.util.List;
 
 public abstract class BlockchainConnector {
-    public static final String WALLET_API_ENABLED_FLAG = "wallet.api.enabled";
     private static BlockchainConnector connector;
 
     public static BlockchainConnector getInstance() {
         if (connector != null) {
             return connector;
         }
-        if (Boolean.valueOf(System.getProperty(WALLET_API_ENABLED_FLAG))) {
-            connector = new ApiBlockchainConnector();
-        } else {
+        if (ConfigUtils.isEmbedded()) {
             connector = new CoreBlockchainConnector();
+        } else {
+            connector = new ApiBlockchainConnector();
         }
         return connector;
     }
 
     public abstract AccountDTO getAccount(final String address);
 
-    public abstract String sendTransaction(final SendRequestDTO dto) throws ValidationException;
+    public String sendTransaction(final SendRequestDTO dto) throws ValidationException {
+        if (dto == null || !dto.validate()) {
+            throw new ValidationException("Invalid transaction request data");
+        }
+        if (dto.estimateValue().compareTo(getBalance(dto.getFrom())) <= 0) {
+            throw new ValidationException("Insufficient funds");
+        }
+        return sendTransactionInternal(dto);
+    }
+    protected abstract String sendTransactionInternal(final SendRequestDTO dto) throws ValidationException;
 
     public abstract List<AccountDTO> getAccounts();
 
@@ -42,7 +51,7 @@ public abstract class BlockchainConnector {
 
     public abstract SyncInfoDTO getSyncInfo();
 
-    public abstract BigInteger getBalance(final String address) throws Exception;
+    public abstract BigInteger getBalance(final String address);
 
     public abstract AccountDTO addKeystoreUTCFile(final byte[] file, final String password) throws ValidationException;
 

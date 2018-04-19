@@ -8,6 +8,7 @@ import java.math.RoundingMode;
  * @author Cristian Ilca, Centrys Inc.
  */
 public class BalanceUtils {
+    private static final int PRECISION = 18;
     private static final BigDecimal WEI_MULTIPLIER = BigDecimal.valueOf(1000000000000000000L);
 
     public static String formatBalance(final BigInteger balance) {
@@ -15,7 +16,7 @@ public class BalanceUtils {
             return String.valueOf(0);
         }
         BigDecimal bigDecimalBalance = new BigDecimal(balance);
-        return String.valueOf(bigDecimalBalance.divide(WEI_MULTIPLIER, 10, RoundingMode.HALF_EVEN));
+        return bigDecimalBalance.divide(WEI_MULTIPLIER, PRECISION, RoundingMode.HALF_EVEN).stripTrailingZeros().toPlainString();
     }
 
     public static BigInteger extractBalance(final String formattedBalance) {

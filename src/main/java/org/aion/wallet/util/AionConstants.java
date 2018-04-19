@@ -1,5 +1,7 @@
 package org.aion.wallet.util;
 
+import java.math.BigInteger;
+
 public class AionConstants {
 
     private AionConstants() {}
@@ -8,7 +10,7 @@ public class AionConstants {
 
     public static final String DEFAULT_NRG = "100000";
 
-    public static final String DEFAULT_NRG_PRICE = "1000000";
+    public static final BigInteger DEFAULT_NRG_PRICE = BigInteger.valueOf(1000000L);
 
     public static final int BLOCK_MINING_TIME_SECONDS = 10;
 

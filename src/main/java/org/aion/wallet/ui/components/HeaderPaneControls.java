@@ -152,11 +152,7 @@ public class HeaderPaneControls implements Initializable {
         final String accountName = activeAccount.getText();
         if (!accountName.isEmpty()) {
             Optional<BigInteger> balance = Optional.empty();
-            try {
-                balance = Optional.ofNullable(blockchainConnector.getBalance(accountAddress));
-            } catch (Exception e) {
-                log.error(e.getMessage(), e);
-            }
+            balance = Optional.ofNullable(blockchainConnector.getBalance(accountAddress));
             final String[] text = accountBalance.getText().split(CCY_SEPARATOR);
             final String currency = text[1];
             balance.ifPresent(bigInteger -> updateNewBalance(currency, bigInteger));

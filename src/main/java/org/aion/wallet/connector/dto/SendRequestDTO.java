@@ -1,7 +1,9 @@
 package org.aion.wallet.connector.dto;
 
 import org.aion.base.util.ByteArrayWrapper;
+import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.util.AddressUtils;
+import org.aion.wallet.util.ConfigUtils;
 
 import java.math.BigInteger;
 
@@ -66,6 +68,10 @@ public class SendRequestDTO implements UnlockableAccount {
         this.value = value;
     }
 
+    public BigInteger estimateValue() {
+        return value.add(BigInteger.valueOf(nrg * nrgPrice));
+    }
+
     public byte[] getData() {
         return ByteArrayWrapper.NULL_BYTE;
     }
@@ -74,8 +80,25 @@ public class SendRequestDTO implements UnlockableAccount {
         return BigInteger.ZERO;
     }
 
-    public boolean isValid(){
-        return AddressUtils.isValid(from) && AddressUtils.isValid(to)
-                && value != null && value.compareTo(BigInteger.ZERO) > 0;
+    public boolean validate() throws ValidationException {
+        if (!AddressUtils.isValid(from)) {
+            throw new ValidationException("Invalid from address");
+        }
+        if (!AddressUtils.isValid(to)) {
+            throw new ValidationException("Invalid to address");
+        }
+        if (value == null || value.compareTo(BigInteger.ZERO) <= 0) {
+            throw new ValidationException("A value greater than zero must be provided");
+        }
+        if (nrg == null || nrg <= 0) {
+            throw new ValidationException("Invalid nrg value");
+        }
+        if (nrgPrice == null || nrgPrice <= 0) {
+            throw new ValidationException("Invalid nrg price");
+        }
+        if(ConfigUtils.isEmbedded() && (password == null || password.equals(""))) {
+            throw new ValidationException("Password is invalid");
+        }
+        return true;
     }
 }
