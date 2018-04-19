@@ -8,22 +8,22 @@ import org.aion.wallet.connector.dto.TransactionDTO;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
+import org.aion.wallet.util.ConfigUtils;
 
 import java.math.BigInteger;
 import java.util.List;
 
 public abstract class BlockchainConnector {
-    public static final String WALLET_API_ENABLED_FLAG = "wallet.api.enabled";
     private static BlockchainConnector connector;
 
     public static BlockchainConnector getInstance() {
         if (connector != null) {
             return connector;
         }
-        if (Boolean.valueOf(System.getProperty(WALLET_API_ENABLED_FLAG))) {
-            connector = new ApiBlockchainConnector();
-        } else {
+        if (ConfigUtils.isEmbedded()) {
             connector = new CoreBlockchainConnector();
+        } else {
+            connector = new ApiBlockchainConnector();
         }
         return connector;
     }

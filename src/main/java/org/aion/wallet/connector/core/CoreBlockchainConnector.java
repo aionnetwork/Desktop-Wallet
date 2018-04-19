@@ -39,11 +39,14 @@ public class CoreBlockchainConnector extends BlockchainConnector {
 
     @Override
     public String sendTransaction(SendRequestDTO dto) throws ValidationException {
-        if (dto == null || !dto.isValid()) {
+        if (dto == null || !dto.validate()) {
             throw new ValidationException("Invalid transaction request data");
         }
         if (!unlock(dto)) {
             throw new ValidationException("Failed to unlock wallet");
+        }
+        if (dto.estimateValue().compareTo(getBalance(dto.getFrom())) <= 0) {
+            throw new ValidationException("Insufficient funds");
         }
         ArgTxCall transactionParams = new ArgTxCall(Address.wrap(ByteUtil.hexStringToBytes(dto.getFrom()))
                 , Address.wrap(ByteUtil.hexStringToBytes(dto.getTo())), dto.getData(),
@@ -97,7 +100,7 @@ public class CoreBlockchainConnector extends BlockchainConnector {
     }
 
     @Override
-    public BigInteger getBalance(String address) throws Exception {
+    public BigInteger getBalance(String address) {
         return API.getBalance(address);
     }
 
@@ -107,7 +110,7 @@ public class CoreBlockchainConnector extends BlockchainConnector {
     }
 
     @Override
-    public AccountDTO addKeystoreUTCFile(byte[] file, String password) throws ValidationException{
+    public AccountDTO addKeystoreUTCFile(byte[] file, String password) throws ValidationException {
         throw new ValidationException("Unsupported operation");
     }
 

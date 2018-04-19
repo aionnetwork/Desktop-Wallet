@@ -55,8 +55,11 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     @Override
     public String sendTransaction(SendRequestDTO dto) throws ValidationException {
-        if (dto == null || !dto.isValid()) {
+        if (dto == null || !dto.validate()) {
             throw new ValidationException("Invalid transaction request data");
+        }
+        if (dto.estimateValue().compareTo(getBalance(dto.getFrom())) >= 0) {
+            throw new ValidationException("Insufficient funds");
         }
         TxArgs txArgs = new TxArgs.TxArgsBuilder()
                 .from(new Address(TypeConverter.toJsonHex(dto.getFrom())))
@@ -93,7 +96,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     @Override
     public TransactionDTO getTransaction(String txHash) throws NotFoundException {
         ApiMsg txReceiptMsg = API.getChain().getTransactionByHash(Hash256.wrap(txHash));
-        if (txReceiptMsg.getObject() == null) {
+        if (txReceiptMsg == null || txReceiptMsg.getObject() == null) {
             throw new NotFoundException();
         }
         Transaction receipt = txReceiptMsg.getObject();
