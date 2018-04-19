@@ -149,7 +149,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         try {
             // todo: get correct public key from ECKey
             ECKey key = ECKeyFac.inst().fromPrivate(raw);
-            return null;
+            throw new UnsupportedOperationException("ApiBlockhainConnector.addPrivateKey");
         } catch (Exception e) {
             throw new ValidationException("Unsupported key type");
         }

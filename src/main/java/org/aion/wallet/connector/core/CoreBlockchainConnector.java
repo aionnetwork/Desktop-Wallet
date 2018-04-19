@@ -1,7 +1,6 @@
 package org.aion.wallet.connector.core;
 
 import com.google.common.eventbus.Subscribe;
-import org.aion.api.server.ApiAion;
 import org.aion.api.server.types.ArgTxCall;
 import org.aion.api.server.types.SyncInfo;
 import org.aion.base.type.Address;

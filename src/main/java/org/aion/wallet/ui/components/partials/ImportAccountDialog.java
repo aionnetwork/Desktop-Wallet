@@ -84,7 +84,7 @@ public class ImportAccountDialog implements Initializable {
 
     public void open(MouseEvent mouseEvent) {
         StackPane pane = new StackPane();
-        Pane importAccountDialog = null;
+        Pane importAccountDialog;
         try {
             importAccountDialog = FXMLLoader.load(getClass().getResource("ImportAccountDialog.fxml"));
         } catch (IOException e) {
@@ -116,21 +116,21 @@ public class ImportAccountDialog implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         privateKeyRadioButton.setUserData(PK_RADIO_BUTTON_ID);
         keystoreRadioButton.setUserData(KEYSTORE_RADIO_BUTTON_ID);
-        accountTypeToggleGroup.selectedToggleProperty().addListener((ObservableValue<? extends Toggle> ov, Toggle old_toggle, Toggle new_toggle) -> {
-            if (accountTypeToggleGroup.getSelectedToggle() != null) {
-                switch ((String) accountTypeToggleGroup.getSelectedToggle().getUserData()) {
-                    case PK_RADIO_BUTTON_ID:
-                        importPrivateKeyView.setVisible(true);
-                        importKeystoreView.setVisible(false);
-                        break;
-                    case KEYSTORE_RADIO_BUTTON_ID:
-                        importPrivateKeyView.setVisible(false);
-                        importKeystoreView.setVisible(true);
-                        break;
-                }
-
-            }
-        });
+        accountTypeToggleGroup.selectedToggleProperty().addListener(this::radioButtonChanged);
     }
 
+    private void radioButtonChanged(ObservableValue<? extends Toggle> ov, Toggle oldToggle, Toggle newToggle) {
+        if (accountTypeToggleGroup.getSelectedToggle() != null) {
+            switch ((String) accountTypeToggleGroup.getSelectedToggle().getUserData()) {
+                case PK_RADIO_BUTTON_ID:
+                    importPrivateKeyView.setVisible(true);
+                    importKeystoreView.setVisible(false);
+                    break;
+                case KEYSTORE_RADIO_BUTTON_ID:
+                    importPrivateKeyView.setVisible(false);
+                    importKeystoreView.setVisible(true);
+                    break;
+            }
+        }
+    }
 }
