@@ -8,7 +8,11 @@ import java.math.RoundingMode;
  * @author Cristian Ilca, Centrys Inc.
  */
 public class BalanceUtils {
+
+    public static final String CCY_SEPARATOR = " ";
+
     private static final int PRECISION = 18;
+
     private static final BigDecimal WEI_MULTIPLIER = BigDecimal.valueOf(1000000000000000000L);
 
     public static String formatBalance(final BigInteger balance) {

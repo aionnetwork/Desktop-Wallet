@@ -11,6 +11,7 @@ import javafx.scene.input.MouseEvent;
 import org.aion.base.util.TypeConverter;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.ui.events.EventPublisher;
+import org.aion.wallet.util.BalanceUtils;
 import org.aion.wallet.util.UIUtils;
 
 import java.io.IOException;
@@ -89,7 +90,7 @@ public class AccountCellItem extends ListCell<AccountDTO> {
             edit.setOnAction(event -> name.setEditable(true));
 
             publicAddress.setText(TypeConverter.toJsonHex(item.getPublicAddress()));
-            balance.setText(item.getBalance() + item.getCurrency());
+            balance.setText(item.getBalance() + BalanceUtils.CCY_SEPARATOR + item.getCurrency());
             UIUtils.setWidth(balance);
 
             if (item.isActive()) {
