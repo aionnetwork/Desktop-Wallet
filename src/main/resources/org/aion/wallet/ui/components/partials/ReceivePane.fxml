@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.control.TextArea?>
 <AnchorPane id="receivePane" visible="false" stylesheets="@../contentPane.css"
             xmlns="http://javafx.com/javafx/8.0.162" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="org.aion.wallet.ui.components.ReceiveController" fx:id="parent">
 
     <VBox alignment="TOP_CENTER" spacing="10" AnchorPane.leftAnchor="10" AnchorPane.rightAnchor="10" AnchorPane.topAnchor="15">
         <Label alignment="CENTER" styleClass="tile-label" text="Receive"/>
-        <ScrollPane hbarPolicy="NEVER" prefViewportHeight="250" prefViewportWidth="830" vbarPolicy="NEVER"
-                    VBox.vgrow="NEVER"/>
+        <TextArea fx:id="accountAddress" styleClass="private-address-textarea" wrapText="true"/>
     </VBox>
 </AnchorPane>
