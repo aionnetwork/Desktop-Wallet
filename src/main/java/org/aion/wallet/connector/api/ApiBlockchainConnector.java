@@ -5,9 +5,11 @@ import org.aion.api.IAionAPI;
 import org.aion.api.impl.AionAPIImpl;
 import org.aion.api.type.*;
 import org.aion.base.type.Address;
+import org.aion.base.type.Hash256;
 import org.aion.base.util.ByteArrayWrapper;
 import org.aion.base.util.TypeConverter;
 import org.aion.crypto.ECKey;
+import org.aion.crypto.ECKeyFac;
 import org.aion.mcf.account.KeystoreFormat;
 import org.aion.mcf.account.KeystoreItem;
 import org.aion.wallet.connector.BlockchainConnector;
@@ -60,7 +62,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
                 .from(new Address(TypeConverter.toJsonHex(dto.getFrom())))
                 .to(new Address(TypeConverter.toJsonHex(dto.getTo())))
                 .value(dto.getValue())
-                .nonce(dto.getNonce())
+                .nonce(getLatestTransactionNonce(dto.getFrom()))
                 .data(new ByteArrayWrapper(dto.getData()))
                 .nrgPrice(dto.getNrgPrice())
                 .nrgLimit(dto.getNrg()).createTxArgs();
@@ -85,7 +87,12 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     @Override
     public TransactionDTO getTransaction(String txHash) throws NotFoundException {
-        throw new NotFoundException();
+        ApiMsg txReceiptMsg = API.getChain().getTransactionByHash(Hash256.wrap(txHash));
+        if (txReceiptMsg.getObject() == null) {
+            throw new NotFoundException();
+        }
+        Transaction receipt = txReceiptMsg.getObject();
+        return mapTransaction(receipt);
     }
 
     @Override
@@ -138,8 +145,14 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         }
     }
 
-    private byte[] getPrivateKeyFromUTCKeystoreFile(byte[] key, String password) {
-        return KeystoreFormat.fromKeystore(key, password).getPrivKeyBytes();
+    public AccountDTO addPrivateKey(byte[] raw, String password) throws ValidationException {
+        try {
+            // todo: get correct public key from ECKey
+            ECKey key = ECKeyFac.inst().fromPrivate(raw);
+            return null;
+        } catch (Exception e) {
+            throw new ValidationException("Unsupported key type");
+        }
     }
 
     @Override
@@ -155,6 +168,30 @@ public class ApiBlockchainConnector extends BlockchainConnector {
             final String name = walletStorage.getAccountName(account.getPublicAddress());
             System.out.println(name);
         }
+    }
+
+    private BigInteger getLatestTransactionNonce(String addr) {
+        Long latest = API.getChain().blockNumber().getObject();
+        final String parsedAddr = TypeConverter.toJsonHex(addr);
+        for (long i = latest; i > 0; i--) {
+            BlockDetails blk = getBlockDetailsByNumber(i);
+            if (blk == null || blk.getTxDetails().size() == 0) {
+                continue;
+            }
+            BigInteger nonce = null;
+            for (TxDetails t : blk.getTxDetails()) {
+                if (!TypeConverter.toJsonHex(t.getFrom().toString()).equals(parsedAddr)) {
+                    continue;
+                }
+                if (nonce == null || nonce.compareTo(t.getNonce()) < 0) {
+                    nonce = t.getNonce();
+                }
+            }
+            if (nonce != null) {
+                return nonce.add(BigInteger.ONE);
+            }
+        }
+        return BigInteger.ZERO;
     }
 
 
@@ -182,6 +219,19 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     private BlockDetails getBlockDetailsByNumber(Long number) {
         return ((List<BlockDetails>) API.getAdmin().getBlockDetailsByNumber(number.toString()).getObject()).get(0);
+    }
+
+    private TransactionDTO mapTransaction(Transaction transaction) {
+        if (transaction == null) {
+            return null;
+        }
+        TransactionDTO dto = new TransactionDTO();
+        dto.setFrom(transaction.getFrom().toString());
+        dto.setTo(transaction.getTo().toString());
+        dto.setValue(TypeConverter.StringHexToBigInteger(TypeConverter.toJsonHex(transaction.getValue())));
+        dto.setNrg(transaction.getNrgConsumed());
+        dto.setNrgPrice(transaction.getNrgPrice());
+        return dto;
     }
 
     private TransactionDTO mapTransaction(TxDetails transaction) {
