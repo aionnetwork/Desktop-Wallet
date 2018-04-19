@@ -27,17 +27,14 @@ import org.aion.wallet.util.AionConstants;
 import org.aion.wallet.util.BalanceUtils;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class ApiBlockchainConnector extends BlockchainConnector {
 
     private final static IAionAPI API = AionAPIImpl.inst();
+    private final Map<String, ExtendedAccountDTO> addressToAccount = new HashMap<>();
     private final WalletStorage walletStorage = WalletStorage.getInstance();
-    private final Map<String, ExtendedAccountDTO> accounts = new HashMap<>();
 
     public ApiBlockchainConnector() {
         if (API.isConnected()) {
@@ -45,6 +42,17 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         }
         API.connect(IAionAPI.LOCALHOST_URL, true);
         EventBusFactory.getBus(EventPublisher.ACCOUNT_CHANGE_EVENT_ID).register(this);
+    }
+
+    @Override
+    public AccountDTO createAccount(final String password, final String name) {
+        final ApiMsg response = API.getAccount().accountCreate(Collections.singletonList(password), true);
+        final Key createdKey = ((List<Key>) response.getObject()).get(0);
+        final String address = createdKey.getPubKey().toString();
+        final ExtendedAccountDTO account = createExtendedAccountDTO(address, createdKey.getPriKey().toBytes());
+        account.setName(name);
+        walletStorage.setAccountName(address, name);
+        return account;
     }
 
     public AccountDTO getAccount(final String publicAddress) {
@@ -65,7 +73,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
                 .nrgLimit(dto.getNrg()).createTxArgs();
         final MsgRsp response = API.getTx().sendSignedTransaction(
                 txArgs,
-                new ByteArrayWrapper(accounts.get(dto.getFrom()).getPrivateKey()),
+                new ByteArrayWrapper(addressToAccount.get(dto.getFrom()).getPrivateKey()),
                 dto.getPassword()
         ).getObject();
 
@@ -74,17 +82,12 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     @Override
     public List<AccountDTO> getAccounts() {
-        for (Map.Entry<String, ExtendedAccountDTO> entry : accounts.entrySet()) {
+        for (Map.Entry<String, ExtendedAccountDTO> entry : addressToAccount.entrySet()) {
             ExtendedAccountDTO account = entry.getValue();
             account.setBalance(BalanceUtils.formatBalance(getBalance(account.getPublicAddress())));
             entry.setValue(account);
         }
-        return new ArrayList<>(accounts.values());
-    }
-
-    private AccountDTO convertToAccountDto(Address address) {
-        final String publicAddress = address.toString();
-        return getAccount(publicAddress);
+        return new ArrayList<>(addressToAccount.values());
     }
 
     @Override
@@ -136,15 +139,19 @@ public class ApiBlockchainConnector extends BlockchainConnector {
             ECKey key = KeystoreFormat.fromKeystore(file, password);
             KeystoreItem keystoreItem = KeystoreItem.parse(file);
             final String address = keystoreItem.getAddress();
-            final String name = walletStorage.getAccountName(address);
-            final String balance = BalanceUtils.formatBalance(getBalance(address));
-            ExtendedAccountDTO account = new ExtendedAccountDTO(name, address, balance, getCurrency());
-            account.setPrivateKey(key.getPrivKeyBytes());
-            accounts.put(account.getPublicAddress(), account);
-            return account;
+            return createExtendedAccountDTO(address, key.getPrivKeyBytes());
         } catch (Exception e) {
             throw new ValidationException("Unsupported key type");
         }
+    }
+
+    private ExtendedAccountDTO createExtendedAccountDTO(final String address, final byte[] privKeyBytes) {
+        final String name = walletStorage.getAccountName(address);
+        final String balance = BalanceUtils.formatBalance(getBalance(address));
+        ExtendedAccountDTO account = new ExtendedAccountDTO(name, address, balance, getCurrency());
+        account.setPrivateKey(privKeyBytes);
+        addressToAccount.put(account.getPublicAddress(), account);
+        return account;
     }
 
     public AccountDTO addPrivateKey(byte[] raw, String password) throws ValidationException {

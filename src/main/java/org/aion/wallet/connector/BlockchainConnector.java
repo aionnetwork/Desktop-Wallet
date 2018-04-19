@@ -28,6 +28,8 @@ public abstract class BlockchainConnector {
         return connector;
     }
 
+    public abstract AccountDTO createAccount(final String password, final String name);
+
     public abstract AccountDTO getAccount(final String address);
 
     public String sendTransaction(final SendRequestDTO dto) throws ValidationException {

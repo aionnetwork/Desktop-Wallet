@@ -6,6 +6,7 @@ import org.aion.api.server.types.SyncInfo;
 import org.aion.base.type.Address;
 import org.aion.base.util.ByteUtil;
 import org.aion.base.util.TypeConverter;
+import org.aion.mcf.account.Keystore;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.connector.dto.SendRequestDTO;
 import org.aion.wallet.connector.dto.SyncInfoDTO;
@@ -36,6 +37,15 @@ public class CoreBlockchainConnector extends BlockchainConnector {
     public CoreBlockchainConnector() {
         EventBusFactory.getBus(EventPublisher.ACCOUNT_CHANGE_EVENT_ID).register(this);
     }
+
+    public AccountDTO createAccount(final String password, final String name) {
+        final String address = Keystore.create(password);
+        AccountDTO account = getAccount(address);
+        account.setName(name);
+        walletStorage.setAccountName(address, name);
+        return account;
+    }
+
 
     @Override
     protected String sendTransactionInternal(SendRequestDTO dto) throws ValidationException {
