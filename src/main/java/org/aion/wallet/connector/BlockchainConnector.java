@@ -30,7 +30,16 @@ public abstract class BlockchainConnector {
 
     public abstract AccountDTO getAccount(final String address);
 
-    public abstract String sendTransaction(final SendRequestDTO dto) throws ValidationException;
+    public String sendTransaction(final SendRequestDTO dto) throws ValidationException {
+        if (dto == null || !dto.validate()) {
+            throw new ValidationException("Invalid transaction request data");
+        }
+        if (dto.estimateValue().compareTo(getBalance(dto.getFrom())) <= 0) {
+            throw new ValidationException("Insufficient funds");
+        }
+        return sendTransactionInternal(dto);
+    }
+    protected abstract String sendTransactionInternal(final SendRequestDTO dto) throws ValidationException;
 
     public abstract List<AccountDTO> getAccounts();
 
