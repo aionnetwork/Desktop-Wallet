@@ -3,6 +3,7 @@ package org.aion.wallet.connector.dto;
 import org.aion.base.util.ByteArrayWrapper;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.util.AddressUtils;
+import org.aion.wallet.util.BalanceUtils;
 import org.aion.wallet.util.ConfigUtils;
 
 import java.math.BigInteger;
@@ -69,7 +70,7 @@ public class SendRequestDTO implements UnlockableAccount {
     }
 
     public BigInteger estimateValue() {
-        return value.add(BigInteger.valueOf(nrg * nrgPrice));
+        return value.add(BalanceUtils.extractBalance(nrgPrice + "").multiply(BigInteger.valueOf(nrg)));
     }
 
     public byte[] getData() {
