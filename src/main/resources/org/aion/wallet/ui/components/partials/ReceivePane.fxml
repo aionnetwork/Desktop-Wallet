@@ -1,15 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.control.Button?>
 <AnchorPane id="receivePane" visible="false" stylesheets="@../contentPane.css"
             xmlns="http://javafx.com/javafx/8.0.162" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="org.aion.wallet.ui.components.ReceiveController" fx:id="parent">
 
     <VBox alignment="TOP_CENTER" spacing="10" AnchorPane.leftAnchor="10" AnchorPane.rightAnchor="10" AnchorPane.topAnchor="15">
-        <Label alignment="CENTER" styleClass="tile-label" text="Receive"/>
-        <ScrollPane hbarPolicy="NEVER" prefViewportHeight="250" prefViewportWidth="830" vbarPolicy="NEVER"
-                    VBox.vgrow="NEVER"/>
+        <Label alignment="CENTER_LEFT" styleClass="tile-label" text="Receive"/>
+        <HBox alignment="TOP_CENTER">
+            <Label text="Account address" styleClass="paragraph-text" />
+        </HBox>
+        <HBox spacing="10" alignment="TOP_CENTER">
+            <TextArea fx:id="accountAddress" styleClass="address-textarea" wrapText="true" prefRowCount="2" prefColumnCount="30" text="No account selected!"/>
+        </HBox>
+        <HBox alignment="TOP_CENTER">
+            <Button fx:id="copyToClipboard" text="Copy to clipboard" onMouseClicked="#onCopyToClipBoard" styleClass="disabled"/>
+        </HBox>
     </VBox>
 </AnchorPane>
