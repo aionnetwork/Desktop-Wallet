@@ -15,13 +15,12 @@ import org.aion.log.AionLoggerFactory;
 import org.aion.log.LogEnum;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.dto.AccountDTO;
-import org.aion.wallet.storage.WalletStorage;
 import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
 import org.aion.wallet.ui.events.TimerEvent;
 import org.aion.wallet.util.UIUtils;
-import org.aion.wallet.util.BalanceFormatter;
+import org.aion.wallet.util.BalanceUtils;
 import org.aion.wallet.util.DataUpdater;
 import org.slf4j.Logger;
 
@@ -165,7 +164,7 @@ public class HeaderPaneControls implements Initializable {
     }
 
     private void updateNewBalance(final String currency, final BigInteger bigInteger) {
-        final String newBalance = BalanceFormatter.formatBalance(bigInteger) + CCY_SEPARATOR + currency;
+        final String newBalance = BalanceUtils.formatBalance(bigInteger) + CCY_SEPARATOR + currency;
         if (newBalance.equalsIgnoreCase(accountBalance.getText())) {
             accountBalance.setText(newBalance);
         }

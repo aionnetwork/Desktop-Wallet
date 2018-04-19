@@ -1,7 +1,6 @@
 package org.aion.wallet.connector.api;
 
 import com.google.common.eventbus.Subscribe;
-import com.google.common.eventbus.Subscribe;
 import org.aion.api.IAionAPI;
 import org.aion.api.impl.AionAPIImpl;
 import org.aion.api.type.*;
@@ -23,8 +22,7 @@ import org.aion.wallet.storage.WalletStorage;
 import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.util.AionConstants;
-import org.aion.wallet.util.BalanceFormatter;
-import org.aion.wallet.util.AionConstants;
+import org.aion.wallet.util.BalanceUtils;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -36,12 +34,10 @@ import java.util.stream.Collectors;
 public class ApiBlockchainConnector extends BlockchainConnector {
 
     private final static IAionAPI API = AionAPIImpl.inst();
-
-    private Map<String, ExtendedAccountDTO> accounts = new HashMap<>();
-
     private final WalletStorage walletStorage = WalletStorage.getInstance();
+    private final Map<String, ExtendedAccountDTO> accounts = new HashMap<>();
 
-    public ApiBlockchainConnector(){
+    public ApiBlockchainConnector() {
         if (API.isConnected()) {
             return;
         }
@@ -51,7 +47,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     public AccountDTO getAccount(final String publicAddress) {
         final String name = walletStorage.getAccountName(publicAddress);
-        final String balance = BalanceFormatter.formatBalance(getBalance(publicAddress));
+        final String balance = BalanceUtils.formatBalance(getBalance(publicAddress));
         return new AccountDTO(name, publicAddress, balance, getCurrency());
     }
 
@@ -132,7 +128,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
             KeystoreItem keystoreItem = KeystoreItem.parse(file);
             final String address = keystoreItem.getAddress();
             final String name = walletStorage.getAccountName(address);
-            final String balance = BalanceFormatter.formatBalance(getBalance(address));
+            final String balance = BalanceUtils.formatBalance(getBalance(address));
             ExtendedAccountDTO account = new ExtendedAccountDTO(name, address, balance, getCurrency());
             account.setPrivateKey(key.getPrivKeyBytes());
             accounts.put(account.getPublicAddress(), account);

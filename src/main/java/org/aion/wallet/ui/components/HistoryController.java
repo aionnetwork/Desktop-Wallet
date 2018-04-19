@@ -16,7 +16,7 @@ import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
 import org.aion.wallet.util.AddressUtils;
-import org.aion.wallet.util.BalanceFormatter;
+import org.aion.wallet.util.BalanceUtils;
 
 import java.net.URL;
 import java.util.List;
@@ -101,7 +101,7 @@ public class HistoryController extends AbstractController {
         private TxRow(final String requestingAddress, final TransactionDTO dto) {
             final AccountDTO fromAccount = blockchainConnector.getAccount(dto.getFrom());
             final AccountDTO toAccount = blockchainConnector.getAccount(dto.getTo());
-            final String balance = BalanceFormatter.formatBalance(dto.getValue());
+            final String balance = BalanceUtils.formatBalance(dto.getValue());
             boolean isFromTx = AddressUtils.equals(requestingAddress, fromAccount.getPublicAddress());
             this.type = new SimpleStringProperty(isFromTx ? TO : FROM);
             this.name = new SimpleStringProperty(isFromTx ? toAccount.getName() : fromAccount.getName());

@@ -53,3 +53,32 @@
 .line{
     -fx-stroke: #40bded;
 }
+
+.header-text {
+    -fx-font-family: 'Open Sans Bold';
+    -fx-font-size: 18px;
+}
+
+.paragraph-text {
+    -fx-font-family: 'Open Sans Regular';
+    -fx-font-size: 16px;
+}
+
+.balance-value {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0px;
+    -fx-text-fill: BLACK;
+    -fx-text-alignment: CENTER;
+    -fx-font-family: 'Open Sans Regular';
+    -fx-font-size: 16px;
+    -fx-display-caret: false;
+    -fx-border-color: #40bded;
+    -fx-border-width: 0 0 1 0;
+}
+
+.private-address-textarea {
+    -fx-control-inner-background: #ececec;
+    -fx-background-insets: 0px;
+    -fx-text-fill: BLACK;
+    -fx-display-caret: false;
+}
