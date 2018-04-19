@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project basedir="." default="build" name="aion ui">
+<project basedir="." default="build_standalone" name="aion ui"
+         xmlns:if="ant:if" xmlns:unless="ant:unless">
     <property name="parent.mod" value="../mod"/>
     <property name="project.name" value="aion_ui"/>
     <property name="dir.lib" value="./lib"/>
@@ -16,6 +17,21 @@
     <property name="out.test" value="./build/test"/>
     <property name="test.report.dir" value="./build/report"/>
 
+    <macrodef name="git">
+        <attribute name="command"/>
+        <attribute name="dir" default=""/>
+        <attribute name="output" default=""/>
+        <element name="args" optional="true"/>
+        <sequential>
+            <echo message="git @{command}"/>
+            <exec executable="git" dir="@{dir}" outputproperty="@{output}">
+                <arg value="@{command}" />
+                <args/>
+            </exec>
+            <echo message="${@{output}}"/>
+        </sequential>
+    </macrodef>
+
     <path id="classpath.dependency">
         <pathelement location="${dir.mod}/modAionBase.jar"/>
     </path>
@@ -23,17 +39,24 @@
     <path id="classpath.test">
     </path>
 
+    <target name="get_version_from_git">
+        <git command="tag" output="git.version"/>
+        <condition property="suffix" value="" else="-${git.version}" >
+            <equals arg1="${git.version}" arg2=""/>
+        </condition>
+    </target>
+
     <target name="clean">
         <delete dir="${out.main}" includeEmptyDirs="true" includes="**/*/"/>
         <delete dir="${out.test}" includeEmptyDirs="true" includes="**/*/"/>
         <delete dir="${test.report.dir}"/>
+        <delete dir="${dir.pack}"/>
         <delete dir="${dir.mod}/updated/"/>
     </target>
 
     <target name="test_build" depends="build_standalone">
         <mkdir dir="${out.test}"/>
         <javac
-                debug="on"
                 debuglevel="source,lines,vars"
                 includeantruntime="false"
                 release="9"
@@ -70,14 +93,12 @@
         <condition property="parent.exists">
             <available file="${parent.mod}" type="dir"/>
         </condition>
-        <!--<fail unless:set="parent.exists">Can't build module in standalone mode</fail>-->
 
         <mkdir dir="${dir.mod}/updated"/>
         <copy todir="${dir.mod}/updated">
             <fileset dir="${parent.mod}" includes="mod*.jar"/>
         </copy>
         <javac
-                debug="${compile.debug}"
                 debuglevel="source,lines,vars"
                 includeantruntime="false"
                 release="9"
@@ -105,14 +126,13 @@
         <delete dir="${dir.mod}/updated"/>
     </target>
 
-    <target name="build_standalone">
+    <target name="build_standalone" depends="get_version_from_git">
         <mkdir dir="${out.main}"/>
         <mkdir dir="${dir.pack}"/>
         <condition property="parent.exists">
             <available file="${parent.mod}" type="dir"/>
         </condition>
         <javac
-                debug="${compile.debug}"
                 debuglevel="source,lines,vars"
                 includeantruntime="false"
                 release="9"
@@ -130,23 +150,24 @@
             <fileset dir="${res.main}" id="**"/>
         </copy>
         <jar
-                destfile="aion_ui.jar"
+                destfile="aion_ui${suffix}.jar"
                 filesetmanifest="mergewithoutmain"
                 basedir="${out.main}"
                 excludes="native/">
             <manifest>
                 <attribute name="Main-Class" value="org.aion.wallet.WalletApplication"/>
+                <attribute name="Version" value="${git.version}"/>
             </manifest>
         </jar>
         <move includeemptydirs="false" todir="${dir.pack}">
-            <file file="aion_ui.jar"/>
+            <file file="aion_ui${suffix}.jar"/>
         </move>
     </target>
 
     <target name="pack" depends="build_standalone">
         <mkdir dir="${dir.pack}"/>
-        <delete file="${dir.pack}/aion_ui.tar.gz"/>
-        <tar destfile="${dir.pack}/aion_ui.tar.gz" longfile="gnu" compression="gzip">
+        <delete file="${dir.pack}/aion_ui*.tar.gz"/>
+        <tar destfile="${dir.pack}/aion_ui${suffix}.tar.gz" longfile="gnu" compression="gzip">
             <tarfileset dir="${dir.lib}" filemode="755" prefix="${project.name}/lib">
                 <include name="*.jar"/>
             </tarfileset>
@@ -154,7 +175,7 @@
                 <include name="*.jar"/>
             </tarfileset>
             <tarfileset dir="${dir.pack}" filemode="755" prefix="${project.name}/mod">
-                <include name="aion_ui.jar"/>
+                <include name="aion_ui${suffix}.jar"/>
             </tarfileset>
             <tarfileset dir="${res.main}/native" filemode="755" prefix="${project.name}/native"/>
             <tarfileset dir="${dir.script}" filemode="755" prefix="${project.name}">
