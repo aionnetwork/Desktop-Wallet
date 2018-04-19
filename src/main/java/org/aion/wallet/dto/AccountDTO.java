@@ -5,8 +5,8 @@ import java.util.Objects;
 public class AccountDTO {
     private final String currency;
     private final String publicAddress;
-    private final String balance;
-    private String name; //TODO this has to be BigInteger
+    private String balance;  //TODO this has to be BigInteger
+    private String name;
     private boolean active;
 
     public AccountDTO(final String name, final String publicAddress, final String balance, final String currency) {
@@ -36,6 +36,10 @@ public class AccountDTO {
         return balance;
     }
 
+    public void setBalance(String balance) {
+        this.balance = balance;
+    }
+
     public boolean isActive() {
         return active;
     }
@@ -55,7 +59,6 @@ public class AccountDTO {
 
     @Override
     public int hashCode() {
-
         return Objects.hash(currency, publicAddress);
     }
 }
