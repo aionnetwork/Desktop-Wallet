@@ -2,6 +2,7 @@ package org.aion.wallet.ui.components;
 
 import com.google.common.eventbus.Subscribe;
 import javafx.application.Platform;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
@@ -112,7 +113,7 @@ public class SendController implements Initializable {
 
     private void setDefaults() {
         nrgInput.setText(AionConstants.DEFAULT_NRG);
-        nrgPriceInput.setText(BalanceUtils.formatBalance(AionConstants.DEFAULT_NRG_PRICE));
+        nrgPriceInput.setText(AionConstants.DEFAULT_NRG_PRICE.toString());
 
         toInput.setText("");
         valueInput.setText("");
@@ -120,25 +121,31 @@ public class SendController implements Initializable {
     }
 
     public void onSendAionClicked() {
-        Platform.runLater(() -> {
-            if (account == null) {
-                txStatusLabel.setText("You must select an account before sending Aion!");
-                return;
+        Task<String> executeAppTask = new Task<String>() {
+            @Override
+            protected String call() throws Exception {
+                SendRequestDTO dto = mapFormData();
+                txStatusLabel.setText("Sending transaction");
+                return blockchainConnector.sendTransaction(dto);
             }
-            try {
-                final String txHash = sendAion();
-                setDefaults();
-                displayTxStatus(txHash);
-            } catch (ValidationException e) {
-                txStatusLabel.setText(e.getMessage() != null ? e.getMessage() : "An error has occured");
-            }
-        });
-    }
+        };
 
-    private String sendAion() throws ValidationException {
-        SendRequestDTO dto = mapFormData();
-        txStatusLabel.setText("Sending transaction");
-        return blockchainConnector.sendTransaction(dto);
+        executeAppTask.setOnSucceeded(e -> {
+            setDefaults();
+            displayTxStatus(executeAppTask.getValue());
+        });
+
+        executeAppTask.setOnFailed(evt -> {
+            Throwable e = executeAppTask.getException();
+            txStatusLabel.setText(e.getMessage() != null ? e.getMessage() : "An error has occured");
+        });
+
+        executeAppTask.setOnCancelled(e -> {
+            /* task was cancelled */
+        });
+
+        Thread thread = new Thread(executeAppTask);
+        thread.start();
     }
 
     private void displayTxStatus(final String txHash) {
