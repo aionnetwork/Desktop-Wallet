@@ -123,27 +123,28 @@ public class SendController extends AbstractController {
             e.printStackTrace();
             return;
         }
-
         txStatusLabel.setText("Sending transaction...");
 
-        Task<String> executeAppTask = getApiTask(sendRequestDTO -> {
-                    try {
-                        return blockchainConnector.sendTransaction(sendRequestDTO);
-                    } catch (ValidationException e) {
-                        throw new RuntimeException(e);
-                    }
-                },
-                dto);
+        Task<String> sendTransactionTask = getApiTask(this::sendTransaction, dto);
 
         final EventHandler<WorkerStateEvent> successHandler = evt -> {
             setDefaults();
             txStatusLabel.setText("Transaction Finished");
         };
-        final EventHandler<WorkerStateEvent> errorHandler = evt -> txStatusLabel.setText("An error has occurred" + executeAppTask.getException().getMessage());
-        final EventHandler<WorkerStateEvent> cancelledHandler = event -> {
-        };
+        runApiTask(
+                sendTransactionTask,
+                successHandler,
+                evt -> txStatusLabel.setText("An error has occurred" + sendTransactionTask.getException().getMessage()),
+                getEmptyEvent()
+        );
+    }
 
-        runApiTask(executeAppTask, successHandler, errorHandler, cancelledHandler);
+    private String sendTransaction(final SendRequestDTO sendRequestDTO) {
+        try {
+            return blockchainConnector.sendTransaction(sendRequestDTO);
+        } catch (ValidationException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private SendRequestDTO mapFormData() throws ValidationException {
