@@ -1,7 +1,6 @@
 package org.aion.wallet.connector.core;
 
 import com.google.common.eventbus.Subscribe;
-import org.aion.api.server.ApiAion;
 import org.aion.api.server.types.ArgTxCall;
 import org.aion.api.server.types.SyncInfo;
 import org.aion.base.type.Address;
@@ -30,7 +29,7 @@ import java.util.stream.Collectors;
 
 public class CoreBlockchainConnector extends BlockchainConnector {
 
-    private final static ApiAion API = new WalletApi();
+    private final static WalletApi API = new WalletApi();
 
     private final WalletStorage walletStorage = WalletStorage.getInstance();
 
