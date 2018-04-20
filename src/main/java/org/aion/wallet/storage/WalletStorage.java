@@ -1,5 +1,9 @@
 package org.aion.wallet.storage;
 
+import org.aion.api.log.LogEnum;
+import org.aion.wallet.log.WalletLoggerFactory;
+import org.slf4j.Logger;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,6 +16,8 @@ import java.util.Optional;
 import java.util.Properties;
 
 public class WalletStorage {
+
+    private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
 
     private static final String HOME_DIR = System.getProperty("user.home");
 
@@ -55,8 +61,8 @@ public class WalletStorage {
     public void save() {
         try (final OutputStream writer = Files.newOutputStream(Paths.get(ACCOUNTS_FILE))) {
             accountProperties.store(writer, LocalDateTime.now().toString());
-        } catch (IOException e1) {
-            e1.printStackTrace();
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
         }
     }
 

@@ -9,16 +9,18 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.Popup;
+import org.aion.api.log.AionLoggerFactory;
+import org.aion.api.log.LogEnum;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
+import org.slf4j.Logger;
 
 import java.io.IOException;
 
 public class AddAccountDialog {
 
-    private static final double DEFAULT_ACCOUNT_DIALOG_HEIGHT = 400.0;
-    private static final double DEFAULT_ACCOUNT_DIALOG_WIDTH = 350.0;
+    private static final Logger log = AionLoggerFactory.getLogger(LogEnum.WLT.name());
 
     private ImportAccountDialog importAccountDialog = new ImportAccountDialog();
 
@@ -35,6 +37,7 @@ public class AddAccountDialog {
     private Label validationError;
 
     private final Popup popup = new Popup();
+
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
 
     public void createAccount() {
@@ -82,32 +85,21 @@ public class AddAccountDialog {
         popup.setAutoHide(true);
         popup.setAutoFix(true);
 
-        Pane addAccountDialog = null;
+        Pane addAccountDialog;
         try {
             addAccountDialog = FXMLLoader.load(getClass().getResource("AddAccountDialog.fxml"));
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
+            return;
         }
 
         Node eventSource = (Node) mouseEvent.getSource();
-        popup.setX(eventSource.getScene().getWindow().getX() + eventSource.getScene().getWidth() / 2 - getAccountDialogWidth(addAccountDialog) / 2);
-        popup.setY(eventSource.getScene().getWindow().getY() + eventSource.getScene().getHeight() / 2 - getAccountDialogHeight(addAccountDialog) / 2);
+        final double windowX = eventSource.getScene().getWindow().getX();
+        final double windowY = eventSource.getScene().getWindow().getY();
+        popup.setX(windowX + eventSource.getScene().getWidth() / 2 - addAccountDialog.getPrefWidth() / 2);
+        popup.setY(windowY + eventSource.getScene().getHeight() / 2 - addAccountDialog.getPrefHeight() / 2);
         popup.getContent().addAll(addAccountDialog);
         popup.show(eventSource.getScene().getWindow());
-    }
-
-    private double getAccountDialogHeight(Pane addAccountDialog) {
-        if(addAccountDialog != null) {
-            return addAccountDialog.getPrefHeight();
-        }
-        return DEFAULT_ACCOUNT_DIALOG_HEIGHT;
-    }
-
-    private double getAccountDialogWidth(Pane addAccountDialog) {
-        if(addAccountDialog != null) {
-            return addAccountDialog.getPrefWidth();
-        }
-        return DEFAULT_ACCOUNT_DIALOG_WIDTH;
     }
 
     public void close() {

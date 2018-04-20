@@ -16,10 +16,13 @@ import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import org.aion.api.log.AionLoggerFactory;
+import org.aion.api.log.LogEnum;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.ui.events.EventPublisher;
+import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,8 +31,13 @@ import java.nio.file.Files;
 import java.util.ResourceBundle;
 
 public class ImportAccountDialog implements Initializable {
+
+    private static final Logger log = AionLoggerFactory.getLogger(LogEnum.WLT.name());
+
     private static final String PK_RADIO_BUTTON_ID = "PK_RB";
+
     private static final String KEYSTORE_RADIO_BUTTON_ID = "KEYSTORE_RB";
+
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
 
     @FXML
@@ -81,7 +89,7 @@ public class ImportAccountDialog implements Initializable {
                 try {
                     account = blockchainConnector.addKeystoreUTCFile(keystoreFile, password);
                 } catch (final ValidationException e) {
-                    e.printStackTrace();
+                    log.error(e.getMessage(), e);
                     return;
                 }
                 EventPublisher.fireAccountChanged(account);
@@ -100,7 +108,7 @@ public class ImportAccountDialog implements Initializable {
         try {
             importAccountDialog = FXMLLoader.load(getClass().getResource("ImportAccountDialog.fxml"));
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             return;
         }
         pane.getChildren().add(importAccountDialog);
