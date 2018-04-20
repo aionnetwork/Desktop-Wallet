@@ -2,18 +2,19 @@ package org.aion.wallet.ui.components;
 
 import com.google.common.eventbus.Subscribe;
 import javafx.concurrent.Task;
-import javafx.concurrent.WorkerStateEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import org.aion.api.log.AionLoggerFactory;
+import org.aion.api.log.LogEnum;
 import org.aion.base.util.TypeConverter;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.connector.dto.SendRequestDTO;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.exception.ValidationException;
+import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
@@ -21,11 +22,14 @@ import org.aion.wallet.util.AionConstants;
 import org.aion.wallet.util.BalanceUtils;
 import org.aion.wallet.util.ConfigUtils;
 import org.aion.wallet.util.UIUtils;
+import org.slf4j.Logger;
 
 import java.net.URL;
 import java.util.ResourceBundle;
 
 public class SendController extends AbstractController {
+
+    private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
 
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
 
@@ -52,6 +56,34 @@ public class SendController extends AbstractController {
 
     private AccountDTO account;
 
+    public void onSendAionClicked() {
+        final SendRequestDTO dto;
+        try {
+            dto = mapFormData();
+        } catch (ValidationException e) {
+            log.error(e.getMessage(), e);
+            return;
+        }
+        txStatusLabel.setText("Sending transaction...");
+
+        final Task<String> sendTransactionTask = getApiTask(this::sendTransaction, dto);
+
+        runApiTask(
+                sendTransactionTask,
+                evt -> txStatusLabel.setText("Transaction Finished"),
+                getErrorEvent(t -> txStatusLabel.setText(t.getMessage()), sendTransactionTask.getException()),
+                getEmptyEvent()
+        );
+    }
+
+    private String sendTransaction(final SendRequestDTO sendRequestDTO) {
+        try {
+            return blockchainConnector.sendTransaction(sendRequestDTO);
+        } catch (ValidationException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Override
     protected void internalInit(final URL location, final ResourceBundle resources) {
         setDefaults();
@@ -59,6 +91,15 @@ public class SendController extends AbstractController {
             passwordInput.setVisible(false);
             passwordInput.setManaged(false);
         }
+    }
+
+    private void setDefaults() {
+        nrgInput.setText(AionConstants.DEFAULT_NRG);
+        nrgPriceInput.setText(AionConstants.DEFAULT_NRG_PRICE.toString());
+
+        toInput.setText("");
+        valueInput.setText("");
+        passwordInput.setText("");
     }
 
     @Subscribe
@@ -90,6 +131,13 @@ public class SendController extends AbstractController {
         }
     }
 
+    @Override
+    protected void registerEventBusConsumer() {
+        super.registerEventBusConsumer();
+        EventBusFactory.getBus(HeaderPaneButtonEvent.ID).register(this);
+        EventBusFactory.getBus(EventPublisher.ACCOUNT_CHANGE_EVENT_ID).register(this);
+    }
+
     private void setAccountBalanceText() {
         accountBalance.setText(account.getBalance() + " " + AionConstants.CCY);
         UIUtils.setWidth(accountBalance);
@@ -102,53 +150,6 @@ public class SendController extends AbstractController {
         }
         this.account.setBalance(BalanceUtils.formatBalance(blockchainConnector.getBalance(this.account.getPublicAddress())));
         setAccountBalanceText();
-    }
-
-    protected void registerEventBusConsumer() {
-        super.registerEventBusConsumer();
-        EventBusFactory.getBus(HeaderPaneButtonEvent.ID).register(this);
-        EventBusFactory.getBus(EventPublisher.ACCOUNT_CHANGE_EVENT_ID).register(this);
-    }
-
-    private void setDefaults() {
-        nrgInput.setText(AionConstants.DEFAULT_NRG);
-        nrgPriceInput.setText(AionConstants.DEFAULT_NRG_PRICE.toString());
-
-        toInput.setText("");
-        valueInput.setText("");
-        passwordInput.setText("");
-    }
-
-    public void onSendAionClicked() {
-        final SendRequestDTO dto;
-        try {
-            dto = mapFormData();
-        } catch (ValidationException e) {
-            e.printStackTrace();
-            return;
-        }
-        txStatusLabel.setText("Sending transaction...");
-
-        final Task<String> sendTransactionTask = getApiTask(this::sendTransaction, dto);
-
-        final EventHandler<WorkerStateEvent> successHandler = evt -> {
-            setDefaults();
-            txStatusLabel.setText("Transaction Finished");
-        };
-        runApiTask(
-                sendTransactionTask,
-                successHandler,
-                evt -> txStatusLabel.setText("An error has occurred: " + sendTransactionTask.getException().getMessage()),
-                getEmptyEvent()
-        );
-    }
-
-    private String sendTransaction(final SendRequestDTO sendRequestDTO) {
-        try {
-            return blockchainConnector.sendTransaction(sendRequestDTO);
-        } catch (ValidationException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     private SendRequestDTO mapFormData() throws ValidationException {

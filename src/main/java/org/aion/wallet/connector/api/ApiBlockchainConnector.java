@@ -171,8 +171,6 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     private void handleAccountChanged(final AccountDTO account) {
         if (!account.getName().equalsIgnoreCase(getStoredAccountName(account.getPublicAddress()))) {
             storeAccountName(account.getPublicAddress(), account.getName());
-            final String name = getStoredAccountName(account.getPublicAddress());
-            System.out.println(name);
         }
     }
 

@@ -1,6 +1,7 @@
 package org.aion.wallet.connector.core;
 
 import com.google.common.eventbus.Subscribe;
+import org.aion.api.log.LogEnum;
 import org.aion.api.server.types.ArgTxCall;
 import org.aion.api.server.types.SyncInfo;
 import org.aion.base.type.Address;
@@ -15,12 +16,14 @@ import org.aion.wallet.connector.dto.UnlockableAccount;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
+import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.util.AionConstants;
 import org.aion.wallet.util.BalanceUtils;
 import org.aion.zero.impl.types.AionBlock;
 import org.aion.zero.types.AionTransaction;
+import org.slf4j.Logger;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -28,6 +31,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class CoreBlockchainConnector extends BlockchainConnector {
+
+    private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
 
     private final static WalletApi API = new WalletApi();
 
@@ -97,7 +102,7 @@ public class CoreBlockchainConnector extends BlockchainConnector {
         try {
             return API.getBalance(address);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             return BigInteger.ZERO;
         }
     }
