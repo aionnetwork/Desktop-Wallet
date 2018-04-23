@@ -15,7 +15,7 @@
                 <TextField text="Balance" styleClass="copyable-label" editable="false"/>
             </VBox>
             <VBox>
-                <TextField fx:id="name" styleClass="name-input-fields" editable="false" onMouseEntered="#onNameFieldClicked" />
+                <TextField fx:id="name" styleClass="name-input-fields" editable="false"/>
                 <TextField fx:id="publicAddress" styleClass="copyable-label" editable="false"/>
                 <TextField fx:id="balance" styleClass="copyable-label" editable="false"/>
             </VBox>
