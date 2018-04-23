@@ -23,6 +23,10 @@ public class AccountCellItem extends ListCell<AccountDTO> {
 
     private static final String ICON_DISCONNECTED = "/org/aion/wallet/ui/components/icons/icon-disconnected-50.png";
 
+    private static final String EDIT_ICON = "/org/aion/wallet/ui/components/icons/pencil-edit-button.png";
+
+    private static final String CONFIRM_ICON = "/org/aion/wallet/ui/components/icons/icons8-checkmark-50.png";
+
     @FXML
     private TextField name;
     @FXML
@@ -32,7 +36,9 @@ public class AccountCellItem extends ListCell<AccountDTO> {
     @FXML
     private ImageView accountSelectButton;
     @FXML
-    private ImageView enterNameForSave;
+    private ImageView editNameButton;
+
+    private boolean nameInEditMode;
 
     public AccountCellItem() {
         loadFXML();
@@ -46,7 +52,6 @@ public class AccountCellItem extends ListCell<AccountDTO> {
             loader.setRoot(this);
             loader.load();
             name.setOnKeyPressed(this::submitName);
-            name.setOnMouseExited(this::submitName);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -59,18 +64,8 @@ public class AccountCellItem extends ListCell<AccountDTO> {
             accountDTO.setName(name.getText());
             EventPublisher.fireAccountChanged(accountDTO);
             updateItem(accountDTO, false);
-            enterNameForSave.setVisible(false);
             accountDTO.setActive(true);
             updateItem(accountDTO, false);
-        }
-    }
-
-    private void submitName(MouseEvent event) {
-        if(name.getText() != null && getItem() != null && getItem().getName() != null
-        && name.getText().equals(getItem().getName())) {
-            enterNameForSave.setVisible(false);
-            name.getStyleClass().clear();
-            name.getStyleClass().add("name-input-fields");
         }
     }
 
@@ -110,9 +105,29 @@ public class AccountCellItem extends ListCell<AccountDTO> {
     }
 
     public void onNameFieldClicked() {
-        name.setEditable(true);
-        name.getStyleClass().clear();
-        name.getStyleClass().add("name-input-fields-selected");
-        enterNameForSave.setVisible(true);
+        if(!nameInEditMode) {
+            name.setEditable(true);
+            name.getStyleClass().clear();
+            name.getStyleClass().add("name-input-fields-selected");
+            final InputStream resource = getClass().getResourceAsStream(CONFIRM_ICON);
+            editNameButton.setImage(new Image(resource));
+            name.requestFocus();
+            nameInEditMode = true;
+        }
+        else {
+            updateNameFieldOnSave();
+        }
+    }
+
+    private void updateNameFieldOnSave() {
+        if(name.getText() != null && getItem() != null && getItem().getName() != null
+                && name.getText().equals(getItem().getName())) {
+            name.getStyleClass().clear();
+            name.getStyleClass().add("name-input-fields");
+            final InputStream resource = getClass().getResourceAsStream(EDIT_ICON);
+            editNameButton.setImage(new Image(resource));
+            name.setEditable(false);
+            nameInEditMode = false;
+        }
     }
 }
