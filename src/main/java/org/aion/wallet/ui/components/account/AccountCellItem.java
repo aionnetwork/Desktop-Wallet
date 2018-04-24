@@ -2,7 +2,9 @@ package org.aion.wallet.ui.components.account;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.*;
+import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
@@ -43,13 +45,6 @@ public class AccountCellItem extends ListCell<AccountDTO> {
     public AccountCellItem() {
         loadFXML();
         publicAddress.setPrefWidth(575);
-
-        name.addEventFilter(MouseEvent.MOUSE_PRESSED, ev -> {
-            if (ev.getButton() == MouseButton.SECONDARY) {
-                ev.consume();
-                onNameFieldClicked();
-            }
-        });
     }
 
     private void loadFXML() {
@@ -67,6 +62,7 @@ public class AccountCellItem extends ListCell<AccountDTO> {
     private void submitNameOnEnterPressed(final KeyEvent event) {
         if (event.getCode().equals(KeyCode.ENTER)) {
             submitName();
+            updateNameFieldOnSave();
         }
     }
 
@@ -89,11 +85,6 @@ public class AccountCellItem extends ListCell<AccountDTO> {
         } else {
             name.setText(item.getName());
             UIUtils.setWidth(name);
-            ContextMenu contextMenu = new ContextMenu();
-            MenuItem edit = new MenuItem("Edit");
-            contextMenu.getItems().add(edit);
-            name.setContextMenu(contextMenu);
-            edit.setOnAction(event -> name.setEditable(true));
 
             publicAddress.setText(item.getPublicAddress());
             balance.setText(item.getBalance() + BalanceUtils.CCY_SEPARATOR + item.getCurrency());
@@ -116,7 +107,7 @@ public class AccountCellItem extends ListCell<AccountDTO> {
     }
 
     public void onNameFieldClicked() {
-        if(!nameInEditMode) {
+        if (!nameInEditMode) {
             name.setEditable(true);
             name.getStyleClass().clear();
             name.getStyleClass().add("name-input-fields-selected");
@@ -126,14 +117,13 @@ public class AccountCellItem extends ListCell<AccountDTO> {
 
             name.requestFocus();
             nameInEditMode = true;
-        }
-        else {
+        } else {
             updateNameFieldOnSave();
         }
     }
 
     private void updateNameFieldOnSave() {
-        if(name.getText() != null && getItem() != null && getItem().getName() != null) {
+        if (name.getText() != null && getItem() != null && getItem().getName() != null) {
             name.getStyleClass().clear();
             name.getStyleClass().add("name-input-fields");
 
