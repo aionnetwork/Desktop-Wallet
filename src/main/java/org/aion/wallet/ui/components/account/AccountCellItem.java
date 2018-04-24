@@ -25,9 +25,11 @@ public class AccountCellItem extends ListCell<AccountDTO> {
 
     private static final String ICON_DISCONNECTED = "/org/aion/wallet/ui/components/icons/icon-disconnected-50.png";
 
-    private static final String EDIT_ICON = "/org/aion/wallet/ui/components/icons/pencil-edit-button.png";
+    private static final String ICON_EDIT = "/org/aion/wallet/ui/components/icons/pencil-edit-button.png";
 
-    private static final String CONFIRM_ICON = "/org/aion/wallet/ui/components/icons/icons8-checkmark-50.png";
+    private static final String ICON_CONFIRM = "/org/aion/wallet/ui/components/icons/icons8-checkmark-50.png";
+    public static final String NAME_INPUT_FIELDS_SELECTED_STYLE = "name-input-fields-selected";
+    public static final String NAME_INPUT_FIELDS_STYLE = "name-input-fields";
 
     @FXML
     private TextField name;
@@ -110,9 +112,9 @@ public class AccountCellItem extends ListCell<AccountDTO> {
         if (!nameInEditMode) {
             name.setEditable(true);
             name.getStyleClass().clear();
-            name.getStyleClass().add("name-input-fields-selected");
+            name.getStyleClass().add(NAME_INPUT_FIELDS_SELECTED_STYLE);
 
-            final InputStream resource = getClass().getResourceAsStream(CONFIRM_ICON);
+            final InputStream resource = getClass().getResourceAsStream(ICON_CONFIRM);
             editNameButton.setImage(new Image(resource));
 
             name.requestFocus();
@@ -125,9 +127,9 @@ public class AccountCellItem extends ListCell<AccountDTO> {
     private void updateNameFieldOnSave() {
         if (name.getText() != null && getItem() != null && getItem().getName() != null) {
             name.getStyleClass().clear();
-            name.getStyleClass().add("name-input-fields");
+            name.getStyleClass().add(NAME_INPUT_FIELDS_STYLE);
 
-            final InputStream resource = getClass().getResourceAsStream(EDIT_ICON);
+            final InputStream resource = getClass().getResourceAsStream(ICON_EDIT);
             editNameButton.setImage(new Image(resource));
 
             name.setEditable(false);
