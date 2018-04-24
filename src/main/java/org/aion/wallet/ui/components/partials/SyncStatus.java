@@ -1,11 +1,12 @@
 package org.aion.wallet.ui.components.partials;
 
 import com.google.common.eventbus.Subscribe;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.connector.dto.SyncInfoDTO;
+import org.aion.wallet.ui.components.AbstractController;
 import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.TimerEvent;
 import org.aion.wallet.util.DataUpdater;
@@ -13,8 +14,9 @@ import org.aion.wallet.util.SyncStatusFormatter;
 
 import java.net.URL;
 import java.util.ResourceBundle;
+import java.util.function.Function;
 
-public class SyncStatus implements Initializable {
+public class SyncStatus extends AbstractController {
 
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
 
@@ -22,18 +24,17 @@ public class SyncStatus implements Initializable {
     private Label progressBarLabel;
 
     @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        registerEventBusConsumer();
-    }
-
-    private void registerEventBusConsumer() {
-        EventBusFactory.getBus(DataUpdater.UI_DATA_REFRESH).register(this);
-    }
+    protected void internalInit(URL location, ResourceBundle resources) {}
 
     @Subscribe
     private void handleConnectivityStatusEvent(TimerEvent event) {
-        SyncInfoDTO syncInfo = blockchainConnector.getSyncInfo();
-        setSyncStatus(syncInfo);
+        final Task<SyncInfoDTO> getSyncInfoTask = getApiTask(o -> blockchainConnector.getSyncInfo(), null);
+        runApiTask(
+                getSyncInfoTask,
+                evt -> setSyncStatus(getSyncInfoTask.getValue()),
+                getErrorEvent(throwable -> {}, getSyncInfoTask),
+                getEmptyEvent()
+        );
     }
 
     private void setSyncStatus(SyncInfoDTO syncInfo) {

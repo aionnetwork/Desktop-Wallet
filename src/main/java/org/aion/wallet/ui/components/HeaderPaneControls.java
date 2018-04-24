@@ -2,6 +2,7 @@ package org.aion.wallet.ui.components;
 
 import com.google.common.eventbus.Subscribe;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -14,6 +15,7 @@ import javafx.scene.layout.VBox;
 import org.aion.api.log.LogEnum;
 import org.aion.log.AionLoggerFactory;
 import org.aion.wallet.connector.BlockchainConnector;
+import org.aion.wallet.connector.dto.SyncInfoDTO;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.EventPublisher;
@@ -35,7 +37,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
-public class HeaderPaneControls implements Initializable {
+public class HeaderPaneControls extends AbstractController {
 
     private static final Logger log = AionLoggerFactory.getLogger(LogEnum.WLT.name());
 
@@ -71,7 +73,7 @@ public class HeaderPaneControls implements Initializable {
     private String accountAddress;
 
     @Override
-    public void initialize(URL location, ResourceBundle resources) {
+    public void internalInit(URL location, ResourceBundle resources) {
         registerEventBusConsumer();
         headerButtons.put(homeButton, new HeaderPaneButtonEvent(HeaderPaneButtonEvent.Type.OVERVIEW));
         headerButtons.put(sendButton, new HeaderPaneButtonEvent(HeaderPaneButtonEvent.Type.SEND));
@@ -83,9 +85,10 @@ public class HeaderPaneControls implements Initializable {
         clickButton(homeButton);
     }
 
-    private void registerEventBusConsumer() {
+    @Override
+    protected void registerEventBusConsumer() {
+        super.registerEventBusConsumer();
         EventBusFactory.getBus(EventPublisher.ACCOUNT_CHANGE_EVENT_ID).register(this);
-        EventBusFactory.getBus(DataUpdater.UI_DATA_REFRESH).register(this);
     }
 
     public void openAionWebSite() {
@@ -147,11 +150,15 @@ public class HeaderPaneControls implements Initializable {
     private void handleConnectivityStatusEvent(final TimerEvent event) {
         final String accountName = activeAccount.getText();
         if (!accountName.isEmpty()) {
-            Optional<BigInteger> balance;
-            balance = Optional.ofNullable(blockchainConnector.getBalance(accountAddress));
             final String[] text = accountBalance.getText().split(BalanceUtils.CCY_SEPARATOR);
             final String currency = text[1];
-            balance.ifPresent(bigInteger -> updateNewBalance(currency, bigInteger));
+            final Task<BigInteger> getBalanceTask = getApiTask(blockchainConnector::getBalance, accountAddress);
+            runApiTask(
+                    getBalanceTask,
+                    evt -> updateNewBalance(currency, getBalanceTask.getValue()),
+                    getErrorEvent(throwable -> {}, getBalanceTask),
+                    getEmptyEvent()
+            );
         }
     }
 

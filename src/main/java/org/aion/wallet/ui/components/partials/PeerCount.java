@@ -29,7 +29,7 @@ public class PeerCount implements Initializable{
 
     @Subscribe
     private void handleConnectivityStatusEvent(TimerEvent event) {
-        setPeerCount(blockchainConnector.getPeerCount());
+         setPeerCount(blockchainConnector.getPeerCount());
     }
 
     private void setPeerCount(int numberOfPeers) {

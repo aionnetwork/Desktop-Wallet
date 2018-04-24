@@ -61,14 +61,16 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     @Override
     protected String sendTransactionInternal(SendRequestDTO dto) {
+        final BigInteger latestTransactionNonce = getLatestTransactionNonce(dto.getFrom());
         TxArgs txArgs = new TxArgs.TxArgsBuilder()
                 .from(new Address(TypeConverter.toJsonHex(dto.getFrom())))
                 .to(new Address(TypeConverter.toJsonHex(dto.getTo())))
                 .value(dto.getValue())
-                .nonce(getLatestTransactionNonce(dto.getFrom()))
+                .nonce(latestTransactionNonce)
                 .data(new ByteArrayWrapper(dto.getData()))
                 .nrgPrice(dto.getNrgPrice())
-                .nrgLimit(dto.getNrg()).createTxArgs();
+                .nrgLimit(dto.getNrg())
+                .createTxArgs();
         final MsgRsp response = API.getTx().sendSignedTransaction(
                 txArgs,
                 new ByteArrayWrapper(addressToAccount.get(dto.getFrom()).getPrivateKey()),
@@ -110,9 +112,20 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     @Override
     public SyncInfoDTO getSyncInfo() {
+        long chainBest;
+        long netBest;
+        SyncInfo syncInfo;
+        try {
+            syncInfo = API.getNet().syncInfo().getObject();
+            chainBest = syncInfo.getChainBestBlock();
+            netBest = syncInfo.getNetworkBestBlock();
+        } catch (Exception e) {
+            chainBest = API.getChain().blockNumber().getObject();
+            netBest = chainBest;
+        }
         SyncInfoDTO syncInfoDTO = new SyncInfoDTO();
-        syncInfoDTO.setChainBestBlkNumber(API.getChain().blockNumber().getObject());
-        syncInfoDTO.setNetworkBestBlkNumber(((SyncInfo) API.getNet().syncInfo().getObject()).getNetworkBestBlock());
+        syncInfoDTO.setChainBestBlkNumber(chainBest);
+        syncInfoDTO.setNetworkBestBlkNumber(netBest);
         return syncInfoDTO;
     }
 
@@ -165,6 +178,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
                 return null;
             }
         } catch (Exception e) {
+            e.printStackTrace();
             throw new ValidationException("Unsupported key type");
         }
     }
@@ -186,7 +200,12 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         Long latest = API.getChain().blockNumber().getObject();
         final String parsedAddr = TypeConverter.toJsonHex(addr);
         for (long i = latest; i > 0; i--) {
-            BlockDetails blk = getBlockDetailsByNumber(i);
+            BlockDetails blk = null;
+            try {
+                blk = getBlockDetailsByNumber(i);
+            } catch (Exception e) {
+                //
+            }
             if (blk == null || blk.getTxDetails().size() == 0) {
                 continue;
             }

@@ -7,7 +7,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
-import org.aion.api.log.AionLoggerFactory;
 import org.aion.api.log.LogEnum;
 import org.aion.base.util.TypeConverter;
 import org.aion.wallet.connector.BlockchainConnector;
@@ -24,6 +23,7 @@ import org.aion.wallet.util.ConfigUtils;
 import org.aion.wallet.util.UIUtils;
 import org.slf4j.Logger;
 
+import java.math.BigInteger;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -71,7 +71,7 @@ public class SendController extends AbstractController {
         runApiTask(
                 sendTransactionTask,
                 evt -> txStatusLabel.setText("Transaction Finished"),
-                getErrorEvent(t -> txStatusLabel.setText(t.getMessage()), sendTransactionTask.getException()),
+                getErrorEvent(t -> txStatusLabel.setText(t.getMessage()), sendTransactionTask),
                 getEmptyEvent()
         );
     }
@@ -145,11 +145,19 @@ public class SendController extends AbstractController {
     }
 
     private void refreshAccountBalance() {
-        if (this.account == null) {
+        if (account == null) {
             return;
         }
-        this.account.setBalance(BalanceUtils.formatBalance(blockchainConnector.getBalance(this.account.getPublicAddress())));
-        setAccountBalanceText();
+        final Task<BigInteger> getBalanceTask = getApiTask(blockchainConnector::getBalance, account.getPublicAddress());
+        runApiTask(
+                getBalanceTask,
+                evt -> {
+                    account.setBalance(BalanceUtils.formatBalance(getBalanceTask.getValue()));
+                    setAccountBalanceText();
+                },
+                getErrorEvent(throwable -> {}, getBalanceTask),
+                getEmptyEvent()
+        );
     }
 
     private SendRequestDTO mapFormData() throws ValidationException {

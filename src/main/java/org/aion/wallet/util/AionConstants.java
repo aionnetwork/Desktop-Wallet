@@ -8,9 +8,9 @@ public class AionConstants {
 
     public final static String CCY = "AION";
 
-    public static final String DEFAULT_NRG = "100000";
+    public static final String DEFAULT_NRG = "22000";
 
-    public static final BigInteger DEFAULT_NRG_PRICE = BigInteger.valueOf(1000000L);
+    public static final BigInteger DEFAULT_NRG_PRICE = BigInteger.valueOf((long) 10E9);
 
     public static final int BLOCK_MINING_TIME_SECONDS = 10;
 
