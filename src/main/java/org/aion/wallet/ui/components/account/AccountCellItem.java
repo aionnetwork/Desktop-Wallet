@@ -7,8 +7,8 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-import org.aion.base.util.TypeConverter;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.util.BalanceUtils;
@@ -43,6 +43,13 @@ public class AccountCellItem extends ListCell<AccountDTO> {
     public AccountCellItem() {
         loadFXML();
         publicAddress.setPrefWidth(575);
+
+        name.addEventFilter(MouseEvent.MOUSE_PRESSED, ev -> {
+            if (ev.getButton() == MouseButton.SECONDARY) {
+                ev.consume();
+                onNameFieldClicked();
+            }
+        });
     }
 
     private void loadFXML() {
@@ -51,22 +58,26 @@ public class AccountCellItem extends ListCell<AccountDTO> {
             loader.setController(this);
             loader.setRoot(this);
             loader.load();
-            name.setOnKeyPressed(this::submitName);
+            name.setOnKeyPressed(this::submitNameOnEnterPressed);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private void submitName(final KeyEvent event) {
+    private void submitNameOnEnterPressed(final KeyEvent event) {
         if (event.getCode().equals(KeyCode.ENTER)) {
-            name.setEditable(false);
-            final AccountDTO accountDTO = getItem();
-            accountDTO.setName(name.getText());
-            EventPublisher.fireAccountChanged(accountDTO);
-            updateItem(accountDTO, false);
-            accountDTO.setActive(true);
-            updateItem(accountDTO, false);
+            submitName();
         }
+    }
+
+    private void submitName() {
+        name.setEditable(false);
+        final AccountDTO accountDTO = getItem();
+        accountDTO.setName(name.getText());
+        EventPublisher.fireAccountChanged(accountDTO);
+        updateItem(accountDTO, false);
+        accountDTO.setActive(true);
+        updateItem(accountDTO, false);
     }
 
     @Override
@@ -109,8 +120,10 @@ public class AccountCellItem extends ListCell<AccountDTO> {
             name.setEditable(true);
             name.getStyleClass().clear();
             name.getStyleClass().add("name-input-fields-selected");
+
             final InputStream resource = getClass().getResourceAsStream(CONFIRM_ICON);
             editNameButton.setImage(new Image(resource));
+
             name.requestFocus();
             nameInEditMode = true;
         }
@@ -120,14 +133,16 @@ public class AccountCellItem extends ListCell<AccountDTO> {
     }
 
     private void updateNameFieldOnSave() {
-        if(name.getText() != null && getItem() != null && getItem().getName() != null
-                && name.getText().equals(getItem().getName())) {
+        if(name.getText() != null && getItem() != null && getItem().getName() != null) {
             name.getStyleClass().clear();
             name.getStyleClass().add("name-input-fields");
+
             final InputStream resource = getClass().getResourceAsStream(EDIT_ICON);
             editNameButton.setImage(new Image(resource));
+
             name.setEditable(false);
             nameInEditMode = false;
+            submitName();
         }
     }
 }
