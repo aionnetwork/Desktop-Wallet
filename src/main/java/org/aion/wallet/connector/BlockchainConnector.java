@@ -13,6 +13,7 @@ import org.aion.wallet.util.ConfigUtils;
 
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Map;
 
 public abstract class BlockchainConnector {
 
@@ -78,4 +79,6 @@ public abstract class BlockchainConnector {
     protected void storeAccountName(final String address, final String name) {
         walletStorage.setAccountName(address, name);
     }
+
+    public abstract AccountDTO importAccount(Map<String, String> importData) throws ValidationException;
 }

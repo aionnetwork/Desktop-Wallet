@@ -167,6 +167,16 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         API.destroyApi();
     }
 
+    @Override
+    public AccountDTO importAccount(Map<String, String> val) {
+        final ApiMsg response = API.getAccount().accountImport(val);
+        System.out.println(((List<Key>) response.getObject()).get(0));
+        final Key importedKey = ((List<Key>) response.getObject()).get(0);
+        final String address = importedKey.getPubKey().toString();
+        final ExtendedAccountDTO account = createExtendedAccountDTO(address, importedKey.getPriKey().toBytes());
+        return account;
+    }
+
     @Subscribe
     private void handleAccountChanged(final AccountDTO account) {
         if (!account.getName().equalsIgnoreCase(getStoredAccountName(account.getPublicAddress()))) {

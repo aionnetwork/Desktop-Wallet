@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class CoreBlockchainConnector extends BlockchainConnector {
@@ -110,6 +111,11 @@ public class CoreBlockchainConnector extends BlockchainConnector {
     @Override
     public String getCurrency() {
         return AionConstants.CCY;
+    }
+
+    @Override
+    public AccountDTO importAccount(Map<String, String> importData) {
+        return null;
     }
 
     @Override

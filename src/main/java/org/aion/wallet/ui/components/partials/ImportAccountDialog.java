@@ -18,6 +18,12 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import org.aion.api.log.AionLoggerFactory;
 import org.aion.api.log.LogEnum;
+import org.aion.base.type.Address;
+import org.aion.base.util.Hex;
+import org.aion.crypto.ECKey;
+import org.aion.crypto.ECKeyFac;
+import org.aion.mcf.account.AccountManager;
+import org.aion.mcf.account.Keystore;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.exception.ValidationException;
@@ -28,6 +34,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 public class ImportAccountDialog implements Initializable {
@@ -95,9 +103,26 @@ public class ImportAccountDialog implements Initializable {
                 EventPublisher.fireAccountChanged(account);
             }
         } else {
-            //todo: import private key
             String password = privateKeyPassword.getText();
             String privateKey = privateKeyInput.getText();
+            if (password != null && !password.isEmpty() && privateKey != null && !privateKey.isEmpty()) {
+                byte[] raw = Hex.decode(privateKey.startsWith("0x") ? privateKey.substring(2) : privateKey);
+                if (raw == null) {
+                    System.out.println("Invalid private key");
+                    return;
+                }
+
+                ECKey key = ECKeyFac.inst().fromPrivate(raw);
+
+                String address = Keystore.create(password, key);
+                if (!address.equals("0x")) {
+                    System.out.println("The private key was imported, the address is: " + address);
+                    return;
+                } else {
+                    System.out.println("Failed to import the private key. Already exists?");
+                    return;
+                }
+            }
         }
         this.close(mouseEvent);
     }
