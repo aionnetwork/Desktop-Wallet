@@ -26,6 +26,7 @@ import org.aion.mcf.account.AccountManager;
 import org.aion.mcf.account.Keystore;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.dto.AccountDTO;
+import org.aion.wallet.dto.ExtendedAccountDTO;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.ui.events.EventPublisher;
 import org.slf4j.Logger;
@@ -90,6 +91,7 @@ public class ImportAccountDialog implements Initializable {
     }
 
     public void importAccount(MouseEvent mouseEvent) {
+        //TODO take into account the remember me checkbox
         if (importKeystoreView.isVisible()) {
             String password = keystorePassword.getText();
             if (!password.isEmpty() && keystoreFile != null) {
@@ -106,21 +108,19 @@ public class ImportAccountDialog implements Initializable {
             String password = privateKeyPassword.getText();
             String privateKey = privateKeyInput.getText();
             if (password != null && !password.isEmpty() && privateKey != null && !privateKey.isEmpty()) {
+                AccountDTO account;
                 byte[] raw = Hex.decode(privateKey.startsWith("0x") ? privateKey.substring(2) : privateKey);
-                if (raw == null) {
+                if(raw == null) {
                     System.out.println("Invalid private key");
                     return;
                 }
-
-                ECKey key = ECKeyFac.inst().fromPrivate(raw);
-
-                String address = Keystore.create(password, key);
-                if (!address.equals("0x")) {
-                    System.out.println("The private key was imported, the address is: " + address);
-                    return;
-                } else {
-                    System.out.println("Failed to import the private key. Already exists?");
-                    return;
+                try {
+                    account = blockchainConnector.addPrivateKey(raw, password);
+                    if(account != null) {
+                        EventPublisher.fireAccountChanged(account);
+                    }
+                } catch (ValidationException e) {
+                    log.error(e.getMessage(), e);
                 }
             }
         }

@@ -10,6 +10,7 @@ import org.aion.base.util.ByteArrayWrapper;
 import org.aion.base.util.TypeConverter;
 import org.aion.crypto.ECKey;
 import org.aion.crypto.ECKeyFac;
+import org.aion.mcf.account.Keystore;
 import org.aion.mcf.account.KeystoreFormat;
 import org.aion.mcf.account.KeystoreItem;
 import org.aion.wallet.connector.BlockchainConnector;
@@ -151,11 +152,18 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         return account;
     }
 
+    @Override
     public AccountDTO addPrivateKey(byte[] raw, String password) throws ValidationException {
         try {
-            // todo: get correct public key from ECKey
             ECKey key = ECKeyFac.inst().fromPrivate(raw);
-            throw new UnsupportedOperationException("ApiBlockhainConnector.addPrivateKey");
+            String address = Keystore.create(password, key);
+            if (!address.equals("0x")) {
+                System.out.println("The private key was imported, the address is: " + address);
+                return createExtendedAccountDTO(address, raw);
+            } else {
+                System.out.println("Failed to import the private key. Already exists?");
+                return null;
+            }
         } catch (Exception e) {
             throw new ValidationException("Unsupported key type");
         }
@@ -165,16 +173,6 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     public void close() {
         super.close();
         API.destroyApi();
-    }
-
-    @Override
-    public AccountDTO importAccount(Map<String, String> val) {
-        final ApiMsg response = API.getAccount().accountImport(val);
-        System.out.println(((List<Key>) response.getObject()).get(0));
-        final Key importedKey = ((List<Key>) response.getObject()).get(0);
-        final String address = importedKey.getPubKey().toString();
-        final ExtendedAccountDTO account = createExtendedAccountDTO(address, importedKey.getPriKey().toBytes());
-        return account;
     }
 
     @Subscribe

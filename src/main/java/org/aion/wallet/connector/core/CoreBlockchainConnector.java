@@ -114,7 +114,7 @@ public class CoreBlockchainConnector extends BlockchainConnector {
     }
 
     @Override
-    public AccountDTO importAccount(Map<String, String> importData) {
+    public AccountDTO addPrivateKey(byte[] raw, String password) throws ValidationException {
         return null;
     }
 

@@ -80,5 +80,5 @@ public abstract class BlockchainConnector {
         walletStorage.setAccountName(address, name);
     }
 
-    public abstract AccountDTO importAccount(Map<String, String> importData) throws ValidationException;
+    public abstract AccountDTO addPrivateKey(byte[] raw, String password) throws ValidationException;
 }
