@@ -41,6 +41,9 @@
                 <PasswordField fx:id="privateKeyPassword"
                                prefWidth="275.0" promptText="Password" styleClass="add-account-input-fields"/>
             </VBox>
+            <AnchorPane AnchorPane.bottomAnchor="150">
+                <CheckBox fx:id="rememberAccount" text="Remember me" />
+            </AnchorPane>
             <AnchorPane AnchorPane.bottomAnchor="0">
                 <HBox spacing="10.0">
                     <Button prefHeight="50.0" prefWidth="130.0" styleClass="add-account-buttons"
