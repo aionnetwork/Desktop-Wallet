@@ -35,6 +35,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.Key;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -76,6 +78,9 @@ public class ImportAccountDialog implements Initializable {
     @FXML
     private VBox importPrivateKeyView;
 
+    @FXML
+    private CheckBox rememberAccount;
+
     private byte[] keystoreFile;
 
     public void uploadKeystoreFile() throws IOException {
@@ -103,6 +108,12 @@ public class ImportAccountDialog implements Initializable {
                     return;
                 }
                 EventPublisher.fireAccountChanged(account);
+                if(!rememberAccount.isSelected()) {
+                    if(Keystore.exist(account.getPublicAddress())) {
+                        for(String s : Keystore.list())
+                        Keystore.list();
+                    }
+                }
             }
         } else {
             String password = privateKeyPassword.getText();
