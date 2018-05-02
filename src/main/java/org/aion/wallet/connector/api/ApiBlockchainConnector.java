@@ -3,6 +3,7 @@ package org.aion.wallet.connector.api;
 import com.google.common.eventbus.Subscribe;
 import org.aion.api.IAionAPI;
 import org.aion.api.impl.AionAPIImpl;
+import org.aion.api.log.LogEnum;
 import org.aion.api.type.*;
 import org.aion.base.type.Address;
 import org.aion.base.type.Hash256;
@@ -21,10 +22,12 @@ import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.dto.ExtendedAccountDTO;
 import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
+import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.util.AionConstants;
 import org.aion.wallet.util.BalanceUtils;
+import org.slf4j.Logger;
 
 import java.math.BigInteger;
 import java.util.*;
@@ -32,6 +35,7 @@ import java.util.stream.Collectors;
 
 public class ApiBlockchainConnector extends BlockchainConnector {
 
+    private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
     private final static IAionAPI API = AionAPIImpl.inst();
     private final Map<String, ExtendedAccountDTO> addressToAccount = new HashMap<>();
 
@@ -61,14 +65,16 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     @Override
     protected String sendTransactionInternal(SendRequestDTO dto) {
+        final BigInteger latestTransactionNonce = getLatestTransactionNonce(dto.getFrom());
         TxArgs txArgs = new TxArgs.TxArgsBuilder()
                 .from(new Address(TypeConverter.toJsonHex(dto.getFrom())))
                 .to(new Address(TypeConverter.toJsonHex(dto.getTo())))
                 .value(dto.getValue())
-                .nonce(getLatestTransactionNonce(dto.getFrom()))
+                .nonce(latestTransactionNonce)
                 .data(new ByteArrayWrapper(dto.getData()))
                 .nrgPrice(dto.getNrgPrice())
-                .nrgLimit(dto.getNrg()).createTxArgs();
+                .nrgLimit(dto.getNrg())
+                .createTxArgs();
         final MsgRsp response = API.getTx().sendSignedTransaction(
                 txArgs,
                 new ByteArrayWrapper(addressToAccount.get(dto.getFrom()).getPrivateKey()),
@@ -110,9 +116,20 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     @Override
     public SyncInfoDTO getSyncInfo() {
+        long chainBest;
+        long netBest;
+        SyncInfo syncInfo;
+        try {
+            syncInfo = API.getNet().syncInfo().getObject();
+            chainBest = syncInfo.getChainBestBlock();
+            netBest = syncInfo.getNetworkBestBlock();
+        } catch (Exception e) {
+            chainBest = API.getChain().blockNumber().getObject();
+            netBest = chainBest;
+        }
         SyncInfoDTO syncInfoDTO = new SyncInfoDTO();
-        syncInfoDTO.setChainBestBlkNumber(API.getChain().blockNumber().getObject());
-        syncInfoDTO.setNetworkBestBlkNumber(((SyncInfo) API.getNet().syncInfo().getObject()).getNetworkBestBlock());
+        syncInfoDTO.setChainBestBlkNumber(chainBest);
+        syncInfoDTO.setNetworkBestBlkNumber(netBest);
         return syncInfoDTO;
     }
 
@@ -165,6 +182,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
                 return null;
             }
         } catch (Exception e) {
+            e.printStackTrace();
             throw new ValidationException("Unsupported key type");
         }
     }
@@ -186,7 +204,12 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         Long latest = API.getChain().blockNumber().getObject();
         final String parsedAddr = TypeConverter.toJsonHex(addr);
         for (long i = latest; i > 0; i--) {
-            BlockDetails blk = getBlockDetailsByNumber(i);
+            BlockDetails blk = null;
+            try {
+                blk = getBlockDetailsByNumber(i);
+            } catch (Exception e) {
+                log.warn("Exception occurred while searching for the latest account transaction");
+            }
             if (blk == null || blk.getTxDetails().size() == 0) {
                 continue;
             }

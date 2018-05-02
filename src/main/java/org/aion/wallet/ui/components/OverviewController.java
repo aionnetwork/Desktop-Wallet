@@ -2,6 +2,7 @@ package org.aion.wallet.ui.components;
 
 import com.google.common.eventbus.Subscribe;
 import javafx.collections.FXCollections;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.ListView;
 import javafx.scene.input.MouseEvent;
@@ -11,6 +12,7 @@ import org.aion.wallet.ui.components.partials.AddAccountDialog;
 import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
+import org.aion.wallet.util.BalanceUtils;
 
 import java.net.URL;
 import java.util.List;
@@ -39,7 +41,16 @@ public class OverviewController extends AbstractController {
     }
 
     protected void reloadAccounts() {
-        List<AccountDTO> accounts = blockchainConnector.getAccounts();
+        final Task<List<AccountDTO>> getAccountsTask = getApiTask(o -> blockchainConnector.getAccounts(), null);
+        runApiTask(
+                getAccountsTask,
+                evt -> reloadAccountObservableList(getAccountsTask.getValue()),
+                getErrorEvent(throwable -> {}, getAccountsTask),
+                getEmptyEvent()
+        );
+    }
+
+    private void reloadAccountObservableList(List<AccountDTO> accounts) {
         for (AccountDTO account : accounts) {
             account.setActive(this.account != null && this.account.equals(account));
         }

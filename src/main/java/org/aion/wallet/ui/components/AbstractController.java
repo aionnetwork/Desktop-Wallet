@@ -70,10 +70,13 @@ public abstract class AbstractController implements Initializable {
         };
     }
 
-    protected final EventHandler<WorkerStateEvent> getErrorEvent(Consumer<Throwable> consumer, Throwable e) {
+    protected final EventHandler<WorkerStateEvent> getErrorEvent(Consumer<Throwable> consumer, Task t) {
         return event -> {
-            log.error(e.getMessage(), e);
-            consumer.accept(e);
+            Throwable e = t.getException();
+            if (e != null) {
+                log.error(e.getMessage(), e);
+                consumer.accept(e);
+            }
         };
     }
 

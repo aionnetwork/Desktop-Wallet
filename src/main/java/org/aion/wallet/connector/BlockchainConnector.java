@@ -1,7 +1,6 @@
 package org.aion.wallet.connector;
 
 import org.aion.wallet.connector.api.ApiBlockchainConnector;
-import org.aion.wallet.connector.core.CoreBlockchainConnector;
 import org.aion.wallet.connector.dto.SendRequestDTO;
 import org.aion.wallet.connector.dto.SyncInfoDTO;
 import org.aion.wallet.connector.dto.TransactionDTO;
@@ -11,11 +10,14 @@ import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.storage.WalletStorage;
 import org.aion.wallet.util.ConfigUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
 
 public abstract class BlockchainConnector {
+
+    private static final String CORE_CONNECTOR_CLASS = "org.aion.wallet.connector.core.CoreBlockchainConnector";
 
     private static BlockchainConnector INST;
 
@@ -26,7 +28,11 @@ public abstract class BlockchainConnector {
             return INST;
         }
         if (ConfigUtils.isEmbedded()) {
-            INST = new CoreBlockchainConnector();
+            try {
+                INST = (BlockchainConnector) Class.forName(CORE_CONNECTOR_CLASS).getDeclaredConstructor().newInstance();
+            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | NoSuchMethodException | InvocationTargetException e) {
+                throw new RuntimeException("Could not instantiate class: " + CORE_CONNECTOR_CLASS, e);
+            }
         } else {
             INST = new ApiBlockchainConnector();
         }
