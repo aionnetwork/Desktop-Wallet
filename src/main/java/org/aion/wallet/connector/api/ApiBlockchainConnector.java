@@ -3,6 +3,7 @@ package org.aion.wallet.connector.api;
 import com.google.common.eventbus.Subscribe;
 import org.aion.api.IAionAPI;
 import org.aion.api.impl.AionAPIImpl;
+import org.aion.api.log.LogEnum;
 import org.aion.api.type.*;
 import org.aion.base.type.Address;
 import org.aion.base.type.Hash256;
@@ -21,10 +22,12 @@ import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.dto.ExtendedAccountDTO;
 import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
+import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.util.AionConstants;
 import org.aion.wallet.util.BalanceUtils;
+import org.slf4j.Logger;
 
 import java.math.BigInteger;
 import java.util.*;
@@ -32,6 +35,7 @@ import java.util.stream.Collectors;
 
 public class ApiBlockchainConnector extends BlockchainConnector {
 
+    private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
     private final static IAionAPI API = AionAPIImpl.inst();
     private final Map<String, ExtendedAccountDTO> addressToAccount = new HashMap<>();
 
@@ -204,7 +208,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
             try {
                 blk = getBlockDetailsByNumber(i);
             } catch (Exception e) {
-                //
+                log.warn("Exception occurred while searching for the latest account transaction");
             }
             if (blk == null || blk.getTxDetails().size() == 0) {
                 continue;
