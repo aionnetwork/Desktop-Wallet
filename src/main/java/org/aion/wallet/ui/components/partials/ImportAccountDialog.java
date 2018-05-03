@@ -19,7 +19,6 @@ import javafx.stage.StageStyle;
 import org.aion.api.log.AionLoggerFactory;
 import org.aion.api.log.LogEnum;
 import org.aion.base.util.Hex;
-import org.aion.mcf.account.Keystore;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.exception.ValidationException;
@@ -30,7 +29,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ResourceBundle;
 
 public class ImportAccountDialog implements Initializable {
@@ -40,7 +38,6 @@ public class ImportAccountDialog implements Initializable {
     private static final String PK_RADIO_BUTTON_ID = "PK_RB";
 
     private static final String KEYSTORE_RADIO_BUTTON_ID = "KEYSTORE_RB";
-    public static final String USER_DIR = "user.dir";
 
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
 
@@ -89,7 +86,6 @@ public class ImportAccountDialog implements Initializable {
     }
 
     public void importAccount(MouseEvent mouseEvent) {
-        //TODO take into account the remember me checkbox
         AccountDTO account = null;
         if (importKeystoreView.isVisible()) {
             String password = keystorePassword.getText();
@@ -107,12 +103,11 @@ public class ImportAccountDialog implements Initializable {
             if (password != null && !password.isEmpty() && privateKey != null && !privateKey.isEmpty()) {
                 byte[] raw = Hex.decode(privateKey.startsWith("0x") ? privateKey.substring(2) : privateKey);
                 if(raw == null) {
-                    System.out.println("Invalid private key");
+                    log.error("Invalid private key: " + privateKey);
                     return;
                 }
                 try {
-                    account = blockchainConnector.addPrivateKey(raw, password);
-
+                    account = blockchainConnector.addPrivateKey(raw, password, rememberAccount.isSelected());
                 } catch (ValidationException e) {
                     log.error(e.getMessage(), e);
                     return;
@@ -121,30 +116,8 @@ public class ImportAccountDialog implements Initializable {
         }
         if(account != null) {
             EventPublisher.fireAccountChanged(account);
-            if(!rememberAccount.isSelected()) {
-                removeKeystoreFile(account);
-            }
         }
         this.close(mouseEvent);
-    }
-
-    private void removeKeystoreFile(AccountDTO account) {
-        if(Keystore.exist(account.getPublicAddress())) {
-            for(String keystoreAccount : Keystore.list()) {
-                if (keystoreAccount.contains(account.getPublicAddress().substring(2))) {
-                    File keystoreDir = new File(System.getProperty(USER_DIR) + "/keystore");
-                    for(File file : keystoreDir.listFiles()) {
-                        if(file.getName().contains(keystoreAccount.substring(2))) {
-                            try {
-                                Files.deleteIfExists(Paths.get(file.toURI()));
-                            } catch (IOException e) {
-                                log.error(e.getMessage(), e);
-                            }
-                        }
-                    }
-                }
-            }
-        }
     }
 
     public void open(MouseEvent mouseEvent) {

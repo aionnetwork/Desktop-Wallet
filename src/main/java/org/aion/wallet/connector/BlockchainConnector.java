@@ -42,7 +42,7 @@ public abstract class BlockchainConnector {
 
     public abstract AccountDTO addKeystoreUTCFile(final byte[] file, final String password, final boolean shouldKeep) throws ValidationException;
 
-    public abstract AccountDTO addPrivateKey(byte[] raw, String password) throws ValidationException;
+    public abstract AccountDTO addPrivateKey(byte[] raw, String password, final boolean shouldKeep) throws ValidationException;
 
     public abstract AccountDTO getAccount(final String address);
 

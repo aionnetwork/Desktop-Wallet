@@ -53,7 +53,7 @@ public class CoreBlockchainConnector extends BlockchainConnector {
     }
 
     @Override
-    public AccountDTO addPrivateKey(byte[] raw, String password) throws ValidationException {
+    public AccountDTO addPrivateKey(byte[] raw, String password, final boolean shouldKeep) {
         return null;
     }
 

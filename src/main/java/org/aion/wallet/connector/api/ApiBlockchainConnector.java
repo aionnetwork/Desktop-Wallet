@@ -29,16 +29,26 @@ import org.aion.wallet.util.AionConstants;
 import org.aion.wallet.util.BalanceUtils;
 import org.slf4j.Logger;
 
-import javax.security.auth.kerberos.KerberosTicket;
+import java.io.File;
+import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class ApiBlockchainConnector extends BlockchainConnector {
 
     private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
+
     private final static IAionAPI API = AionAPIImpl.inst();
-    private final Map<String, ExtendedAccountDTO> addressToAccount = new HashMap<>();
+
+    private static final String USER_DIR = "user.dir";
+
+    private static final Path KEYSTORE_PATH = Paths.get(System.getProperty(USER_DIR) + File.separator + "keystore");
+
+    private final Map<String, AccountDTO> addressToAccount = new HashMap<>();
 
     public ApiBlockchainConnector() {
         if (API.isConnected()) {
@@ -75,15 +85,18 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     }
 
     @Override
-    public AccountDTO addPrivateKey(byte[] raw, String password) throws ValidationException {
+    public AccountDTO addPrivateKey(byte[] raw, String password, final boolean shouldKeep) throws ValidationException {
         try {
             ECKey key = ECKeyFac.inst().fromPrivate(raw);
             String address = Keystore.create(password, key);
             if (!address.equals("0x")) {
-                System.out.println("The private key was imported, the address is: " + address);
+                if (!shouldKeep) {
+                    removeKeystoreFile(address);
+                }
+                log.info("The private key was imported, the address is: " + address);
                 return createExtendedAccountDTO(address, raw);
             } else {
-                System.out.println("Failed to import the private key. Already exists?");
+                log.info("Failed to import the private key. Already exists?");
                 return null;
             }
         } catch (Exception e) {
@@ -100,6 +113,27 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         return account;
     }
 
+    private void removeKeystoreFile(String address) {
+        if (Keystore.exist(address)) {
+            final String unwrappedAddress = address.substring(2);
+            Arrays.stream(Keystore.list())
+                    .filter(s -> s.contains(unwrappedAddress))
+                    .forEach(account -> removeAssociatedKeyStoreFile(unwrappedAddress));
+        }
+    }
+
+    private void removeAssociatedKeyStoreFile(final String unwrappedAddress) {
+        try {
+            for (Path keystoreFile : Files.newDirectoryStream(KEYSTORE_PATH)) {
+                if (keystoreFile.toString().contains(unwrappedAddress)) {
+                    Files.deleteIfExists(keystoreFile);
+                }
+            }
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+        }
+    }
+
     @Override
     public AccountDTO getAccount(final String publicAddress) {
         final String name = getStoredAccountName(publicAddress);
@@ -109,8 +143,8 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     @Override
     public List<AccountDTO> getAccounts() {
-        for (Map.Entry<String, ExtendedAccountDTO> entry : addressToAccount.entrySet()) {
-            ExtendedAccountDTO account = entry.getValue();
+        for (Map.Entry<String, AccountDTO> entry : addressToAccount.entrySet()) {
+            AccountDTO account = entry.getValue();
             account.setBalance(BalanceUtils.formatBalance(getBalance(account.getPublicAddress())));
             entry.setValue(account);
         }
@@ -136,7 +170,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
                 .createTxArgs();
         final MsgRsp response = API.getTx().sendSignedTransaction(
                 txArgs,
-                new ByteArrayWrapper(addressToAccount.get(dto.getFrom()).getPrivateKey()),
+                new ByteArrayWrapper(((ExtendedAccountDTO) addressToAccount.get(dto.getFrom())).getPrivateKey()),
                 dto.getPassword()
         ).getObject();
 
