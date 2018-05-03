@@ -40,7 +40,15 @@ public abstract class BlockchainConnector {
 
     public abstract void createAccount(final String password, final String name);
 
+    public abstract AccountDTO addKeystoreUTCFile(final byte[] file, final String password, final boolean shouldKeep) throws ValidationException;
+
+    public abstract AccountDTO addPrivateKey(byte[] raw, String password) throws ValidationException;
+
     public abstract AccountDTO getAccount(final String address);
+
+    public abstract List<AccountDTO> getAccounts();
+
+    public abstract BigInteger getBalance(final String address);
 
     public String sendTransaction(final SendRequestDTO dto) throws ValidationException {
         if (dto == null || !dto.validate()) {
@@ -54,8 +62,6 @@ public abstract class BlockchainConnector {
 
     protected abstract String sendTransactionInternal(final SendRequestDTO dto) throws ValidationException;
 
-    public abstract List<AccountDTO> getAccounts();
-
     public abstract TransactionDTO getTransaction(final String txHash) throws NotFoundException;
 
     public abstract List<TransactionDTO> getLatestTransactions(final String address);
@@ -63,12 +69,6 @@ public abstract class BlockchainConnector {
     public abstract boolean getConnectionStatusByConnectedPeers();
 
     public abstract SyncInfoDTO getSyncInfo();
-
-    public abstract BigInteger getBalance(final String address);
-
-    public abstract AccountDTO addKeystoreUTCFile(final byte[] file, final String password, final boolean shouldKeep) throws ValidationException;
-
-    public abstract AccountDTO addPrivateKey(byte[] raw, String password) throws ValidationException;
 
     public abstract int getPeerCount();
     // todo: Add balances with different currencies in AccountDTO

@@ -29,6 +29,7 @@ import org.aion.wallet.util.AionConstants;
 import org.aion.wallet.util.BalanceUtils;
 import org.slf4j.Logger;
 
+import javax.security.auth.kerberos.KerberosTicket;
 import java.math.BigInteger;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -49,103 +50,11 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     @Override
     public void createAccount(final String password, final String name) {
-        final ApiMsg response = API.getAccount().accountCreate(Collections.singletonList(password), true);
-        final Key createdKey = ((List<Key>) response.getObject()).get(0);
-        final String address = createdKey.getPubKey().toString();
-        final ExtendedAccountDTO account = createExtendedAccountDTO(address, createdKey.getPriKey().toBytes());
+        final String address = Keystore.create(password);
+        final ECKey ecKey = Keystore.getKey(address, password);
+        final ExtendedAccountDTO account = createExtendedAccountDTO(address, ecKey.getPrivKeyBytes());
         account.setName(name);
         storeAccountName(address, name);
-    }
-
-    public AccountDTO getAccount(final String publicAddress) {
-        final String name = getStoredAccountName(publicAddress);
-        final String balance = BalanceUtils.formatBalance(getBalance(publicAddress));
-        return new AccountDTO(name, publicAddress, balance, getCurrency());
-    }
-
-    @Override
-    protected String sendTransactionInternal(SendRequestDTO dto) {
-        final BigInteger latestTransactionNonce = getLatestTransactionNonce(dto.getFrom());
-        TxArgs txArgs = new TxArgs.TxArgsBuilder()
-                .from(new Address(TypeConverter.toJsonHex(dto.getFrom())))
-                .to(new Address(TypeConverter.toJsonHex(dto.getTo())))
-                .value(dto.getValue())
-                .nonce(latestTransactionNonce)
-                .data(new ByteArrayWrapper(dto.getData()))
-                .nrgPrice(dto.getNrgPrice())
-                .nrgLimit(dto.getNrg())
-                .createTxArgs();
-        final MsgRsp response = API.getTx().sendSignedTransaction(
-                txArgs,
-                new ByteArrayWrapper(addressToAccount.get(dto.getFrom()).getPrivateKey()),
-                dto.getPassword()
-        ).getObject();
-
-        return String.valueOf(response.getTxHash());
-    }
-
-    @Override
-    public List<AccountDTO> getAccounts() {
-        for (Map.Entry<String, ExtendedAccountDTO> entry : addressToAccount.entrySet()) {
-            ExtendedAccountDTO account = entry.getValue();
-            account.setBalance(BalanceUtils.formatBalance(getBalance(account.getPublicAddress())));
-            entry.setValue(account);
-        }
-        return new ArrayList<>(addressToAccount.values());
-    }
-
-    @Override
-    public TransactionDTO getTransaction(String txHash) throws NotFoundException {
-        ApiMsg txReceiptMsg = API.getChain().getTransactionByHash(Hash256.wrap(txHash));
-        if (txReceiptMsg == null || txReceiptMsg.getObject() == null) {
-            throw new NotFoundException();
-        }
-        Transaction receipt = txReceiptMsg.getObject();
-        return mapTransaction(receipt);
-    }
-
-    @Override
-    public List<TransactionDTO> getLatestTransactions(String address) {
-        return getTransactions(address, AionConstants.MAX_BLOCKS_FOR_LATEST_TRANSACTIONS_QUERY);
-    }
-
-    @Override
-    public boolean getConnectionStatusByConnectedPeers() {
-        return API.isConnected();
-    }
-
-    @Override
-    public SyncInfoDTO getSyncInfo() {
-        long chainBest;
-        long netBest;
-        SyncInfo syncInfo;
-        try {
-            syncInfo = API.getNet().syncInfo().getObject();
-            chainBest = syncInfo.getChainBestBlock();
-            netBest = syncInfo.getNetworkBestBlock();
-        } catch (Exception e) {
-            chainBest = API.getChain().blockNumber().getObject();
-            netBest = chainBest;
-        }
-        SyncInfoDTO syncInfoDTO = new SyncInfoDTO();
-        syncInfoDTO.setChainBestBlkNumber(chainBest);
-        syncInfoDTO.setNetworkBestBlkNumber(netBest);
-        return syncInfoDTO;
-    }
-
-    @Override
-    public BigInteger getBalance(String address) {
-        return API.getChain().getBalance(new Address(address)).getObject();
-    }
-
-    @Override
-    public int getPeerCount() {
-        return ((List) API.getNet().getActiveNodes().getObject()).size();
-    }
-
-    @Override
-    public String getCurrency() {
-        return AionConstants.CCY;
     }
 
     @Override
@@ -192,6 +101,98 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     }
 
     @Override
+    public AccountDTO getAccount(final String publicAddress) {
+        final String name = getStoredAccountName(publicAddress);
+        final String balance = BalanceUtils.formatBalance(getBalance(publicAddress));
+        return new AccountDTO(name, publicAddress, balance, getCurrency());
+    }
+
+    @Override
+    public List<AccountDTO> getAccounts() {
+        for (Map.Entry<String, ExtendedAccountDTO> entry : addressToAccount.entrySet()) {
+            ExtendedAccountDTO account = entry.getValue();
+            account.setBalance(BalanceUtils.formatBalance(getBalance(account.getPublicAddress())));
+            entry.setValue(account);
+        }
+        return new ArrayList<>(addressToAccount.values());
+    }
+
+    @Override
+    public BigInteger getBalance(String address) {
+        return API.getChain().getBalance(new Address(address)).getObject();
+    }
+
+    @Override
+    protected String sendTransactionInternal(SendRequestDTO dto) {
+        final BigInteger latestTransactionNonce = getLatestTransactionNonce(dto.getFrom());
+        TxArgs txArgs = new TxArgs.TxArgsBuilder()
+                .from(new Address(TypeConverter.toJsonHex(dto.getFrom())))
+                .to(new Address(TypeConverter.toJsonHex(dto.getTo())))
+                .value(dto.getValue())
+                .nonce(latestTransactionNonce)
+                .data(new ByteArrayWrapper(dto.getData()))
+                .nrgPrice(dto.getNrgPrice())
+                .nrgLimit(dto.getNrg())
+                .createTxArgs();
+        final MsgRsp response = API.getTx().sendSignedTransaction(
+                txArgs,
+                new ByteArrayWrapper(addressToAccount.get(dto.getFrom()).getPrivateKey()),
+                dto.getPassword()
+        ).getObject();
+
+        return String.valueOf(response.getTxHash());
+    }
+
+    @Override
+    public TransactionDTO getTransaction(String txHash) throws NotFoundException {
+        ApiMsg txReceiptMsg = API.getChain().getTransactionByHash(Hash256.wrap(txHash));
+        if (txReceiptMsg == null || txReceiptMsg.getObject() == null) {
+            throw new NotFoundException();
+        }
+        Transaction receipt = txReceiptMsg.getObject();
+        return mapTransaction(receipt);
+    }
+
+    @Override
+    public List<TransactionDTO> getLatestTransactions(String address) {
+        return getTransactions(address, AionConstants.MAX_BLOCKS_FOR_LATEST_TRANSACTIONS_QUERY);
+    }
+
+    @Override
+    public boolean getConnectionStatusByConnectedPeers() {
+        return API.isConnected();
+    }
+
+    @Override
+    public SyncInfoDTO getSyncInfo() {
+        long chainBest;
+        long netBest;
+        SyncInfo syncInfo;
+        try {
+            syncInfo = API.getNet().syncInfo().getObject();
+            chainBest = syncInfo.getChainBestBlock();
+            netBest = syncInfo.getNetworkBestBlock();
+        } catch (Exception e) {
+            chainBest = API.getChain().blockNumber().getObject();
+            netBest = chainBest;
+        }
+        SyncInfoDTO syncInfoDTO = new SyncInfoDTO();
+        syncInfoDTO.setChainBestBlkNumber(chainBest);
+        syncInfoDTO.setNetworkBestBlkNumber(netBest);
+        return syncInfoDTO;
+    }
+
+    @Override
+    public int getPeerCount() {
+        return ((List) API.getNet().getActiveNodes().getObject()).size();
+    }
+
+    @Override
+    public String getCurrency() {
+        return AionConstants.CCY;
+    }
+
+    @Override
     public void close() {
         super.close();
         API.destroyApi();
@@ -232,7 +233,6 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         }
         return BigInteger.ZERO;
     }
-
 
     private List<TransactionDTO> getTransactions(final String addr, long nrOfBlocksToCheck) {
         Long latest = API.getChain().blockNumber().getObject();

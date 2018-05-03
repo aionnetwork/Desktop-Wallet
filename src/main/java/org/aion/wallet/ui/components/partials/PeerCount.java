@@ -24,11 +24,11 @@ public class PeerCount extends AbstractController {
 
     @Subscribe
     private void handleConnectivityStatusEvent(TimerEvent event) {
-        final Task<Integer> getSyncInfoTask = getApiTask(o -> blockchainConnector.getPeerCount(), null);
+        final Task<Integer> getPeerCountTask = getApiTask(o -> blockchainConnector.getPeerCount(), null);
         runApiTask(
-                getSyncInfoTask,
-                evt -> setPeerCount(blockchainConnector.getPeerCount()),
-                getErrorEvent(throwable -> {}, getSyncInfoTask),
+                getPeerCountTask,
+                evt -> setPeerCount(getPeerCountTask.getValue()),
+                getErrorEvent(throwable -> {}, getPeerCountTask),
                 getEmptyEvent()
         );
     }
