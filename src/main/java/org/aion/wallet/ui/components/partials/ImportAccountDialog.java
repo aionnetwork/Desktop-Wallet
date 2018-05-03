@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ResourceBundle;
 
 public class ImportAccountDialog implements Initializable {
@@ -39,6 +40,7 @@ public class ImportAccountDialog implements Initializable {
     private static final String PK_RADIO_BUTTON_ID = "PK_RB";
 
     private static final String KEYSTORE_RADIO_BUTTON_ID = "KEYSTORE_RB";
+    public static final String USER_DIR = "user.dir";
 
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
 
@@ -88,32 +90,21 @@ public class ImportAccountDialog implements Initializable {
 
     public void importAccount(MouseEvent mouseEvent) {
         //TODO take into account the remember me checkbox
+        AccountDTO account = null;
         if (importKeystoreView.isVisible()) {
             String password = keystorePassword.getText();
             if (!password.isEmpty() && keystoreFile != null) {
-                AccountDTO account;
                 try {
                     account = blockchainConnector.addKeystoreUTCFile(keystoreFile, password, rememberAccount.isSelected());
                 } catch (final ValidationException e) {
                     log.error(e.getMessage(), e);
                     return;
                 }
-                EventPublisher.fireAccountChanged(account);
-                if(!rememberAccount.isSelected()) {
-                    if(Keystore.exist(account.getPublicAddress())) {
-                        for(String keystoreAccount : Keystore.list()) {
-                            if (keystoreAccount.contains(account.getPublicAddress().substring(2))) {
-                                System.out.println("FOUND");
-                            }
-                        }
-                    }
-                }
             }
         } else {
             String password = privateKeyPassword.getText();
             String privateKey = privateKeyInput.getText();
             if (password != null && !password.isEmpty() && privateKey != null && !privateKey.isEmpty()) {
-                AccountDTO account;
                 byte[] raw = Hex.decode(privateKey.startsWith("0x") ? privateKey.substring(2) : privateKey);
                 if(raw == null) {
                     System.out.println("Invalid private key");
@@ -121,15 +112,39 @@ public class ImportAccountDialog implements Initializable {
                 }
                 try {
                     account = blockchainConnector.addPrivateKey(raw, password);
-                    if(account != null) {
-                        EventPublisher.fireAccountChanged(account);
-                    }
+
                 } catch (ValidationException e) {
                     log.error(e.getMessage(), e);
+                    return;
                 }
             }
         }
+        if(account != null) {
+            EventPublisher.fireAccountChanged(account);
+            if(!rememberAccount.isSelected()) {
+                removeKeystoreFile(account);
+            }
+        }
         this.close(mouseEvent);
+    }
+
+    private void removeKeystoreFile(AccountDTO account) {
+        if(Keystore.exist(account.getPublicAddress())) {
+            for(String keystoreAccount : Keystore.list()) {
+                if (keystoreAccount.contains(account.getPublicAddress().substring(2))) {
+                    File keystoreDir = new File(System.getProperty(USER_DIR) + "/keystore");
+                    for(File file : keystoreDir.listFiles()) {
+                        if(file.getName().contains(keystoreAccount.substring(2))) {
+                            try {
+                                Files.deleteIfExists(Paths.get(file.toURI()));
+                            } catch (IOException e) {
+                                log.error(e.getMessage(), e);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     public void open(MouseEvent mouseEvent) {
