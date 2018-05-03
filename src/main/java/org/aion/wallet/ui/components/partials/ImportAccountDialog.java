@@ -110,9 +110,10 @@ public class ImportAccountDialog implements Initializable {
                 EventPublisher.fireAccountChanged(account);
                 if(!rememberAccount.isSelected()) {
                     if(Keystore.exist(account.getPublicAddress())) {
-                        for(String keystoreAccount : Keystore.list())
-                        if(keystoreAccount.contains(account.getPublicAddress().substring(2))) {
-                            System.out.println("FOUND");
+                        for(String keystoreAccount : Keystore.list()) {
+                            if (keystoreAccount.contains(account.getPublicAddress().substring(2))) {
+                                System.out.println("FOUND");
+                            }
                         }
                     }
                 }
