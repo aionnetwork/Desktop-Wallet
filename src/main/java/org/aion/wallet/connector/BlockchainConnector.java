@@ -13,7 +13,6 @@ import org.aion.wallet.util.ConfigUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.util.List;
-import java.util.Map;
 
 public abstract class BlockchainConnector {
 
@@ -67,11 +66,13 @@ public abstract class BlockchainConnector {
 
     public abstract BigInteger getBalance(final String address);
 
-    public abstract AccountDTO addKeystoreUTCFile(final byte[] file, final String password) throws ValidationException;
+    public abstract AccountDTO addKeystoreUTCFile(final byte[] file, final String password, final boolean shouldKeep) throws ValidationException;
+
+    public abstract AccountDTO addPrivateKey(byte[] raw, String password) throws ValidationException;
 
     public abstract int getPeerCount();
-
     // todo: Add balances with different currencies in AccountDTO
+
     public abstract String getCurrency();
 
     public void close() {
@@ -85,6 +86,4 @@ public abstract class BlockchainConnector {
     protected void storeAccountName(final String address, final String name) {
         walletStorage.setAccountName(address, name);
     }
-
-    public abstract AccountDTO addPrivateKey(byte[] raw, String password) throws ValidationException;
 }

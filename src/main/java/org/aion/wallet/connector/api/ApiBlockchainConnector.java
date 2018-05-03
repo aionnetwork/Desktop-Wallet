@@ -149,24 +149,20 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     }
 
     @Override
-    public AccountDTO addKeystoreUTCFile(byte[] file, String password) throws ValidationException {
+    public AccountDTO addKeystoreUTCFile(byte[] file, String password, final boolean shouldKeep) throws ValidationException {
         try {
             ECKey key = KeystoreFormat.fromKeystore(file, password);
             KeystoreItem keystoreItem = KeystoreItem.parse(file);
-            final String address = keystoreItem.getAddress();
-            return createExtendedAccountDTO(address, key.getPrivKeyBytes());
+            String address = keystoreItem.getAddress();
+            if (!Keystore.exist(address) && shouldKeep) {
+                address = Keystore.create(password, key);
+                return createExtendedAccountDTO(address, key.getPrivKeyBytes());
+            } else {
+                return addressToAccount.getOrDefault(address, createExtendedAccountDTO(address, key.getPrivKeyBytes()));
+            }
         } catch (final Exception e) {
-            throw new ValidationException("Could not open Keystore File");
+            throw new ValidationException("Could not open Keystore File", e);
         }
-    }
-
-    private ExtendedAccountDTO createExtendedAccountDTO(final String address, final byte[] privKeyBytes) {
-        final String name = getStoredAccountName(address);
-        final String balance = BalanceUtils.formatBalance(getBalance(address));
-        ExtendedAccountDTO account = new ExtendedAccountDTO(name, address, balance, getCurrency());
-        account.setPrivateKey(privKeyBytes);
-        addressToAccount.put(account.getPublicAddress(), account);
-        return account;
     }
 
     @Override
@@ -182,9 +178,17 @@ public class ApiBlockchainConnector extends BlockchainConnector {
                 return null;
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new ValidationException("Unsupported key type");
+            throw new ValidationException("Unsupported key type", e);
         }
+    }
+
+    private ExtendedAccountDTO createExtendedAccountDTO(final String address, final byte[] privKeyBytes) {
+        final String name = getStoredAccountName(address);
+        final String balance = BalanceUtils.formatBalance(getBalance(address));
+        ExtendedAccountDTO account = new ExtendedAccountDTO(name, address, balance, getCurrency());
+        account.setPrivateKey(privKeyBytes);
+        addressToAccount.put(account.getPublicAddress(), account);
+        return account;
     }
 
     @Override

@@ -18,15 +18,10 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import org.aion.api.log.AionLoggerFactory;
 import org.aion.api.log.LogEnum;
-import org.aion.base.type.Address;
 import org.aion.base.util.Hex;
-import org.aion.crypto.ECKey;
-import org.aion.crypto.ECKeyFac;
-import org.aion.mcf.account.AccountManager;
 import org.aion.mcf.account.Keystore;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.dto.AccountDTO;
-import org.aion.wallet.dto.ExtendedAccountDTO;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.ui.events.EventPublisher;
 import org.slf4j.Logger;
@@ -35,10 +30,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.security.Key;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.ResourceBundle;
 
 public class ImportAccountDialog implements Initializable {
@@ -102,7 +93,7 @@ public class ImportAccountDialog implements Initializable {
             if (!password.isEmpty() && keystoreFile != null) {
                 AccountDTO account;
                 try {
-                    account = blockchainConnector.addKeystoreUTCFile(keystoreFile, password);
+                    account = blockchainConnector.addKeystoreUTCFile(keystoreFile, password, rememberAccount.isSelected());
                 } catch (final ValidationException e) {
                     log.error(e.getMessage(), e);
                     return;

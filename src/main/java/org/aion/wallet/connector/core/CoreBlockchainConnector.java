@@ -28,7 +28,6 @@ import org.slf4j.Logger;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 public class CoreBlockchainConnector extends BlockchainConnector {
@@ -119,7 +118,7 @@ public class CoreBlockchainConnector extends BlockchainConnector {
     }
 
     @Override
-    public AccountDTO addKeystoreUTCFile(byte[] file, String password) throws ValidationException {
+    public AccountDTO addKeystoreUTCFile(byte[] file, String password, final boolean shouldKeep) throws ValidationException {
         throw new ValidationException("Unsupported operation");
     }
 
