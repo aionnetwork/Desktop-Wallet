@@ -19,7 +19,6 @@ import org.aion.wallet.connector.dto.SendRequestDTO;
 import org.aion.wallet.connector.dto.SyncInfoDTO;
 import org.aion.wallet.connector.dto.TransactionDTO;
 import org.aion.wallet.dto.AccountDTO;
-import org.aion.wallet.dto.ExtendedAccountDTO;
 import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
@@ -55,14 +54,21 @@ public class ApiBlockchainConnector extends BlockchainConnector {
             return;
         }
         API.connect(IAionAPI.LOCALHOST_URL, true);
+        loadLocallySavedAccounts();
         EventBusFactory.getBus(EventPublisher.ACCOUNT_CHANGE_EVENT_ID).register(this);
+    }
+
+    private void loadLocallySavedAccounts() {
+        for(String localAccount : Keystore.list()) {
+            addressToAccount.put(localAccount, getAccount(localAccount));
+        }
     }
 
     @Override
     public void createAccount(final String password, final String name) {
         final String address = Keystore.create(password);
         final ECKey ecKey = Keystore.getKey(address, password);
-        final ExtendedAccountDTO account = createExtendedAccountDTO(address, ecKey.getPrivKeyBytes());
+        final AccountDTO account = createAccountDTOWithPrivateKey(address, ecKey.getPrivKeyBytes());
         account.setName(name);
         storeAccountName(address, name);
     }
@@ -75,9 +81,9 @@ public class ApiBlockchainConnector extends BlockchainConnector {
             String address = keystoreItem.getAddress();
             if (!Keystore.exist(address) && shouldKeep) {
                 address = Keystore.create(password, key);
-                return createExtendedAccountDTO(address, key.getPrivKeyBytes());
+                return createAccountDTOWithPrivateKey(address, key.getPrivKeyBytes());
             } else {
-                return addressToAccount.getOrDefault(address, createExtendedAccountDTO(address, key.getPrivKeyBytes()));
+                return addressToAccount.getOrDefault(address, createAccountDTOWithPrivateKey(address, key.getPrivKeyBytes()));
             }
         } catch (final Exception e) {
             throw new ValidationException("Could not open Keystore File", e);
@@ -94,7 +100,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
                     removeKeystoreFile(address);
                 }
                 log.info("The private key was imported, the address is: " + address);
-                return createExtendedAccountDTO(address, raw);
+                return createAccountDTOWithPrivateKey(address, raw);
             } else {
                 log.info("Failed to import the private key. Already exists?");
                 return null;
@@ -104,10 +110,10 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         }
     }
 
-    private ExtendedAccountDTO createExtendedAccountDTO(final String address, final byte[] privKeyBytes) {
+    private AccountDTO createAccountDTOWithPrivateKey(final String address, final byte[] privKeyBytes) {
         final String name = getStoredAccountName(address);
         final String balance = BalanceUtils.formatBalance(getBalance(address));
-        ExtendedAccountDTO account = new ExtendedAccountDTO(name, address, balance, getCurrency());
+        AccountDTO account = new AccountDTO(name, address, balance, getCurrency());
         account.setPrivateKey(privKeyBytes);
         addressToAccount.put(account.getPublicAddress(), account);
         return account;
@@ -170,7 +176,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
                 .createTxArgs();
         final MsgRsp response = API.getTx().sendSignedTransaction(
                 txArgs,
-                new ByteArrayWrapper(((ExtendedAccountDTO) addressToAccount.get(dto.getFrom())).getPrivateKey()),
+                new ByteArrayWrapper((addressToAccount.get(dto.getFrom())).getPrivateKey()),
                 dto.getPassword()
         ).getObject();
 
