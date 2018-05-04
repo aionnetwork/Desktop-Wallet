@@ -1,35 +1,36 @@
 package org.aion.wallet.ui.components.partials;
 
 import com.google.common.eventbus.Subscribe;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import org.aion.wallet.connector.BlockchainConnector;
-import org.aion.wallet.ui.events.EventBusFactory;
+import org.aion.wallet.ui.components.AbstractController;
 import org.aion.wallet.ui.events.TimerEvent;
-import org.aion.wallet.util.DataUpdater;
 
 import java.net.URL;
 import java.util.ResourceBundle;
 
-public class PeerCount implements Initializable{
+public class PeerCount extends AbstractController {
     @FXML
     private Label peerCount;
 
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
 
     @Override
-    public void initialize(URL location, ResourceBundle resources) {
+    public void internalInit(URL location, ResourceBundle resources) {
         registerEventBusConsumer();
-    }
-
-    private void registerEventBusConsumer() {
-        EventBusFactory.getBus(DataUpdater.UI_DATA_REFRESH).register(this);
     }
 
     @Subscribe
     private void handleConnectivityStatusEvent(TimerEvent event) {
-         setPeerCount(blockchainConnector.getPeerCount());
+        final Task<Integer> getPeerCountTask = getApiTask(o -> blockchainConnector.getPeerCount(), null);
+        runApiTask(
+                getPeerCountTask,
+                evt -> setPeerCount(getPeerCountTask.getValue()),
+                getErrorEvent(throwable -> {}, getPeerCountTask),
+                getEmptyEvent()
+        );
     }
 
     private void setPeerCount(int numberOfPeers) {

@@ -29,15 +29,26 @@ import org.aion.wallet.util.AionConstants;
 import org.aion.wallet.util.BalanceUtils;
 import org.slf4j.Logger;
 
+import java.io.File;
+import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class ApiBlockchainConnector extends BlockchainConnector {
 
     private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
+
     private final static IAionAPI API = AionAPIImpl.inst();
-    private final Map<String, ExtendedAccountDTO> addressToAccount = new HashMap<>();
+
+    private static final String USER_DIR = "user.dir";
+
+    private static final Path KEYSTORE_PATH = Paths.get(System.getProperty(USER_DIR) + File.separator + "keystore");
+
+    private final Map<String, AccountDTO> addressToAccount = new HashMap<>();
 
     public ApiBlockchainConnector() {
         if (API.isConnected()) {
@@ -49,18 +60,100 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     @Override
     public void createAccount(final String password, final String name) {
-        final ApiMsg response = API.getAccount().accountCreate(Collections.singletonList(password), true);
-        final Key createdKey = ((List<Key>) response.getObject()).get(0);
-        final String address = createdKey.getPubKey().toString();
-        final ExtendedAccountDTO account = createExtendedAccountDTO(address, createdKey.getPriKey().toBytes());
+        final String address = Keystore.create(password);
+        final ECKey ecKey = Keystore.getKey(address, password);
+        final ExtendedAccountDTO account = createExtendedAccountDTO(address, ecKey.getPrivKeyBytes());
         account.setName(name);
         storeAccountName(address, name);
     }
 
+    @Override
+    public AccountDTO addKeystoreUTCFile(byte[] file, String password, final boolean shouldKeep) throws ValidationException {
+        try {
+            ECKey key = KeystoreFormat.fromKeystore(file, password);
+            KeystoreItem keystoreItem = KeystoreItem.parse(file);
+            String address = keystoreItem.getAddress();
+            if (!Keystore.exist(address) && shouldKeep) {
+                address = Keystore.create(password, key);
+                return createExtendedAccountDTO(address, key.getPrivKeyBytes());
+            } else {
+                return addressToAccount.getOrDefault(address, createExtendedAccountDTO(address, key.getPrivKeyBytes()));
+            }
+        } catch (final Exception e) {
+            throw new ValidationException("Could not open Keystore File", e);
+        }
+    }
+
+    @Override
+    public AccountDTO addPrivateKey(byte[] raw, String password, final boolean shouldKeep) throws ValidationException {
+        try {
+            ECKey key = ECKeyFac.inst().fromPrivate(raw);
+            String address = Keystore.create(password, key);
+            if (!address.equals("0x")) {
+                if (!shouldKeep) {
+                    removeKeystoreFile(address);
+                }
+                log.info("The private key was imported, the address is: " + address);
+                return createExtendedAccountDTO(address, raw);
+            } else {
+                log.info("Failed to import the private key. Already exists?");
+                return null;
+            }
+        } catch (Exception e) {
+            throw new ValidationException("Unsupported key type", e);
+        }
+    }
+
+    private ExtendedAccountDTO createExtendedAccountDTO(final String address, final byte[] privKeyBytes) {
+        final String name = getStoredAccountName(address);
+        final String balance = BalanceUtils.formatBalance(getBalance(address));
+        ExtendedAccountDTO account = new ExtendedAccountDTO(name, address, balance, getCurrency());
+        account.setPrivateKey(privKeyBytes);
+        addressToAccount.put(account.getPublicAddress(), account);
+        return account;
+    }
+
+    private void removeKeystoreFile(String address) {
+        if (Keystore.exist(address)) {
+            final String unwrappedAddress = address.substring(2);
+            Arrays.stream(Keystore.list())
+                    .filter(s -> s.contains(unwrappedAddress))
+                    .forEach(account -> removeAssociatedKeyStoreFile(unwrappedAddress));
+        }
+    }
+
+    private void removeAssociatedKeyStoreFile(final String unwrappedAddress) {
+        try {
+            for (Path keystoreFile : Files.newDirectoryStream(KEYSTORE_PATH)) {
+                if (keystoreFile.toString().contains(unwrappedAddress)) {
+                    Files.deleteIfExists(keystoreFile);
+                }
+            }
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+        }
+    }
+
+    @Override
     public AccountDTO getAccount(final String publicAddress) {
         final String name = getStoredAccountName(publicAddress);
         final String balance = BalanceUtils.formatBalance(getBalance(publicAddress));
         return new AccountDTO(name, publicAddress, balance, getCurrency());
+    }
+
+    @Override
+    public List<AccountDTO> getAccounts() {
+        for (Map.Entry<String, AccountDTO> entry : addressToAccount.entrySet()) {
+            AccountDTO account = entry.getValue();
+            account.setBalance(BalanceUtils.formatBalance(getBalance(account.getPublicAddress())));
+            entry.setValue(account);
+        }
+        return new ArrayList<>(addressToAccount.values());
+    }
+
+    @Override
+    public BigInteger getBalance(String address) {
+        return API.getChain().getBalance(new Address(address)).getObject();
     }
 
     @Override
@@ -77,21 +170,11 @@ public class ApiBlockchainConnector extends BlockchainConnector {
                 .createTxArgs();
         final MsgRsp response = API.getTx().sendSignedTransaction(
                 txArgs,
-                new ByteArrayWrapper(addressToAccount.get(dto.getFrom()).getPrivateKey()),
+                new ByteArrayWrapper(((ExtendedAccountDTO) addressToAccount.get(dto.getFrom())).getPrivateKey()),
                 dto.getPassword()
         ).getObject();
 
         return String.valueOf(response.getTxHash());
-    }
-
-    @Override
-    public List<AccountDTO> getAccounts() {
-        for (Map.Entry<String, ExtendedAccountDTO> entry : addressToAccount.entrySet()) {
-            ExtendedAccountDTO account = entry.getValue();
-            account.setBalance(BalanceUtils.formatBalance(getBalance(account.getPublicAddress())));
-            entry.setValue(account);
-        }
-        return new ArrayList<>(addressToAccount.values());
     }
 
     @Override
@@ -134,11 +217,6 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     }
 
     @Override
-    public BigInteger getBalance(String address) {
-        return API.getChain().getBalance(new Address(address)).getObject();
-    }
-
-    @Override
     public int getPeerCount() {
         return ((List) API.getNet().getActiveNodes().getObject()).size();
     }
@@ -146,45 +224,6 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     @Override
     public String getCurrency() {
         return AionConstants.CCY;
-    }
-
-    @Override
-    public AccountDTO addKeystoreUTCFile(byte[] file, String password) throws ValidationException {
-        try {
-            ECKey key = KeystoreFormat.fromKeystore(file, password);
-            KeystoreItem keystoreItem = KeystoreItem.parse(file);
-            final String address = keystoreItem.getAddress();
-            return createExtendedAccountDTO(address, key.getPrivKeyBytes());
-        } catch (final Exception e) {
-            throw new ValidationException("Could not open Keystore File");
-        }
-    }
-
-    private ExtendedAccountDTO createExtendedAccountDTO(final String address, final byte[] privKeyBytes) {
-        final String name = getStoredAccountName(address);
-        final String balance = BalanceUtils.formatBalance(getBalance(address));
-        ExtendedAccountDTO account = new ExtendedAccountDTO(name, address, balance, getCurrency());
-        account.setPrivateKey(privKeyBytes);
-        addressToAccount.put(account.getPublicAddress(), account);
-        return account;
-    }
-
-    @Override
-    public AccountDTO addPrivateKey(byte[] raw, String password) throws ValidationException {
-        try {
-            ECKey key = ECKeyFac.inst().fromPrivate(raw);
-            String address = Keystore.create(password, key);
-            if (!address.equals("0x")) {
-                System.out.println("The private key was imported, the address is: " + address);
-                return createExtendedAccountDTO(address, raw);
-            } else {
-                System.out.println("Failed to import the private key. Already exists?");
-                return null;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new ValidationException("Unsupported key type");
-        }
     }
 
     @Override
@@ -228,7 +267,6 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         }
         return BigInteger.ZERO;
     }
-
 
     private List<TransactionDTO> getTransactions(final String addr, long nrOfBlocksToCheck) {
         Long latest = API.getChain().blockNumber().getObject();

@@ -28,7 +28,6 @@ import org.slf4j.Logger;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 public class CoreBlockchainConnector extends BlockchainConnector {
@@ -49,15 +48,19 @@ public class CoreBlockchainConnector extends BlockchainConnector {
     }
 
     @Override
-    protected String sendTransactionInternal(SendRequestDTO dto) throws ValidationException {
-        if (!unlock(dto)) {
-            throw new ValidationException("Failed to unlock wallet");
-        }
-        ArgTxCall transactionParams = new ArgTxCall(Address.wrap(ByteUtil.hexStringToBytes(dto.getFrom()))
-                , Address.wrap(ByteUtil.hexStringToBytes(dto.getTo())), dto.getData(),
-                dto.getNonce(), dto.getValue(), dto.getNrg(), dto.getNrgPrice());
+    public AccountDTO addKeystoreUTCFile(byte[] file, String password, final boolean shouldKeep) throws ValidationException {
+        throw new ValidationException("Unsupported operation");
+    }
 
-        return TypeConverter.toJsonHex(API.sendTransaction(transactionParams));
+    @Override
+    public AccountDTO addPrivateKey(byte[] raw, String password, final boolean shouldKeep) {
+        return null;
+    }
+
+    @Override
+    public AccountDTO getAccount(final String publicAddress) {
+        final String name = getStoredAccountName(publicAddress);
+        return new AccountDTO(name, publicAddress, BalanceUtils.formatBalance(getBalance(publicAddress)), getCurrency());
     }
 
     @Override
@@ -69,9 +72,26 @@ public class CoreBlockchainConnector extends BlockchainConnector {
         return accounts;
     }
 
-    public AccountDTO getAccount(final String publicAddress) {
-        final String name = getStoredAccountName(publicAddress);
-        return new AccountDTO(name, publicAddress, BalanceUtils.formatBalance(getBalance(publicAddress)), getCurrency());
+    @Override
+    public BigInteger getBalance(String address){
+        try {
+            return API.getBalance(address);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return BigInteger.ZERO;
+        }
+    }
+
+    @Override
+    protected String sendTransactionInternal(SendRequestDTO dto) throws ValidationException {
+        if (!unlock(dto)) {
+            throw new ValidationException("Failed to unlock wallet");
+        }
+        ArgTxCall transactionParams = new ArgTxCall(Address.wrap(ByteUtil.hexStringToBytes(dto.getFrom()))
+                , Address.wrap(ByteUtil.hexStringToBytes(dto.getTo())), dto.getData(),
+                dto.getNonce(), dto.getValue(), dto.getNrg(), dto.getNrgPrice());
+
+        return TypeConverter.toJsonHex(API.sendTransaction(transactionParams));
     }
 
     @Override
@@ -99,28 +119,8 @@ public class CoreBlockchainConnector extends BlockchainConnector {
     }
 
     @Override
-    public BigInteger getBalance(String address){
-        try {
-            return API.getBalance(address);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            return BigInteger.ZERO;
-        }
-    }
-
-    @Override
     public String getCurrency() {
         return AionConstants.CCY;
-    }
-
-    @Override
-    public AccountDTO addPrivateKey(byte[] raw, String password) throws ValidationException {
-        return null;
-    }
-
-    @Override
-    public AccountDTO addKeystoreUTCFile(byte[] file, String password) throws ValidationException {
-        throw new ValidationException("Unsupported operation");
     }
 
     private boolean unlock(UnlockableAccount account) {
