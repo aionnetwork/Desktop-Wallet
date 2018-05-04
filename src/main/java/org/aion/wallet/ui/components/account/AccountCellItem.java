@@ -12,6 +12,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import org.aion.wallet.dto.AccountDTO;
+import org.aion.wallet.ui.components.partials.AccountUnlockDialog;
 import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.util.BalanceUtils;
 import org.aion.wallet.util.UIUtils;
@@ -43,6 +44,8 @@ public class AccountCellItem extends ListCell<AccountDTO> {
     private ImageView editNameButton;
 
     private boolean nameInEditMode;
+
+    private AccountUnlockDialog accountUnlockDialog;
 
     public AccountCellItem() {
         loadFXML();
@@ -104,7 +107,10 @@ public class AccountCellItem extends ListCell<AccountDTO> {
         }
     }
 
-    public void onDisconnectedClicked() {
+    public void onDisconnectedClicked(MouseEvent mouseEvent) {
+        if(this.getItem().getPrivateKey() == null) {
+            accountUnlockDialog.open(mouseEvent);
+        }
         EventPublisher.fireAccountChanged(this.getItem());
     }
 
