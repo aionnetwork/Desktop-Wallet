@@ -159,7 +159,10 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     @Override
     public BigInteger getBalance(String address) {
-        return API.getChain().getBalance(new Address(address)).getObject();
+        lock();
+        final BigInteger balance = API.getChain().getBalance(new Address(address)).getObject();
+        unLock();
+        return balance;
     }
 
     @Override
@@ -174,18 +177,30 @@ public class ApiBlockchainConnector extends BlockchainConnector {
                 .nrgPrice(dto.getNrgPrice())
                 .nrgLimit(dto.getNrg())
                 .createTxArgs();
-        final MsgRsp response = API.getTx().sendSignedTransaction(
-                txArgs,
-                new ByteArrayWrapper((addressToAccount.get(dto.getFrom())).getPrivateKey()),
-                dto.getPassword()
-        ).getObject();
+        final MsgRsp response;
+        lock();
+        try {
+            response = API.getTx().sendSignedTransaction(
+                    txArgs,
+                    new ByteArrayWrapper((addressToAccount.get(dto.getFrom())).getPrivateKey()),
+                    dto.getPassword()
+            ).getObject();
+        } finally {
+            unLock();
+        }
 
         return String.valueOf(response.getTxHash());
     }
 
     @Override
     public TransactionDTO getTransaction(String txHash) throws NotFoundException {
-        ApiMsg txReceiptMsg = API.getChain().getTransactionByHash(Hash256.wrap(txHash));
+        final ApiMsg txReceiptMsg;
+        lock();
+        try {
+            txReceiptMsg = API.getChain().getTransactionByHash(Hash256.wrap(txHash));
+        } finally {
+            unLock();
+        }
         if (txReceiptMsg == null || txReceiptMsg.getObject() == null) {
             throw new NotFoundException();
         }
@@ -200,7 +215,14 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     @Override
     public boolean getConnectionStatusByConnectedPeers() {
-        return API.isConnected();
+        final boolean connected;
+        lock();
+        try {
+            connected = API.isConnected();
+        } finally {
+            unLock();
+        }
+        return connected;
     }
 
     @Override
@@ -209,11 +231,16 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         long netBest;
         SyncInfo syncInfo;
         try {
-            syncInfo = API.getNet().syncInfo().getObject();
+            lock();
+            try {
+                syncInfo = API.getNet().syncInfo().getObject();
+            } finally {
+                unLock();
+            }
             chainBest = syncInfo.getChainBestBlock();
             netBest = syncInfo.getNetworkBestBlock();
         } catch (Exception e) {
-            chainBest = API.getChain().blockNumber().getObject();
+            chainBest = getLatest();
             netBest = chainBest;
         }
         SyncInfoDTO syncInfoDTO = new SyncInfoDTO();
@@ -224,7 +251,14 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     @Override
     public int getPeerCount() {
-        return ((List) API.getNet().getActiveNodes().getObject()).size();
+        final int size;
+        lock();
+        try {
+            size = ((List) API.getNet().getActiveNodes().getObject()).size();
+        } finally {
+            unLock();
+        }
+        return size;
     }
 
     @Override
@@ -246,7 +280,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     }
 
     private BigInteger getLatestTransactionNonce(String addr) {
-        Long latest = API.getChain().blockNumber().getObject();
+        final Long latest = getLatest();
         final String parsedAddr = TypeConverter.toJsonHex(addr);
         for (long i = latest; i > 0; i--) {
             BlockDetails blk = null;
@@ -275,7 +309,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     }
 
     private List<TransactionDTO> getTransactions(final String addr, long nrOfBlocksToCheck) {
-        Long latest = API.getChain().blockNumber().getObject();
+        final Long latest = getLatest();
         long blockOffset = latest - nrOfBlocksToCheck;
         if (blockOffset < 0) {
             blockOffset = 0;
@@ -296,8 +330,26 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         return txs;
     }
 
+    private Long getLatest() {
+        final Long latest;
+        lock();
+        try {
+            latest = API.getChain().blockNumber().getObject();
+        } finally {
+            unLock();
+        }
+        return latest;
+    }
+
     private BlockDetails getBlockDetailsByNumber(Long number) {
-        return ((List<BlockDetails>) API.getAdmin().getBlockDetailsByNumber(number.toString()).getObject()).get(0);
+        final BlockDetails blockDetails;
+        lock();
+        try {
+            blockDetails = ((List<BlockDetails>) API.getAdmin().getBlockDetailsByNumber(number.toString()).getObject()).get(0);
+        } finally {
+            unLock();
+        }
+        return blockDetails;
     }
 
     private TransactionDTO mapTransaction(Transaction transaction) {

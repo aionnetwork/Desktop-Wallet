@@ -17,6 +17,7 @@ import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
+import org.aion.wallet.ui.events.RefreshEvent;
 import org.aion.wallet.util.AionConstants;
 import org.aion.wallet.util.BalanceUtils;
 import org.aion.wallet.util.ConfigUtils;
@@ -70,10 +71,16 @@ public class SendController extends AbstractController {
 
         runApiTask(
                 sendTransactionTask,
-                evt -> txStatusLabel.setText("Transaction Finished"),
+                evt -> handleTransactionFinished(sendTransactionTask.getValue()),
                 getErrorEvent(t -> txStatusLabel.setText(t.getMessage()), sendTransactionTask),
                 getEmptyEvent()
         );
+    }
+
+    private void handleTransactionFinished(final String txHash) {
+        log.info("Transaction finished: " + txHash);
+        txStatusLabel.setText("Transaction Finished");
+        EventPublisher.fireTransactionFinished();
     }
 
     private String sendTransaction(final SendRequestDTO sendRequestDTO) {
@@ -102,6 +109,13 @@ public class SendController extends AbstractController {
         passwordInput.setText("");
     }
 
+    @Override
+    protected void refreshView(final RefreshEvent event) {
+        if (RefreshEvent.Type.OPERATION_FINISHED.equals(event.getType())) {
+            setDefaults();
+        }
+    }
+
     @Subscribe
     private void handleAccountChanged(final AccountDTO account) {
         this.account = account;
@@ -120,10 +134,6 @@ public class SendController extends AbstractController {
         UIUtils.setWidth(equivalentUSD);
     }
 
-    private double convertBalanceToCcy(final AccountDTO account, final double exchangeRate) {
-        return Double.parseDouble(account.getBalance()) * exchangeRate;
-    }
-
     @Subscribe
     private void handleHeaderPaneButtonEvent(final HeaderPaneButtonEvent event) {
         if (event.getType().equals(HeaderPaneButtonEvent.Type.SEND)) {
@@ -136,6 +146,10 @@ public class SendController extends AbstractController {
         super.registerEventBusConsumer();
         EventBusFactory.getBus(HeaderPaneButtonEvent.ID).register(this);
         EventBusFactory.getBus(EventPublisher.ACCOUNT_CHANGE_EVENT_ID).register(this);
+    }
+
+    private double convertBalanceToCcy(final AccountDTO account, final double exchangeRate) {
+        return Double.parseDouble(account.getBalance()) * exchangeRate;
     }
 
     private void setAccountBalanceText() {

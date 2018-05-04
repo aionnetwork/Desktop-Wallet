@@ -8,6 +8,4 @@ public class SettingsController extends AbstractController {
     @Override
     protected void internalInit(final URL location, final ResourceBundle resources) {}
 
-    @Override
-    protected void refreshView() {}
 }
