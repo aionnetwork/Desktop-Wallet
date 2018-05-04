@@ -7,6 +7,7 @@ import org.aion.wallet.connector.dto.TransactionDTO;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
+import org.aion.wallet.storage.StoredTxInfo;
 import org.aion.wallet.storage.WalletStorage;
 import org.aion.wallet.util.ConfigUtils;
 
@@ -82,19 +83,26 @@ public abstract class BlockchainConnector {
         walletStorage.save();
     }
 
-    protected String getStoredAccountName(final String publicAddress) {
-        return walletStorage.getAccountName(publicAddress);
-    }
-
-    protected void storeAccountName(final String address, final String name) {
-        walletStorage.setAccountName(address, name);
-    }
-
     protected final void lock(){
         lock.lock();
     }
 
-    protected final void unLock(){
+    protected final void unLock() {
         lock.unlock();
+    }
+
+    protected final String getStoredAccountName(final String publicAddress) {
+        return walletStorage.getAccountName(publicAddress);
+    }
+
+    protected final void storeAccountName(final String address, final String name) {
+        walletStorage.setAccountName(address, name);
+    }
+    protected final StoredTxInfo getTransactionInfo(final String address){
+        return walletStorage.getAccountTxCount(address);
+    }
+
+    protected final void storeTransactionInfo(final String address, final StoredTxInfo txInfo){
+        walletStorage.setAccountTxInfo(address, txInfo);
     }
 }

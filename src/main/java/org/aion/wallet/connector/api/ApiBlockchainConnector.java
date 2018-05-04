@@ -22,6 +22,7 @@ import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
+import org.aion.wallet.storage.StoredTxInfo;
 import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.util.AionConstants;
@@ -70,6 +71,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         final ECKey ecKey = Keystore.getKey(address, password);
         final AccountDTO account = createAccountDTOWithPrivateKey(address, ecKey.getPrivKeyBytes());
         account.setName(name);
+        storeTransactionInfo(address, new StoredTxInfo(0, 0));
         storeAccountName(address, name);
     }
 
@@ -279,9 +281,11 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         }
     }
 
-    private BigInteger getLatestTransactionNonce(String addr) {
+    private BigInteger getLatestTransactionNonce(String address) {
+        final String parsedAddress = TypeConverter.toJsonHex(address);
+        final StoredTxInfo transactionInfo = getTransactionInfo(parsedAddress);
+
         final Long latest = getLatest();
-        final String parsedAddr = TypeConverter.toJsonHex(addr);
         for (long i = latest; i > 0; i--) {
             BlockDetails blk = null;
             try {
@@ -294,7 +298,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
             }
             BigInteger nonce = null;
             for (TxDetails t : blk.getTxDetails()) {
-                if (!TypeConverter.toJsonHex(t.getFrom().toString()).equals(parsedAddr)) {
+                if (!TypeConverter.toJsonHex(t.getFrom().toString()).equals(parsedAddress)) {
                     continue;
                 }
                 if (nonce == null || nonce.compareTo(t.getNonce()) < 0) {
