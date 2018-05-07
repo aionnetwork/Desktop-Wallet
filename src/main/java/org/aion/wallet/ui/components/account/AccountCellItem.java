@@ -1,7 +1,9 @@
 package org.aion.wallet.ui.components.account;
 
+import com.google.common.eventbus.Subscribe;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.TextField;
@@ -9,18 +11,20 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import org.aion.wallet.dto.AccountDTO;
-import org.aion.wallet.ui.components.partials.AccountUnlockDialog;
+import org.aion.wallet.ui.components.partials.UnlockAccountDialog;
+import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.util.BalanceUtils;
 import org.aion.wallet.util.UIUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
+import java.util.ResourceBundle;
 
-public class AccountCellItem extends ListCell<AccountDTO> {
+public class AccountCellItem extends ListCell<AccountDTO>{
 
     private static final String ICON_CONNECTED = "/org/aion/wallet/ui/components/icons/icon-connected-50.png";
 
@@ -45,7 +49,7 @@ public class AccountCellItem extends ListCell<AccountDTO> {
 
     private boolean nameInEditMode;
 
-    private AccountUnlockDialog accountUnlockDialog;
+    private UnlockAccountDialog accountUnlockDialog = new UnlockAccountDialog();
 
     public AccountCellItem() {
         loadFXML();
@@ -110,8 +114,8 @@ public class AccountCellItem extends ListCell<AccountDTO> {
     public void onDisconnectedClicked(MouseEvent mouseEvent) {
         if(this.getItem().getPrivateKey() == null) {
             accountUnlockDialog.open(mouseEvent);
+            EventPublisher.fireStartUnlockAccount(getItem());
         }
-        EventPublisher.fireAccountChanged(this.getItem());
     }
 
     public void onNameFieldClicked() {
