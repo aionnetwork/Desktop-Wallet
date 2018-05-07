@@ -9,6 +9,7 @@ import org.aion.base.util.ByteUtil;
 import org.aion.base.util.TypeConverter;
 import org.aion.mcf.account.Keystore;
 import org.aion.wallet.connector.BlockchainConnector;
+import org.aion.wallet.connector.api.TxState;
 import org.aion.wallet.connector.dto.SendRequestDTO;
 import org.aion.wallet.connector.dto.SyncInfoDTO;
 import org.aion.wallet.connector.dto.TransactionDTO;
@@ -170,12 +171,13 @@ public class CoreBlockchainConnector extends BlockchainConnector {
         if (transaction == null) {
             return null;
         }
-        TransactionDTO dto = new TransactionDTO();
-        dto.setFrom(transaction.getFrom().toString());
-        dto.setTo(transaction.getTo().toString());
-        dto.setValue(TypeConverter.StringHexToBigInteger(TypeConverter.toJsonHex(transaction.getValue())));
-        dto.setNrg(transaction.getNrg());
-        dto.setNrgPrice(transaction.getNrgPrice());
-        return dto;
+        return new TransactionDTO(
+                transaction.getFrom().toString(),
+                transaction.getTo().toString(),
+                TypeConverter.StringHexToBigInteger(TypeConverter.toJsonHex(transaction.getValue())),
+                transaction.getNrg(),
+                transaction.getNrgPrice(),
+                transaction.getTimeStampBI().longValue(),
+                TxState.FINISHED);
     }
 }

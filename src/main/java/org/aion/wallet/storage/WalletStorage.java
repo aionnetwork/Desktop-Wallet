@@ -77,18 +77,4 @@ public class WalletStorage {
     public void setAccountName(final String address, final String accountName) {
         accountProperties.setProperty(address + ACCOUNT_NAME_PROP, accountName);
     }
-
-    public void setAccountTxInfo(final String address, final StoredTxInfo txInfo){
-        accountProperties.setProperty(address + ACCOUNT_TX_LATEST_BLOCK, String.valueOf(txInfo.getLastCheckedBlock()));
-        accountProperties.setProperty(address + ACCOUNT_TX_COUNT, String.valueOf(txInfo.getTxCount()));
-    }
-
-    public StoredTxInfo getAccountTxCount(final String address) {
-        final int lastCheckedBlock = Optional.ofNullable(accountProperties.get(address + ACCOUNT_TX_LATEST_BLOCK)).
-                map(o -> Integer.parseInt(o.toString())).orElse(-1);
-        final int txCount = Optional.ofNullable(accountProperties.get(address + ACCOUNT_TX_COUNT))
-                .map(o -> Integer.parseInt(o.toString())).orElse(0);
-        return new StoredTxInfo(lastCheckedBlock, txCount);
-    }
-
 }

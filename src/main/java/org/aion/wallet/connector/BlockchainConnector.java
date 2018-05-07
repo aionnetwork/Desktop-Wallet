@@ -7,7 +7,6 @@ import org.aion.wallet.connector.dto.TransactionDTO;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
-import org.aion.wallet.storage.StoredTxInfo;
 import org.aion.wallet.storage.WalletStorage;
 import org.aion.wallet.util.ConfigUtils;
 
@@ -54,7 +53,7 @@ public abstract class BlockchainConnector {
 
     public abstract BigInteger getBalance(final String address);
 
-    public String sendTransaction(final SendRequestDTO dto) throws ValidationException {
+    public final String sendTransaction(final SendRequestDTO dto) throws ValidationException {
         if (dto == null || !dto.validate()) {
             throw new ValidationException("Invalid transaction request data");
         }
@@ -97,12 +96,6 @@ public abstract class BlockchainConnector {
 
     protected final void storeAccountName(final String address, final String name) {
         walletStorage.setAccountName(address, name);
-    }
-    protected final StoredTxInfo getTransactionInfo(final String address){
-        return walletStorage.getAccountTxCount(address);
-    }
-
-    protected final void storeTransactionInfo(final String address, final StoredTxInfo txInfo){
-        walletStorage.setAccountTxInfo(address, txInfo);
+        walletStorage.save();
     }
 }

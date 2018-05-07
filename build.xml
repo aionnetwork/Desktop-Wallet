@@ -13,6 +13,7 @@
     <property name="dir.test" value="./src/test"/>
     <property name="src.test" value="${dir.test}/java"/>
     <property name="res.test" value="${dir.test}/resources"/>
+    <property name="dir.out" value="./build"/>
     <property name="out.main" value="./build/main"/>
     <property name="out.test" value="./build/test"/>
     <property name="test.report.dir" value="./build/report"/>
@@ -48,8 +49,7 @@
     </target>
 
     <target name="clean">
-        <delete dir="${out.main}" includeEmptyDirs="true" includes="**/*/"/>
-        <delete dir="${out.test}" includeEmptyDirs="true" includes="**/*/"/>
+        <delete dir="${dir.out}" includeEmptyDirs="true" includes="**/*/"/>
         <delete dir="${test.report.dir}"/>
         <delete dir="${dir.pack}"/>
         <delete dir="${dir.mod}/updated/"/>
