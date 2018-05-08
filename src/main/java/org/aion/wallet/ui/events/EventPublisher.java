@@ -10,7 +10,7 @@ public class EventPublisher {
         EventBusFactory.getBus(ACCOUNT_CHANGE_EVENT_ID).post(dto);
     }
 
-    public static void fireStartUnlockAccount(AccountDTO accountDTO) {
+    public static void fireUnlockAccount(AccountDTO accountDTO) {
         EventBusFactory.getBus(ACCOUNT_UNLOCK_EVENT_ID).post(accountDTO);
     }
 }

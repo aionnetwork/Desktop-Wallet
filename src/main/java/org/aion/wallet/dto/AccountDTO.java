@@ -72,4 +72,8 @@ public class AccountDTO {
     public int hashCode() {
         return Objects.hash(currency, publicAddress);
     }
+
+    public boolean isUnlocked() {
+        return privateKey != null;
+    }
 }
