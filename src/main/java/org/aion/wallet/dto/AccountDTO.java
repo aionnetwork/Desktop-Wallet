@@ -7,6 +7,7 @@ import java.util.Objects;
 public class AccountDTO {
     private final String currency;
     private final String publicAddress;
+    private byte[] privateKey;
     private String balance;  //TODO this has to be BigInteger
     private String name;
     private boolean active;
@@ -32,6 +33,14 @@ public class AccountDTO {
 
     public String getPublicAddress() {
         return publicAddress;
+    }
+
+    public byte[] getPrivateKey() {
+        return privateKey;
+    }
+
+    public void setPrivateKey(byte[] privateKey) {
+        this.privateKey = privateKey;
     }
 
     public String getBalance() {
@@ -62,5 +71,9 @@ public class AccountDTO {
     @Override
     public int hashCode() {
         return Objects.hash(currency, publicAddress);
+    }
+
+    public boolean isUnlocked() {
+        return privateKey != null;
     }
 }

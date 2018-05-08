@@ -9,9 +9,9 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import org.aion.wallet.dto.AccountDTO;
+import org.aion.wallet.ui.components.partials.UnlockAccountDialog;
 import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.util.BalanceUtils;
 import org.aion.wallet.util.UIUtils;
@@ -19,17 +19,16 @@ import org.aion.wallet.util.UIUtils;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class AccountCellItem extends ListCell<AccountDTO> {
+public class AccountCellItem extends ListCell<AccountDTO>{
 
     private static final String ICON_CONNECTED = "/org/aion/wallet/ui/components/icons/icon-connected-50.png";
-
     private static final String ICON_DISCONNECTED = "/org/aion/wallet/ui/components/icons/icon-disconnected-50.png";
 
     private static final String ICON_EDIT = "/org/aion/wallet/ui/components/icons/pencil-edit-button.png";
-
     private static final String ICON_CONFIRM = "/org/aion/wallet/ui/components/icons/icons8-checkmark-50.png";
-    public static final String NAME_INPUT_FIELDS_SELECTED_STYLE = "name-input-fields-selected";
-    public static final String NAME_INPUT_FIELDS_STYLE = "name-input-fields";
+
+    private static final String NAME_INPUT_FIELDS_SELECTED_STYLE = "name-input-fields-selected";
+    private static final String NAME_INPUT_FIELDS_STYLE = "name-input-fields";
 
     @FXML
     private TextField name;
@@ -43,6 +42,8 @@ public class AccountCellItem extends ListCell<AccountDTO> {
     private ImageView editNameButton;
 
     private boolean nameInEditMode;
+
+    private final UnlockAccountDialog accountUnlockDialog = new UnlockAccountDialog();
 
     public AccountCellItem() {
         loadFXML();
@@ -104,8 +105,14 @@ public class AccountCellItem extends ListCell<AccountDTO> {
         }
     }
 
-    public void onDisconnectedClicked() {
-        EventPublisher.fireAccountChanged(this.getItem());
+    public void onDisconnectedClicked(MouseEvent mouseEvent) {
+        if(!this.getItem().isUnlocked()) {
+            accountUnlockDialog.open(mouseEvent);
+            EventPublisher.fireUnlockAccount(getItem());
+        }
+        else {
+            EventPublisher.fireAccountChanged(this.getItem());
+        }
     }
 
     public void onNameFieldClicked() {
