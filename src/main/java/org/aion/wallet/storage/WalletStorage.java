@@ -27,6 +27,10 @@ public class WalletStorage {
 
     private static final String ACCOUNT_NAME_PROP = ".name";
 
+    private static final String ACCOUNT_TX_COUNT = ".tx.count";
+
+    private static final String ACCOUNT_TX_LATEST_BLOCK = ".tx.latest_block";
+
     private static final WalletStorage INST;
 
     static {
@@ -71,7 +75,8 @@ public class WalletStorage {
     }
 
     public void setAccountName(final String address, final String accountName) {
-        accountProperties.setProperty(address + ACCOUNT_NAME_PROP, accountName);
+        if (address != null && accountName != null) {
+            accountProperties.setProperty(address + ACCOUNT_NAME_PROP, accountName);
+        }
     }
-
 }

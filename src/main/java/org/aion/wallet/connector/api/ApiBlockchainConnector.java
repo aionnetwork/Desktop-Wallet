@@ -22,6 +22,7 @@ import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
+import org.aion.wallet.storage.TxInfo;
 import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.util.AionConstants;
@@ -35,7 +36,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.LongStream;
 
 public class ApiBlockchainConnector extends BlockchainConnector {
 
@@ -47,7 +50,15 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     private static final Path KEYSTORE_PATH = Paths.get(System.getProperty(USER_DIR) + File.separator + "keystore");
 
+    private static final int BLOCK_BATCH_SIZE = 300;
+
     private final Map<String, AccountDTO> addressToAccount = new HashMap<>();
+
+    private final Map<String, SortedSet<TransactionDTO>> addressToTransactions = new HashMap<>();
+
+    private final Map<String, TxInfo> addressToLastTxInfo = new HashMap<>();
+
+    private Comparator<? super TransactionDTO> transactionComparator = new TransactionComparator();
 
     public ApiBlockchainConnector() {
         if (API.isConnected()) {
@@ -55,12 +66,15 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         }
         API.connect(IAionAPI.LOCALHOST_URL, true);
         loadLocallySavedAccounts();
+        processNewTransactions(0, addressToAccount.keySet());
         EventBusFactory.getBus(EventPublisher.ACCOUNT_CHANGE_EVENT_ID).register(this);
     }
 
     private void loadLocallySavedAccounts() {
-        for(String localAccount : Keystore.list()) {
-            addressToAccount.put(localAccount, getAccount(localAccount));
+        for (String address : Keystore.list()) {
+            addressToAccount.put(address, getAccount(address));
+            addressToTransactions.put(address, new TreeSet<>(transactionComparator));
+            addressToLastTxInfo.put(address, new TxInfo(0, -1));
         }
     }
 
@@ -68,23 +82,34 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     public void createAccount(final String password, final String name) {
         final String address = Keystore.create(password);
         final ECKey ecKey = Keystore.getKey(address, password);
-        final AccountDTO account = createAccountDTOWithPrivateKey(address, ecKey.getPrivKeyBytes());
-        account.setName(name);
-        storeAccountName(address, name);
+        if (ecKey != null) {
+            final AccountDTO account = createAccountWithPrivateKey(address, ecKey.getPrivKeyBytes());
+            account.setName(name);
+            processAccountAdded(address, true);
+            storeAccountName(address, name);
+        } else {
+            log.error("An exception occurred while creating the new account: ");
+        }
     }
 
     @Override
     public AccountDTO addKeystoreUTCFile(byte[] file, String password, final boolean shouldKeep) throws ValidationException {
         try {
             ECKey key = KeystoreFormat.fromKeystore(file, password);
+            if (key == null) {
+                throw new ValidationException("Could Not extract ECKey from keystore file");
+            }
             KeystoreItem keystoreItem = KeystoreItem.parse(file);
             String address = keystoreItem.getAddress();
+            final AccountDTO accountDTO;
             if (!Keystore.exist(address) && shouldKeep) {
                 address = Keystore.create(password, key);
-                return createAccountDTOWithPrivateKey(address, key.getPrivKeyBytes());
+                accountDTO = createAccountWithPrivateKey(address, key.getPrivKeyBytes());
             } else {
-                return addressToAccount.getOrDefault(address, createAccountDTOWithPrivateKey(address, key.getPrivKeyBytes()));
+                accountDTO = addressToAccount.getOrDefault(address, createAccountWithPrivateKey(address, key.getPrivKeyBytes()));
             }
+            processAccountAdded(accountDTO.getPublicAddress(), false);
+            return accountDTO;
         } catch (final Exception e) {
             throw new ValidationException("Could not open Keystore File", e);
         }
@@ -100,7 +125,9 @@ public class ApiBlockchainConnector extends BlockchainConnector {
                     removeKeystoreFile(address);
                 }
                 log.info("The private key was imported, the address is: " + address);
-                return createAccountDTOWithPrivateKey(address, raw);
+                final AccountDTO account = createAccountWithPrivateKey(address, raw);
+                processAccountAdded(account.getPublicAddress(), false);
+                return account;
             } else {
                 log.info("Failed to import the private key. Already exists?");
                 return null;
@@ -110,7 +137,13 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         }
     }
 
-    private AccountDTO createAccountDTOWithPrivateKey(final String address, final byte[] privKeyBytes) {
+    private void processAccountAdded(final String address, final boolean isCreated) {
+        addressToLastTxInfo.put(address, new TxInfo(isCreated ? -1 : 0, -1));
+        addressToTransactions.put(address, new TreeSet<>(transactionComparator));
+        processNewTransactions(0, Collections.singleton(address));
+    }
+
+    private AccountDTO createAccountWithPrivateKey(final String address, final byte[] privKeyBytes) {
         final String name = getStoredAccountName(address);
         final String balance = BalanceUtils.formatBalance(getBalance(address));
         AccountDTO account = new AccountDTO(name, address, balance, getCurrency());
@@ -210,7 +243,9 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     @Override
     public List<TransactionDTO> getLatestTransactions(String address) {
-        return getTransactions(address, AionConstants.MAX_BLOCKS_FOR_LATEST_TRANSACTIONS_QUERY);
+        long lastBlockToCheck = addressToLastTxInfo.get(address).getLastCheckedBlock();
+        processNewTransactions(lastBlockToCheck, Collections.singleton(address));
+        return new ArrayList<>(addressToTransactions.getOrDefault(address, Collections.emptySortedSet()));
     }
 
     @Override
@@ -279,55 +314,50 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         }
     }
 
-    private BigInteger getLatestTransactionNonce(String addr) {
-        final Long latest = getLatest();
-        final String parsedAddr = TypeConverter.toJsonHex(addr);
-        for (long i = latest; i > 0; i--) {
-            BlockDetails blk = null;
-            try {
-                blk = getBlockDetailsByNumber(i);
-            } catch (Exception e) {
-                log.warn("Exception occurred while searching for the latest account transaction");
-            }
-            if (blk == null || blk.getTxDetails().size() == 0) {
-                continue;
-            }
-            BigInteger nonce = null;
-            for (TxDetails t : blk.getTxDetails()) {
-                if (!TypeConverter.toJsonHex(t.getFrom().toString()).equals(parsedAddr)) {
-                    continue;
-                }
-                if (nonce == null || nonce.compareTo(t.getNonce()) < 0) {
-                    nonce = t.getNonce();
-                }
-            }
-            if (nonce != null) {
-                return nonce.add(BigInteger.ONE);
-            }
+    private BigInteger getLatestTransactionNonce(String address) {
+        final TxInfo transactionInfo = addressToLastTxInfo.get(address);
+        final long lastCheckedBlock = transactionInfo.getLastCheckedBlock();
+        long lastKnownTxCount = transactionInfo.getTxCount();
+        if (lastCheckedBlock >= 0) {
+            processNewTransactions(lastCheckedBlock, Collections.singleton(address));
         }
-        return BigInteger.ZERO;
+        return BigInteger.valueOf(lastKnownTxCount + 1);
     }
 
-    private List<TransactionDTO> getTransactions(final String addr, long nrOfBlocksToCheck) {
-        final Long latest = getLatest();
-        long blockOffset = latest - nrOfBlocksToCheck;
-        if (blockOffset < 0) {
-            blockOffset = 0;
-        }
-        final String parsedAddr = TypeConverter.toJsonHex(addr);
-        List<TransactionDTO> txs = new ArrayList<>();
-        for (long i = latest; i > blockOffset; i--) {
-            BlockDetails blk = getBlockDetailsByNumber(i);
-            if (blk == null || blk.getTxDetails().size() == 0) {
-                continue;
+    private void processNewTransactions(final long lastBlockToCheck, final Set<String> addresses) {
+        if (!addresses.isEmpty()) {
+            final long start = System.nanoTime();
+            final long latest = getLatest();
+            for (long i = latest; i > lastBlockToCheck; i -= BLOCK_BATCH_SIZE) {
+                List<Long> blockBatch = LongStream.iterate(i, j -> j - 1).limit(BLOCK_BATCH_SIZE).boxed().collect(Collectors.toList());
+                List<BlockDetails> blk = getBlockDetailsByNumbers(blockBatch);
+                blk.forEach(getBlockDetailsConsumer(latest, addresses));
             }
-            txs.addAll(blk.getTxDetails().stream()
-                    .filter(t -> TypeConverter.toJsonHex(t.getFrom().toString()).equals(parsedAddr)
-                            || TypeConverter.toJsonHex(t.getTo().toString()).equals(parsedAddr))
-                    .map(this::mapTransaction)
-                    .collect(Collectors.toList()));
+            final long end = System.nanoTime();
+            System.out.println((end - start) + "ns from: " + lastBlockToCheck + " to: " + latest + " for: " + addresses);
+            for (String address : addresses) {
+                final long txCount = addressToLastTxInfo.get(address).getTxCount();
+                if (txCount < 0) {
+                    addressToLastTxInfo.put(address, new TxInfo(latest, txCount));
+                }
+            }
         }
-        return txs;
+    }
+
+    private Consumer<BlockDetails> getBlockDetailsConsumer(final long latest, final Set<String> addresses) {
+        return blockDetails -> {
+            if (blockDetails != null) {
+                final long timestamp = blockDetails.getTimestamp();
+                for (final String address : addresses) {
+                    Set<TransactionDTO> txs = addressToTransactions.get(address);
+                    txs.addAll(blockDetails.getTxDetails().stream()
+                            .filter(t -> TypeConverter.toJsonHex(t.getFrom().toString()).equals(address)
+                                    || TypeConverter.toJsonHex(t.getTo().toString()).equals(address))
+                            .map(t -> recordTransaction(address, t, timestamp, latest))
+                            .collect(Collectors.toList()));
+                }
+            }
+        };
     }
 
     private Long getLatest() {
@@ -341,11 +371,11 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         return latest;
     }
 
-    private BlockDetails getBlockDetailsByNumber(Long number) {
-        final BlockDetails blockDetails;
+    private List<BlockDetails> getBlockDetailsByNumbers(List<Long> numbers) {
+        List<BlockDetails> blockDetails;
         lock();
         try {
-            blockDetails = ((List<BlockDetails>) API.getAdmin().getBlockDetailsByNumber(number.toString()).getObject()).get(0);
+            blockDetails = API.getAdmin().getBlockDetailsByNumber(numbers).getObject();
         } finally {
             unLock();
         }
@@ -356,25 +386,50 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         if (transaction == null) {
             return null;
         }
-        TransactionDTO dto = new TransactionDTO();
-        dto.setFrom(transaction.getFrom().toString());
-        dto.setTo(transaction.getTo().toString());
-        dto.setValue(TypeConverter.StringHexToBigInteger(TypeConverter.toJsonHex(transaction.getValue())));
-        dto.setNrg(transaction.getNrgConsumed());
-        dto.setNrgPrice(transaction.getNrgPrice());
-        return dto;
+        return new TransactionDTO(
+                transaction.getFrom().toString(),
+                transaction.getTo().toString(),
+                transaction.getTxHash().toString(),
+                TypeConverter.StringHexToBigInteger(TypeConverter.toJsonHex(transaction.getValue())),
+                transaction.getNrgConsumed(),
+                transaction.getNrgPrice(),
+                transaction.getTimeStamp(),
+                TxState.FINISHED
+        );
     }
 
-    private TransactionDTO mapTransaction(TxDetails transaction) {
+    private TransactionDTO mapTransaction(final TxDetails transaction, final long timeStamp) {
         if (transaction == null) {
             return null;
         }
-        TransactionDTO dto = new TransactionDTO();
-        dto.setFrom(transaction.getFrom().toString());
-        dto.setTo(transaction.getTo().toString());
-        dto.setValue(TypeConverter.StringHexToBigInteger(TypeConverter.toJsonHex(transaction.getValue())));
-        dto.setNrg(transaction.getNrgConsumed());
-        dto.setNrgPrice(transaction.getNrgPrice());
-        return dto;
+        return new TransactionDTO(
+                transaction.getFrom().toString(),
+                transaction.getTo().toString(),
+                transaction.getTxHash().toString(),
+                TypeConverter.StringHexToBigInteger(TypeConverter.toJsonHex(transaction.getValue())),
+                transaction.getNrgConsumed(),
+                transaction.getNrgPrice(),
+                timeStamp,
+                TxState.FINISHED
+        );
+    }
+
+    private TransactionDTO recordTransaction(final String address, TxDetails transaction, final long timeStamp, long lastCheckedBlock) {
+        final TransactionDTO transactionDTO = mapTransaction(transaction, timeStamp);
+        final long txCount = addressToLastTxInfo.get(address).getTxCount();
+        if (transactionDTO.getFrom().equals(address)) {
+            final long txNonce = transaction.getNonce().longValue();
+            if (txCount < txNonce) {
+                addressToLastTxInfo.put(address, new TxInfo(lastCheckedBlock, txNonce));
+            }
+        }
+        return transactionDTO;
+    }
+
+    private class TransactionComparator implements Comparator<TransactionDTO> {
+        @Override
+        public int compare(final TransactionDTO tx1, final TransactionDTO tx2) {
+            return Long.compare(tx1.getTimeStamp(), tx2.getTimeStamp());
+        }
     }
 }

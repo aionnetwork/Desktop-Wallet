@@ -53,7 +53,7 @@ public abstract class BlockchainConnector {
 
     public abstract BigInteger getBalance(final String address);
 
-    public String sendTransaction(final SendRequestDTO dto) throws ValidationException {
+    public final String sendTransaction(final SendRequestDTO dto) throws ValidationException {
         if (dto == null || !dto.validate()) {
             throw new ValidationException("Invalid transaction request data");
         }
@@ -82,19 +82,20 @@ public abstract class BlockchainConnector {
         walletStorage.save();
     }
 
-    protected String getStoredAccountName(final String publicAddress) {
-        return walletStorage.getAccountName(publicAddress);
-    }
-
-    protected void storeAccountName(final String address, final String name) {
-        walletStorage.setAccountName(address, name);
-    }
-
     protected final void lock(){
         lock.lock();
     }
 
-    protected final void unLock(){
+    protected final void unLock() {
         lock.unlock();
+    }
+
+    protected final String getStoredAccountName(final String publicAddress) {
+        return walletStorage.getAccountName(publicAddress);
+    }
+
+    protected final void storeAccountName(final String address, final String name) {
+        walletStorage.setAccountName(address, name);
+        walletStorage.save();
     }
 }
