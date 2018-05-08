@@ -75,6 +75,8 @@ public class WalletStorage {
     }
 
     public void setAccountName(final String address, final String accountName) {
-        accountProperties.setProperty(address + ACCOUNT_NAME_PROP, accountName);
+        if (address != null && accountName != null) {
+            accountProperties.setProperty(address + ACCOUNT_NAME_PROP, accountName);
+        }
     }
 }

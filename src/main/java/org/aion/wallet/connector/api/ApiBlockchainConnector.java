@@ -82,16 +82,23 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     public void createAccount(final String password, final String name) {
         final String address = Keystore.create(password);
         final ECKey ecKey = Keystore.getKey(address, password);
-        final AccountDTO account = createAccountWithPrivateKey(address, ecKey.getPrivKeyBytes());
-        account.setName(name);
-        processAccountAdded(address, true);
-        storeAccountName(address, name);
+        if (ecKey != null) {
+            final AccountDTO account = createAccountWithPrivateKey(address, ecKey.getPrivKeyBytes());
+            account.setName(name);
+            processAccountAdded(address, true);
+            storeAccountName(address, name);
+        } else {
+            log.error("An exception occurred while creating the new account: ");
+        }
     }
 
     @Override
     public AccountDTO addKeystoreUTCFile(byte[] file, String password, final boolean shouldKeep) throws ValidationException {
         try {
             ECKey key = KeystoreFormat.fromKeystore(file, password);
+            if (key == null) {
+                throw new ValidationException("Could Not extract ECKey from keystore file");
+            }
             KeystoreItem keystoreItem = KeystoreItem.parse(file);
             String address = keystoreItem.getAddress();
             final AccountDTO accountDTO;
