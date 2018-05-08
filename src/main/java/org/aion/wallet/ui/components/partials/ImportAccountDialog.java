@@ -7,6 +7,9 @@ import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.InputEvent;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
@@ -71,9 +74,13 @@ public class ImportAccountDialog implements Initializable {
     @FXML
     private CheckBox rememberAccount;
 
+    @FXML
+    private Label validationError;
+
     private byte[] keystoreFile;
 
     public void uploadKeystoreFile() throws IOException {
+        resetValidation(null);
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Open UTC Keystore File");
         File file = fileChooser.showOpenDialog(null);
@@ -85,7 +92,7 @@ public class ImportAccountDialog implements Initializable {
         keystoreFile = Files.readAllBytes(file.toPath());
     }
 
-    public void importAccount(MouseEvent mouseEvent) {
+    public void importAccount(InputEvent eventSource) {
         AccountDTO account = null;
         if (importKeystoreView.isVisible()) {
             String password = keystorePassword.getText();
@@ -96,6 +103,11 @@ public class ImportAccountDialog implements Initializable {
                     log.error(e.getMessage(), e);
                     return;
                 }
+            }
+            else {
+                validationError.setText("Please complete the fields!");
+                validationError.setVisible(true);
+                return;
             }
         } else {
             String password = privateKeyPassword.getText();
@@ -113,11 +125,16 @@ public class ImportAccountDialog implements Initializable {
                     return;
                 }
             }
+            else {
+                validationError.setText("Please complete the fields!");
+                validationError.setVisible(true);
+                return;
+            }
         }
         if(account != null) {
             EventPublisher.fireAccountChanged(account);
         }
-        this.close(mouseEvent);
+        this.close(eventSource);
     }
 
     public void open(MouseEvent mouseEvent) {
@@ -146,8 +163,8 @@ public class ImportAccountDialog implements Initializable {
         popup.show();
     }
 
-    public void close(MouseEvent mouseEvent) {
-        ((Node) mouseEvent.getSource()).getScene().getWindow().hide();
+    public void close(InputEvent eventSource) {
+        ((Node) eventSource.getSource()).getScene().getWindow().hide();
     }
 
     @Override
@@ -155,6 +172,18 @@ public class ImportAccountDialog implements Initializable {
         privateKeyRadioButton.setUserData(PK_RADIO_BUTTON_ID);
         keystoreRadioButton.setUserData(KEYSTORE_RADIO_BUTTON_ID);
         accountTypeToggleGroup.selectedToggleProperty().addListener(this::radioButtonChanged);
+    }
+
+    @FXML
+    private void submitOnEnterPressed(final KeyEvent event) {
+        if (event.getCode().equals(KeyCode.ENTER)) {
+            importAccount(event);
+        }
+    }
+
+
+    public void resetValidation(MouseEvent mouseEvent) {
+        validationError.setVisible(false);
     }
 
     private void radioButtonChanged(ObservableValue<? extends Toggle> ov, Toggle oldToggle, Toggle newToggle) {
