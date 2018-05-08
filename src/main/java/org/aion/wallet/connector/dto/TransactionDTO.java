@@ -8,15 +8,17 @@ import java.math.BigInteger;
 public class TransactionDTO {
     private final String from;
     private final String to;
+    private final String hash;
     private final BigInteger value;
     private final long nrg;
     private final long nrgPrice;
     private final long timeStamp;
     private final TxState state;
 
-    public TransactionDTO(final String from, final String to, final BigInteger value, final long nrg, final long nrgPrice, final long timeStamp, final TxState state) {
+    public TransactionDTO(final String from, final String to, final String hash, final BigInteger value, final long nrg, final long nrgPrice, final long timeStamp, final TxState state) {
         this.from = TypeConverter.toJsonHex(from);
         this.to = TypeConverter.toJsonHex(to);
+        this.hash = hash;
         this.value = value;
         this.nrg = nrg;
         this.nrgPrice = nrgPrice;
@@ -30,6 +32,10 @@ public class TransactionDTO {
 
     public String getTo() {
         return to;
+    }
+
+    public String getHash() {
+        return hash;
     }
 
     public BigInteger getValue() {

@@ -380,6 +380,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         return new TransactionDTO(
                 transaction.getFrom().toString(),
                 transaction.getTo().toString(),
+                transaction.getTxHash().toString(),
                 TypeConverter.StringHexToBigInteger(TypeConverter.toJsonHex(transaction.getValue())),
                 transaction.getNrgConsumed(),
                 transaction.getNrgPrice(),
@@ -395,6 +396,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         return new TransactionDTO(
                 transaction.getFrom().toString(),
                 transaction.getTo().toString(),
+                transaction.getTxHash().toString(),
                 TypeConverter.StringHexToBigInteger(TypeConverter.toJsonHex(transaction.getValue())),
                 transaction.getNrgConsumed(),
                 transaction.getNrgPrice(),

@@ -174,6 +174,7 @@ public class CoreBlockchainConnector extends BlockchainConnector {
         return new TransactionDTO(
                 transaction.getFrom().toString(),
                 transaction.getTo().toString(),
+                ByteUtil.toHexString(transaction.getHash()),
                 TypeConverter.StringHexToBigInteger(TypeConverter.toJsonHex(transaction.getValue())),
                 transaction.getNrg(),
                 transaction.getNrgPrice(),
