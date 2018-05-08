@@ -106,12 +106,13 @@ public class AccountCellItem extends ListCell<AccountDTO>{
     }
 
     public void onDisconnectedClicked(MouseEvent mouseEvent) {
-        if(!this.getItem().isUnlocked()) {
+        final AccountDTO modifiedAccount = this.getItem();
+        if(!modifiedAccount.isUnlocked()) {
             accountUnlockDialog.open(mouseEvent);
-            EventPublisher.fireUnlockAccount(getItem());
+            EventPublisher.fireUnlockAccount(modifiedAccount);
         }
         else {
-            EventPublisher.fireAccountChanged(this.getItem());
+            EventPublisher.fireAccountChanged(modifiedAccount);
         }
     }
 

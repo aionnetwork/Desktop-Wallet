@@ -64,7 +64,8 @@ public class HistoryController extends AbstractController {
         final Task<List<TxRow>> getTransactionsTask = getApiTask(
                 address -> blockchainConnector.getLatestTransactions(address).stream()
                         .map(t -> new TxRow(address, t))
-                        .collect(Collectors.toList()), account.getPublicAddress()
+                        .collect(Collectors.toList()),
+                account.getPublicAddress()
         );
 
         runApiTask(

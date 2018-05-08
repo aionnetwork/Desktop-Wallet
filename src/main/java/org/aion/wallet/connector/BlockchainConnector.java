@@ -13,6 +13,7 @@ import org.aion.wallet.util.ConfigUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 
 public abstract class BlockchainConnector {
 
@@ -21,6 +22,8 @@ public abstract class BlockchainConnector {
     private static BlockchainConnector INST;
 
     private final WalletStorage walletStorage = WalletStorage.getInstance();
+
+    private final ReentrantLock lock = new ReentrantLock();
 
     public static BlockchainConnector getInstance() {
         if (INST != null) {
@@ -85,5 +88,13 @@ public abstract class BlockchainConnector {
 
     protected void storeAccountName(final String address, final String name) {
         walletStorage.setAccountName(address, name);
+    }
+
+    protected final void lock(){
+        lock.lock();
+    }
+
+    protected final void unLock(){
+        lock.unlock();
     }
 }

@@ -3,7 +3,7 @@ package org.aion.wallet.util;
 import com.google.common.eventbus.EventBus;
 import javafx.application.Platform;
 import org.aion.wallet.ui.events.EventBusFactory;
-import org.aion.wallet.ui.events.TimerEvent;
+import org.aion.wallet.ui.events.RefreshEvent;
 
 import java.util.TimerTask;
 
@@ -15,6 +15,6 @@ public class DataUpdater extends TimerTask {
 
     @Override
     public void run() {
-        Platform.runLater(() -> eventBus.post(new TimerEvent(null)));
+        Platform.runLater(() -> eventBus.post(new RefreshEvent(RefreshEvent.Type.TIMER)));
     }
 }

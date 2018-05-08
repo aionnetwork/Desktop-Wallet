@@ -5,7 +5,6 @@ import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.event.Event;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -15,14 +14,12 @@ import javafx.scene.layout.VBox;
 import org.aion.api.log.LogEnum;
 import org.aion.log.AionLoggerFactory;
 import org.aion.wallet.connector.BlockchainConnector;
-import org.aion.wallet.connector.dto.SyncInfoDTO;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
-import org.aion.wallet.ui.events.TimerEvent;
+import org.aion.wallet.ui.events.RefreshEvent;
 import org.aion.wallet.util.BalanceUtils;
-import org.aion.wallet.util.DataUpdater;
 import org.aion.wallet.util.UIUtils;
 import org.slf4j.Logger;
 
@@ -34,7 +31,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class HeaderPaneControls extends AbstractController {
@@ -74,7 +70,6 @@ public class HeaderPaneControls extends AbstractController {
 
     @Override
     public void internalInit(URL location, ResourceBundle resources) {
-        registerEventBusConsumer();
         headerButtons.put(homeButton, new HeaderPaneButtonEvent(HeaderPaneButtonEvent.Type.OVERVIEW));
         headerButtons.put(sendButton, new HeaderPaneButtonEvent(HeaderPaneButtonEvent.Type.SEND));
         headerButtons.put(receiveButton, new HeaderPaneButtonEvent(HeaderPaneButtonEvent.Type.RECEIVE));
@@ -146,10 +141,9 @@ public class HeaderPaneControls extends AbstractController {
         UIUtils.setWidth(accountBalance);
     }
 
-    @Subscribe
-    private void handleConnectivityStatusEvent(final TimerEvent event) {
-        final String accountName = activeAccount.getText();
-        if (!accountName.isEmpty()) {
+    @Override
+    protected final void refreshView(final RefreshEvent event) {
+        if (accountAddress != null && !accountAddress.isEmpty()) {
             final String[] text = accountBalance.getText().split(BalanceUtils.CCY_SEPARATOR);
             final String currency = text[1];
             final Task<BigInteger> getBalanceTask = getApiTask(blockchainConnector::getBalance, accountAddress);

@@ -5,7 +5,7 @@
 <?import java.net.URL?>
 <AnchorPane prefHeight="46.0" xmlns="http://javafx.com/javafx/8.0.121"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="org.aion.wallet.ui.components.partials.ConnectivityStatus">
+            fx:controller="org.aion.wallet.ui.components.partials.ConnectivityStatusController" fx:id="parent">
     <stylesheets>
         <URL value="@../footer-pane.css" />
     </stylesheets>
