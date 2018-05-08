@@ -8,6 +8,9 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
+import javafx.scene.input.InputEvent;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
@@ -65,13 +68,13 @@ public class UnlockAccountDialog implements Initializable{
         popup.show(eventSource.getScene().getWindow());
     }
 
-    public void unlockAccount(MouseEvent mouseEvent) {
+    public void unlockAccount(InputEvent event) {
         if(unlockPassword.getText() != null && !unlockPassword.getText().isEmpty()) {
             ECKey storedKey = Keystore.getKey(account.getPublicAddress(), unlockPassword.getText());
             if(storedKey != null) {
                 account.setPrivateKey(storedKey.getPrivKeyBytes());
                 EventPublisher.fireAccountChanged(account);
-                this.close(mouseEvent);
+                this.close(event);
             }
             else {
                 validationError.setText("The password is incorrect!");
@@ -93,8 +96,8 @@ public class UnlockAccountDialog implements Initializable{
         validationError.setVisible(false);
     }
 
-    public void close(MouseEvent mouseEvent) {
-        ((Node) mouseEvent.getSource()).getScene().getWindow().hide();
+    public void close(InputEvent event) {
+        ((Node) event.getSource()).getScene().getWindow().hide();
     }
 
     @Subscribe
@@ -102,6 +105,12 @@ public class UnlockAccountDialog implements Initializable{
         this.account = account;
     }
 
+    @FXML
+    private void submitOnEnterPressed(final KeyEvent event) {
+        if (event.getCode().equals(KeyCode.ENTER)) {
+            unlockAccount(event);
+        }
+    }
     private void registerEventBusConsumer() {
         EventBusFactory.getBus(EventPublisher.ACCOUNT_UNLOCK_EVENT_ID).register(this);
     }
