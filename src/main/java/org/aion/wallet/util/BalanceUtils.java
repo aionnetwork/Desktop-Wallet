@@ -16,7 +16,7 @@ public class BalanceUtils {
     private static final BigDecimal WEI_MULTIPLIER = BigDecimal.valueOf(1E18);
 
     public static String formatBalance(final BigInteger balance) {
-        if (BigInteger.ZERO.equals(balance)) {
+        if (BigInteger.ZERO.equals(balance) || balance == null) {
             return String.valueOf(0);
         }
         BigDecimal bigDecimalBalance = new BigDecimal(balance);

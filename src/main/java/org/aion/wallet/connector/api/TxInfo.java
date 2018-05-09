@@ -1,4 +1,4 @@
-package org.aion.wallet.storage;
+package org.aion.wallet.connector.api;
 
 public class TxInfo {
     private final long lastCheckedBlock;

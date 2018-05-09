@@ -160,6 +160,7 @@ public class HeaderPaneControls extends AbstractController {
         final String newBalance = BalanceUtils.formatBalance(bigInteger) + BalanceUtils.CCY_SEPARATOR + currency;
         if (!newBalance.equalsIgnoreCase(accountBalance.getText())) {
             accountBalance.setText(newBalance);
+            UIUtils.setWidth(accountBalance);
         }
     }
 }

@@ -19,23 +19,26 @@ import org.aion.wallet.connector.dto.SendRequestDTO;
 import org.aion.wallet.connector.dto.SyncInfoDTO;
 import org.aion.wallet.connector.dto.TransactionDTO;
 import org.aion.wallet.dto.AccountDTO;
+import org.aion.wallet.dto.LightAppSettings;
 import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
-import org.aion.wallet.storage.TxInfo;
+import org.aion.wallet.storage.ApiType;
+import org.aion.wallet.storage.WalletStorage;
 import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.util.AionConstants;
 import org.aion.wallet.util.BalanceUtils;
 import org.slf4j.Logger;
 
-import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
@@ -46,28 +49,50 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     private final static IAionAPI API = AionAPIImpl.inst();
 
-    private static final String USER_DIR = "user.dir";
-
-    private static final Path KEYSTORE_PATH = Paths.get(System.getProperty(USER_DIR) + File.separator + "keystore");
-
     private static final int BLOCK_BATCH_SIZE = 300;
 
     private final Map<String, AccountDTO> addressToAccount = new HashMap<>();
 
-    private final Map<String, SortedSet<TransactionDTO>> addressToTransactions = new HashMap<>();
+    private final Map<String, SortedSet<TransactionDTO>> addressToTransactions = Collections.synchronizedMap(new HashMap<>());
 
-    private final Map<String, TxInfo> addressToLastTxInfo = new HashMap<>();
+    private final Map<String, TxInfo> addressToLastTxInfo = Collections.synchronizedMap(new HashMap<>());
+
+    private final ExecutorService backgroundExecutor;
+
+    private LightAppSettings lightAppSettings = getLightweightWalletSettings(ApiType.JAVA);
 
     private Comparator<? super TransactionDTO> transactionComparator = new TransactionComparator();
 
+    private Future<?> connectionFuture;
+
+
     public ApiBlockchainConnector() {
-        if (API.isConnected()) {
-            return;
-        }
-        API.connect(IAionAPI.LOCALHOST_URL, true);
+        backgroundExecutor = Executors.newSingleThreadExecutor();
+        connect();
         loadLocallySavedAccounts();
-        processNewTransactions(0, addressToAccount.keySet());
+        backgroundExecutor.submit(() -> processNewTransactions(0, addressToAccount.keySet()));
         EventBusFactory.getBus(EventPublisher.ACCOUNT_CHANGE_EVENT_ID).register(this);
+        EventBusFactory.getBus(EventPublisher.SETTINGS_CHANGED_ID).register(this);
+    }
+
+    private void connect() {
+        if (connectionFuture != null) {
+            connectionFuture.cancel(true);
+        }
+        connectionFuture = backgroundExecutor.submit(() -> {
+            API.connect(getConnectionString(), true);
+            EventPublisher.fireOperationFinished();
+        });
+    }
+
+    private void disconnect() {
+        storeLightweightWalletSettings(lightAppSettings);
+        lock();
+        try {
+            API.destroyApi().getObject();
+        } finally {
+            unLock();
+        }
     }
 
     private void loadLocallySavedAccounts() {
@@ -140,7 +165,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     private void processAccountAdded(final String address, final boolean isCreated) {
         addressToLastTxInfo.put(address, new TxInfo(isCreated ? -1 : 0, -1));
         addressToTransactions.put(address, new TreeSet<>(transactionComparator));
-        processNewTransactions(0, Collections.singleton(address));
+        backgroundExecutor.submit(() -> processNewTransactions(0, Collections.singleton(address)));
     }
 
     private AccountDTO createAccountWithPrivateKey(final String address, final byte[] privKeyBytes) {
@@ -163,7 +188,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     private void removeAssociatedKeyStoreFile(final String unwrappedAddress) {
         try {
-            for (Path keystoreFile : Files.newDirectoryStream(KEYSTORE_PATH)) {
+            for (Path keystoreFile : Files.newDirectoryStream(WalletStorage.KEYSTORE_PATH)) {
                 if (keystoreFile.toString().contains(unwrappedAddress)) {
                     Files.deleteIfExists(keystoreFile);
                 }
@@ -193,8 +218,16 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     @Override
     public BigInteger getBalance(String address) {
         lock();
-        final BigInteger balance = API.getChain().getBalance(new Address(address)).getObject();
-        unLock();
+        final BigInteger balance;
+        try {
+            if (API.isConnected()) {
+                balance = API.getChain().getBalance(new Address(address)).getObject();
+            } else {
+                balance = null;
+            }
+        } finally {
+            unLock();
+        }
         return balance;
     }
 
@@ -289,7 +322,11 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         final int size;
         lock();
         try {
-            size = ((List) API.getNet().getActiveNodes().getObject()).size();
+            if (API.isConnected()) {
+                size = ((List) API.getNet().getActiveNodes().getObject()).size();
+            } else {
+                size = 0;
+            }
         } finally {
             unLock();
         }
@@ -304,13 +341,38 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     @Override
     public void close() {
         super.close();
-        API.destroyApi();
+        disconnect();
+    }
+
+    @Override
+    public void reloadSettings(final LightAppSettings settings) {
+        super.reloadSettings(settings);
+        lightAppSettings = getLightweightWalletSettings(ApiType.JAVA);
+        disconnect();
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            log.error(e.getMessage(), e);
+        }
+        connect();
+    }
+
+    @Override
+    public LightAppSettings getSettings() {
+        return lightAppSettings;
     }
 
     @Subscribe
     private void handleAccountChanged(final AccountDTO account) {
         if (!account.getName().equalsIgnoreCase(getStoredAccountName(account.getPublicAddress()))) {
             storeAccountName(account.getPublicAddress(), account.getName());
+        }
+    }
+
+    @Subscribe
+    private void handleSettingsChanged(final LightAppSettings settings) {
+        if (settings != null) {
+            reloadSettings(settings);
         }
     }
 
@@ -325,7 +387,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     }
 
     private void processNewTransactions(final long lastBlockToCheck, final Set<String> addresses) {
-        if (!addresses.isEmpty()) {
+        if (API.isConnected() && !addresses.isEmpty()) {
             final long start = System.nanoTime();
             final long latest = getLatest();
             for (long i = latest; i > lastBlockToCheck; i -= BLOCK_BATCH_SIZE) {
@@ -337,9 +399,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
             System.out.println((end - start) + "ns from: " + lastBlockToCheck + " to: " + latest + " for: " + addresses);
             for (String address : addresses) {
                 final long txCount = addressToLastTxInfo.get(address).getTxCount();
-                if (txCount < 0) {
-                    addressToLastTxInfo.put(address, new TxInfo(latest, txCount));
-                }
+                addressToLastTxInfo.put(address, new TxInfo(latest, txCount));
             }
         }
     }
@@ -364,7 +424,11 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         final Long latest;
         lock();
         try {
-            latest = API.getChain().blockNumber().getObject();
+            if (API.isConnected()) {
+                latest = API.getChain().blockNumber().getObject();
+            } else {
+                latest = 0L;
+            }
         } finally {
             unLock();
         }
@@ -426,10 +490,17 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         return transactionDTO;
     }
 
+    private String getConnectionString() {
+        final String protocol = lightAppSettings.getProtocol();
+        final String ip = lightAppSettings.getAddress();
+        final String port = lightAppSettings.getPort();
+        return protocol + "://" + ip + ":" + port;
+    }
+
     private class TransactionComparator implements Comparator<TransactionDTO> {
         @Override
         public int compare(final TransactionDTO tx1, final TransactionDTO tx2) {
-            return Long.compare(tx1.getTimeStamp(), tx2.getTimeStamp());
+            return Long.compare(tx2.getTimeStamp(), tx1.getTimeStamp());
         }
     }
 }

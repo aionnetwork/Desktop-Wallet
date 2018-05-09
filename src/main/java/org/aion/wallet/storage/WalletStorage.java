@@ -1,6 +1,7 @@
 package org.aion.wallet.storage;
 
 import org.aion.api.log.LogEnum;
+import org.aion.wallet.dto.LightAppSettings;
 import org.aion.wallet.log.WalletLoggerFactory;
 import org.slf4j.Logger;
 
@@ -19,17 +20,19 @@ public class WalletStorage {
 
     private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
 
+    private static final String USER_DIR = "user.dir";
+
+    public static final Path KEYSTORE_PATH = Paths.get(System.getProperty(USER_DIR) + File.separator + "keystore");
+
     private static final String HOME_DIR = System.getProperty("user.home");
 
     private static final String STORAGE_DIR = HOME_DIR + File.separator + ".aion";
 
     private static final String ACCOUNTS_FILE = STORAGE_DIR + File.separator + "accounts.properties";
 
+    private static final String WALLET_FILE = STORAGE_DIR + File.separator + "wallet.properties";
+
     private static final String ACCOUNT_NAME_PROP = ".name";
-
-    private static final String ACCOUNT_TX_COUNT = ".tx.count";
-
-    private static final String ACCOUNT_TX_LATEST_BLOCK = ".tx.latest_block";
 
     private static final WalletStorage INST;
 
@@ -41,42 +44,78 @@ public class WalletStorage {
         }
     }
 
-    private final Properties accountProperties;
+    private final Properties accountsProperties;
+
+    private final Properties lightAppProperties;
 
     private WalletStorage() throws IOException {
         final Path dir = Paths.get(STORAGE_DIR);
-        final Path path = Paths.get(ACCOUNTS_FILE);
-        if (!Files.exists(dir)) {
-            Files.createDirectory(dir);
-        }
-        if (!Files.exists(path)) {
-            Files.createFile(path);
-        }
-        final InputStream reader = Files.newInputStream(path);
-        accountProperties = new Properties();
-        accountProperties.load(reader);
-
+        ensureExistence(dir, true);
+        accountsProperties = getPropertiesFomFIle(ACCOUNTS_FILE);
+        lightAppProperties = getPropertiesFomFIle(WALLET_FILE);
     }
 
     public static WalletStorage getInstance() {
         return INST;
     }
 
+    private Properties getPropertiesFomFIle(final String fullPath) throws IOException {
+        final Path filePath = Paths.get(fullPath);
+        ensureExistence(filePath, false);
+        final InputStream reader = Files.newInputStream(filePath);
+        Properties properties = new Properties();
+        properties.load(reader);
+        return properties;
+    }
+
+    private void ensureExistence(final Path path, final boolean isDir) throws IOException {
+        if (!Files.exists(path)) {
+            if (isDir) {
+                Files.createDirectory(path);
+            } else {
+                Files.createFile(path);
+            }
+        }
+    }
+
     public void save() {
+        saveAccounts();
+        saveSettings();
+    }
+
+    private void saveAccounts() {
         try (final OutputStream writer = Files.newOutputStream(Paths.get(ACCOUNTS_FILE))) {
-            accountProperties.store(writer, LocalDateTime.now().toString());
+            accountsProperties.store(writer, LocalDateTime.now().toString());
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+        }
+    }
+
+    private void saveSettings() {
+        try (final OutputStream writer = Files.newOutputStream(Paths.get(WALLET_FILE))) {
+            lightAppProperties.store(writer, LocalDateTime.now().toString());
         } catch (IOException e) {
             log.error(e.getMessage(), e);
         }
     }
 
     public String getAccountName(final String address) {
-        return Optional.ofNullable(accountProperties.get(address + ACCOUNT_NAME_PROP)).map(Object::toString).orElse("");
+        return Optional.ofNullable(accountsProperties.get(address + ACCOUNT_NAME_PROP)).map(Object::toString).orElse("");
     }
 
     public void setAccountName(final String address, final String accountName) {
         if (address != null && accountName != null) {
-            accountProperties.setProperty(address + ACCOUNT_NAME_PROP, accountName);
+            accountsProperties.setProperty(address + ACCOUNT_NAME_PROP, accountName);
+            saveAccounts();
         }
+    }
+
+    public final LightAppSettings getLightAppSettings(final ApiType type) {
+        return new LightAppSettings(lightAppProperties, type);
+    }
+
+    public final void saveLightAppSettings(final LightAppSettings lightAppSettings) {
+        lightAppProperties.putAll(lightAppSettings.getSettingsProperties());
+        saveSettings();
     }
 }

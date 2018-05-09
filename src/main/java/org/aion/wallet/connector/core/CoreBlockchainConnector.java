@@ -15,6 +15,7 @@ import org.aion.wallet.connector.dto.SyncInfoDTO;
 import org.aion.wallet.connector.dto.TransactionDTO;
 import org.aion.wallet.connector.dto.UnlockableAccount;
 import org.aion.wallet.dto.AccountDTO;
+import org.aion.wallet.dto.LightAppSettings;
 import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
@@ -122,6 +123,11 @@ public class CoreBlockchainConnector extends BlockchainConnector {
     @Override
     public String getCurrency() {
         return AionConstants.CCY;
+    }
+
+    @Override
+    public LightAppSettings getSettings() {
+        throw new UnsupportedOperationException();
     }
 
     private boolean unlock(UnlockableAccount account) {

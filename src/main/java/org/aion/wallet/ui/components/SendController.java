@@ -80,7 +80,7 @@ public class SendController extends AbstractController {
     private void handleTransactionFinished(final String txHash) {
         log.info("Transaction finished: " + txHash);
         txStatusLabel.setText("Transaction Finished");
-        EventPublisher.fireTransactionFinished();
+        EventPublisher.fireOperationFinished();
     }
 
     private String sendTransaction(final SendRequestDTO sendRequestDTO) {
