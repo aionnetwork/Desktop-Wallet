@@ -64,7 +64,6 @@ public class AccountCellItem extends ListCell<AccountDTO>{
 
     private void submitNameOnEnterPressed(final KeyEvent event) {
         if (event.getCode().equals(KeyCode.ENTER)) {
-            submitName();
             updateNameFieldOnSave();
         }
     }
@@ -73,10 +72,10 @@ public class AccountCellItem extends ListCell<AccountDTO>{
         name.setEditable(false);
         final AccountDTO accountDTO = getItem();
         accountDTO.setName(name.getText());
-        EventPublisher.fireAccountChanged(accountDTO);
         updateItem(accountDTO, false);
-        accountDTO.setActive(true);
-        updateItem(accountDTO, false);
+        if(accountDTO.isActive()) {
+            EventPublisher.fireAccountChanged(accountDTO);
+        }
     }
 
     @Override
