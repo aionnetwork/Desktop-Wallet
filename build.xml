@@ -13,19 +13,21 @@
     <property name="dir.test" value="./src/test"/>
     <property name="src.test" value="${dir.test}/java"/>
     <property name="res.test" value="${dir.test}/resources"/>
+    <property name="dir.out" value="./build"/>
     <property name="out.main" value="./build/main"/>
     <property name="out.test" value="./build/test"/>
     <property name="test.report.dir" value="./build/report"/>
 
     <macrodef name="git">
         <attribute name="command"/>
+        <attribute name="options"/>
         <attribute name="dir" default=""/>
         <attribute name="output" default=""/>
         <element name="args" optional="true"/>
         <sequential>
-            <echo message="git @{command}"/>
+            <echo message="git @{command} @{options}"/>
             <exec executable="git" dir="@{dir}" outputproperty="@{output}">
-                <arg value="@{command}" />
+                <arg line="@{command} @{options}" />
                 <args/>
             </exec>
             <echo message="${@{output}}"/>
@@ -40,15 +42,14 @@
     </path>
 
     <target name="get_version_from_git">
-        <git command="tag" output="git.version"/>
+        <git command="tag" output="git.version" options="-l --points-at HEAD"/>
         <condition property="suffix" value="" else="-${git.version}" >
             <equals arg1="${git.version}" arg2=""/>
         </condition>
     </target>
 
     <target name="clean">
-        <delete dir="${out.main}" includeEmptyDirs="true" includes="**/*/"/>
-        <delete dir="${out.test}" includeEmptyDirs="true" includes="**/*/"/>
+        <delete dir="${dir.out}" includeEmptyDirs="true" includes="**/*/"/>
         <delete dir="${test.report.dir}"/>
         <delete dir="${dir.pack}"/>
         <delete dir="${dir.mod}/updated/"/>
@@ -138,7 +139,7 @@
                 release="9"
                 srcdir="./"
                 destdir="${out.main}"
-                excludes="src/main/java/org/aion/connector/core/**/*.java"
+                excludes="src/main/java/org/aion/wallet/connector/core/**/*.java"
                 includes="src/main/java/**/*.java"
         >
             <modulepath>

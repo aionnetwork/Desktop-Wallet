@@ -71,7 +71,11 @@ public class MainWindow extends Application {
         panes.put(HeaderPaneButtonEvent.Type.HISTORY, scene.lookup("#historyPane"));
         panes.put(HeaderPaneButtonEvent.Type.SETTINGS, scene.lookup("#settingsPane"));
 
-        timer.schedule(new DataUpdater(), AionConstants.BLOCK_MINING_TIME_MILLIS, AionConstants.BLOCK_MINING_TIME_MILLIS);
+        timer.schedule(
+                new DataUpdater(),
+                AionConstants.BLOCK_MINING_TIME_MILLIS,
+                3 * AionConstants.BLOCK_MINING_TIME_MILLIS
+        );
     }
 
     private void registerEventBusConsumer() {

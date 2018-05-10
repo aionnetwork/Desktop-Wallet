@@ -2,14 +2,16 @@ package org.aion.wallet.ui.components.account;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.*;
+import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
-import org.aion.base.util.TypeConverter;
 import org.aion.wallet.dto.AccountDTO;
+import org.aion.wallet.ui.components.partials.UnlockAccountDialog;
 import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.util.BalanceUtils;
 import org.aion.wallet.util.UIUtils;
@@ -17,11 +19,16 @@ import org.aion.wallet.util.UIUtils;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class AccountCellItem extends ListCell<AccountDTO> {
+public class AccountCellItem extends ListCell<AccountDTO>{
 
     private static final String ICON_CONNECTED = "/org/aion/wallet/ui/components/icons/icon-connected-50.png";
-
     private static final String ICON_DISCONNECTED = "/org/aion/wallet/ui/components/icons/icon-disconnected-50.png";
+
+    private static final String ICON_EDIT = "/org/aion/wallet/ui/components/icons/pencil-edit-button.png";
+    private static final String ICON_CONFIRM = "/org/aion/wallet/ui/components/icons/icons8-checkmark-50.png";
+
+    private static final String NAME_INPUT_FIELDS_SELECTED_STYLE = "name-input-fields-selected";
+    private static final String NAME_INPUT_FIELDS_STYLE = "name-input-fields";
 
     @FXML
     private TextField name;
@@ -32,7 +39,11 @@ public class AccountCellItem extends ListCell<AccountDTO> {
     @FXML
     private ImageView accountSelectButton;
     @FXML
-    private ImageView enterNameForSave;
+    private ImageView editNameButton;
+
+    private boolean nameInEditMode;
+
+    private final UnlockAccountDialog accountUnlockDialog = new UnlockAccountDialog();
 
     public AccountCellItem() {
         loadFXML();
@@ -45,33 +56,27 @@ public class AccountCellItem extends ListCell<AccountDTO> {
             loader.setController(this);
             loader.setRoot(this);
             loader.load();
-            name.setOnKeyPressed(this::submitName);
-            name.setOnMouseExited(this::submitName);
+            name.setOnKeyPressed(this::submitNameOnEnterPressed);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private void submitName(final KeyEvent event) {
+    private void submitNameOnEnterPressed(final KeyEvent event) {
         if (event.getCode().equals(KeyCode.ENTER)) {
-            name.setEditable(false);
-            final AccountDTO accountDTO = getItem();
-            accountDTO.setName(name.getText());
-            EventPublisher.fireAccountChanged(accountDTO);
-            updateItem(accountDTO, false);
-            enterNameForSave.setVisible(false);
-            accountDTO.setActive(true);
-            updateItem(accountDTO, false);
+            submitName();
+            updateNameFieldOnSave();
         }
     }
 
-    private void submitName(MouseEvent event) {
-        if(name.getText() != null && getItem() != null && getItem().getName() != null
-        && name.getText().equals(getItem().getName())) {
-            enterNameForSave.setVisible(false);
-            name.getStyleClass().clear();
-            name.getStyleClass().add("name-input-fields");
-        }
+    private void submitName() {
+        name.setEditable(false);
+        final AccountDTO accountDTO = getItem();
+        accountDTO.setName(name.getText());
+        EventPublisher.fireAccountChanged(accountDTO);
+        updateItem(accountDTO, false);
+        accountDTO.setActive(true);
+        updateItem(accountDTO, false);
     }
 
     @Override
@@ -83,11 +88,6 @@ public class AccountCellItem extends ListCell<AccountDTO> {
         } else {
             name.setText(item.getName());
             UIUtils.setWidth(name);
-            ContextMenu contextMenu = new ContextMenu();
-            MenuItem edit = new MenuItem("Edit");
-            contextMenu.getItems().add(edit);
-            name.setContextMenu(contextMenu);
-            edit.setOnAction(event -> name.setEditable(true));
 
             publicAddress.setText(item.getPublicAddress());
             balance.setText(item.getBalance() + BalanceUtils.CCY_SEPARATOR + item.getCurrency());
@@ -105,14 +105,44 @@ public class AccountCellItem extends ListCell<AccountDTO> {
         }
     }
 
-    public void onDisconnectedClicked() {
-        EventPublisher.fireAccountChanged(this.getItem());
+    public void onDisconnectedClicked(MouseEvent mouseEvent) {
+        final AccountDTO modifiedAccount = this.getItem();
+        if(!modifiedAccount.isUnlocked()) {
+            accountUnlockDialog.open(mouseEvent);
+            EventPublisher.fireUnlockAccount(modifiedAccount);
+        }
+        else {
+            EventPublisher.fireAccountChanged(modifiedAccount);
+        }
     }
 
     public void onNameFieldClicked() {
-        name.setEditable(true);
-        name.getStyleClass().clear();
-        name.getStyleClass().add("name-input-fields-selected");
-        enterNameForSave.setVisible(true);
+        if (!nameInEditMode) {
+            name.setEditable(true);
+            name.getStyleClass().clear();
+            name.getStyleClass().add(NAME_INPUT_FIELDS_SELECTED_STYLE);
+
+            final InputStream resource = getClass().getResourceAsStream(ICON_CONFIRM);
+            editNameButton.setImage(new Image(resource));
+
+            name.requestFocus();
+            nameInEditMode = true;
+        } else {
+            updateNameFieldOnSave();
+        }
+    }
+
+    private void updateNameFieldOnSave() {
+        if (name.getText() != null && getItem() != null && getItem().getName() != null) {
+            name.getStyleClass().clear();
+            name.getStyleClass().add(NAME_INPUT_FIELDS_STYLE);
+
+            final InputStream resource = getClass().getResourceAsStream(ICON_EDIT);
+            editNameButton.setImage(new Image(resource));
+
+            name.setEditable(false);
+            nameInEditMode = false;
+            submitName();
+        }
     }
 }

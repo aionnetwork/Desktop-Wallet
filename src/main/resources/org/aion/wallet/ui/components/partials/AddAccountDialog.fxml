@@ -27,7 +27,8 @@
     <PasswordField fx:id="newPassword" layoutX="40.0" layoutY="285.0" onMouseClicked="#resetValidation"
                    prefWidth="275.0" promptText="New password" styleClass="add-account-input-fields"/>
     <PasswordField fx:id="retypedPassword" layoutX="40.0" layoutY="335.0" onMouseClicked="#resetValidation"
-                   prefWidth="275.0" promptText="Retype your password" styleClass="add-account-input-fields"/>
+                   prefWidth="275.0" promptText="Retype your password" styleClass="add-account-input-fields"
+                   onKeyPressed="#submitOnEnterPressed"/>
     <Label fx:id="validationError" layoutX="40.0" layoutY="380.0" prefWidth="275.0" text="ERROR" textFill="orangered"
            visible="false"/>
     <Button layoutX="40.0" layoutY="400.0" mnemonicParsing="false" onMouseClicked="#createAccount" prefWidth="275.0"

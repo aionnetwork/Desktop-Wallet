@@ -5,10 +5,7 @@ import java.util.ResourceBundle;
 
 public class ContractsController extends AbstractController {
 
-
     @Override
     protected void internalInit(final URL location, final ResourceBundle resources) {}
 
-    @Override
-    protected void refreshView() {}
 }

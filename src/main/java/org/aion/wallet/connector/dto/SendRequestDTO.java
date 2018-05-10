@@ -90,10 +90,10 @@ public class SendRequestDTO implements UnlockableAccount {
         if (value == null || value.compareTo(BigInteger.ZERO) <= 0) {
             throw new ValidationException("A value greater than zero must be provided");
         }
-        if (nrg == null || nrg <= 0) {
+        if (nrg == null || nrg < 0) {
             throw new ValidationException("Invalid nrg value");
         }
-        if (nrgPrice == null || nrgPrice.longValue() <= 0) {
+        if (nrgPrice == null || nrgPrice.longValue() < 0) {
             throw new ValidationException("Invalid nrg price");
         }
         if(ConfigUtils.isEmbedded() && (password == null || password.equals(""))) {
