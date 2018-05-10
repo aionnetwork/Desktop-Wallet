@@ -59,8 +59,9 @@ public class OverviewController extends AbstractController {
 
     @Subscribe
     private void handleAccountChanged(final AccountDTO account) {
-        this.account = account;
-        // todo: don't reload the account list from blockchain connector
+        if (account.isActive()) {
+            this.account = account;
+        }
         reloadAccounts();
     }
 
