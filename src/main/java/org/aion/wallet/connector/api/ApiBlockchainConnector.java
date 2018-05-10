@@ -388,15 +388,12 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     private void processNewTransactions(final long lastBlockToCheck, final Set<String> addresses) {
         if (API.isConnected() && !addresses.isEmpty()) {
-            final long start = System.nanoTime();
             final long latest = getLatest();
             for (long i = latest; i > lastBlockToCheck; i -= BLOCK_BATCH_SIZE) {
                 List<Long> blockBatch = LongStream.iterate(i, j -> j - 1).limit(BLOCK_BATCH_SIZE).boxed().collect(Collectors.toList());
                 List<BlockDetails> blk = getBlockDetailsByNumbers(blockBatch);
                 blk.forEach(getBlockDetailsConsumer(latest, addresses));
             }
-            final long end = System.nanoTime();
-            System.out.println((end - start) + "ns from: " + lastBlockToCheck + " to: " + latest + " for: " + addresses);
             for (String address : addresses) {
                 final long txCount = addressToLastTxInfo.get(address).getTxCount();
                 addressToLastTxInfo.put(address, new TxInfo(latest, txCount));
