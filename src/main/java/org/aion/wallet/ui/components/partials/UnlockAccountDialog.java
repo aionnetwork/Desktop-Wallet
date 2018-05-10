@@ -72,6 +72,7 @@ public class UnlockAccountDialog implements Initializable{
         if(unlockPassword.getText() != null && !unlockPassword.getText().isEmpty()) {
             ECKey storedKey = Keystore.getKey(account.getPublicAddress(), unlockPassword.getText());
             if(storedKey != null) {
+                account.setActive(true);
                 account.setPrivateKey(storedKey.getPrivKeyBytes());
                 EventPublisher.fireAccountChanged(account);
                 this.close(event);

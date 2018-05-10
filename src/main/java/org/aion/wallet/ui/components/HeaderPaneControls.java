@@ -37,7 +37,7 @@ public class HeaderPaneControls extends AbstractController {
 
     private static final Logger log = AionLoggerFactory.getLogger(LogEnum.WLT.name());
 
-    private static final String AION_URL = "http://www.aion.network";
+    private static final String AION_URL = "http://mainnet.aion.network";
 
     private static final String STYLE_DEFAULT = "default";
 
@@ -132,13 +132,15 @@ public class HeaderPaneControls extends AbstractController {
 
     @Subscribe
     private void handleAccountChanged(final AccountDTO account) {
-        accountBalance.setVisible(true);
-        activeAccountLabel.setVisible(true);
-        activeAccount.setText(account.getName());
-        accountAddress = account.getPublicAddress();
-        accountBalance.setText(account.getBalance() + BalanceUtils.CCY_SEPARATOR + account.getCurrency());
-        UIUtils.setWidth(activeAccount);
-        UIUtils.setWidth(accountBalance);
+        if (account.isActive()) {
+            accountBalance.setVisible(true);
+            activeAccountLabel.setVisible(true);
+            activeAccount.setText(account.getName());
+            accountAddress = account.getPublicAddress();
+            accountBalance.setText(account.getBalance() + BalanceUtils.CCY_SEPARATOR + account.getCurrency());
+            UIUtils.setWidth(activeAccount);
+            UIUtils.setWidth(accountBalance);
+        }
     }
 
     @Override
