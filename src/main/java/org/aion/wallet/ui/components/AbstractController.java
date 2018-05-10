@@ -7,21 +7,28 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
+import org.aion.api.log.LogEnum;
+import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.ui.events.EventBusFactory;
-import org.aion.wallet.ui.events.TimerEvent;
+import org.aion.wallet.ui.events.RefreshEvent;
 import org.aion.wallet.util.DataUpdater;
+import org.slf4j.Logger;
 
 import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 public abstract class AbstractController implements Initializable {
 
+    private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
+
     @FXML
     private Node parent;
-    private ExecutorService apiExecutor = Executors.newSingleThreadExecutor();
+
+    private final static ExecutorService API_EXECUTOR = Executors.newSingleThreadExecutor();
 
     @Override
     public final void initialize(final URL location, final ResourceBundle resources) {
@@ -34,9 +41,9 @@ public abstract class AbstractController implements Initializable {
     }
 
     @Subscribe
-    private void handleConnectivityStatusEvent(final TimerEvent event) {
+    private void handleRefreshEvent(final RefreshEvent event) {
         if (isInView()) {
-            refreshView();
+            refreshView(event);
         }
     }
 
@@ -54,7 +61,7 @@ public abstract class AbstractController implements Initializable {
         executeAppTask.setOnFailed(errorHandler);
         executeAppTask.setOnCancelled(cancelledHandler);
 
-        apiExecutor.submit(executeAppTask);
+        API_EXECUTOR.submit(executeAppTask);
     }
 
     protected final EventHandler<WorkerStateEvent> getEmptyEvent() {
@@ -62,11 +69,22 @@ public abstract class AbstractController implements Initializable {
         };
     }
 
-    protected final boolean isInView() {
-        return parent.isVisible();
+    protected final EventHandler<WorkerStateEvent> getErrorEvent(Consumer<Throwable> consumer, Task t) {
+        return event -> {
+            Throwable e = t.getException();
+            if (e != null) {
+                log.error(e.getMessage(), e);
+                consumer.accept(e);
+            }
+        };
     }
 
-    protected void refreshView() {}
+    protected final boolean isInView() {
+        return parent != null && parent.isVisible();
+    }
+
+    protected void refreshView(final RefreshEvent event) {
+    }
 
     protected abstract void internalInit(final URL location, final ResourceBundle resources);
 }

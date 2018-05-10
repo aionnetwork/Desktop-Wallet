@@ -2,30 +2,35 @@ package org.aion.wallet.ui.components;
 
 import com.google.common.eventbus.Subscribe;
 import javafx.concurrent.Task;
-import javafx.concurrent.WorkerStateEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import org.aion.api.log.LogEnum;
 import org.aion.base.util.TypeConverter;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.connector.dto.SendRequestDTO;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.exception.ValidationException;
+import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
+import org.aion.wallet.ui.events.RefreshEvent;
 import org.aion.wallet.util.AionConstants;
 import org.aion.wallet.util.BalanceUtils;
 import org.aion.wallet.util.ConfigUtils;
 import org.aion.wallet.util.UIUtils;
+import org.slf4j.Logger;
 
+import java.math.BigInteger;
 import java.net.URL;
 import java.util.ResourceBundle;
 
 public class SendController extends AbstractController {
+
+    private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
 
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
 
@@ -52,12 +57,62 @@ public class SendController extends AbstractController {
 
     private AccountDTO account;
 
+    public void onSendAionClicked() {
+        final SendRequestDTO dto;
+        try {
+            dto = mapFormData();
+        } catch (ValidationException e) {
+            log.error(e.getMessage(), e);
+            return;
+        }
+        txStatusLabel.setText("Sending transaction...");
+
+        final Task<String> sendTransactionTask = getApiTask(this::sendTransaction, dto);
+
+        runApiTask(
+                sendTransactionTask,
+                evt -> handleTransactionFinished(sendTransactionTask.getValue()),
+                getErrorEvent(t -> txStatusLabel.setText(t.getMessage()), sendTransactionTask),
+                getEmptyEvent()
+        );
+    }
+
+    private void handleTransactionFinished(final String txHash) {
+        log.info("Transaction finished: " + txHash);
+        txStatusLabel.setText("Transaction Finished");
+        EventPublisher.fireOperationFinished();
+    }
+
+    private String sendTransaction(final SendRequestDTO sendRequestDTO) {
+        try {
+            return blockchainConnector.sendTransaction(sendRequestDTO);
+        } catch (ValidationException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Override
     protected void internalInit(final URL location, final ResourceBundle resources) {
         setDefaults();
         if (!ConfigUtils.isEmbedded()) {
             passwordInput.setVisible(false);
             passwordInput.setManaged(false);
+        }
+    }
+
+    private void setDefaults() {
+        nrgInput.setText(AionConstants.DEFAULT_NRG);
+        nrgPriceInput.setText(AionConstants.DEFAULT_NRG_PRICE.toString());
+
+        toInput.setText("");
+        valueInput.setText("");
+        passwordInput.setText("");
+    }
+
+    @Override
+    protected void refreshView(final RefreshEvent event) {
+        if (RefreshEvent.Type.OPERATION_FINISHED.equals(event.getType())) {
+            setDefaults();
         }
     }
 
@@ -79,15 +134,22 @@ public class SendController extends AbstractController {
         UIUtils.setWidth(equivalentUSD);
     }
 
-    private double convertBalanceToCcy(final AccountDTO account, final double exchangeRate) {
-        return Double.parseDouble(account.getBalance()) * exchangeRate;
-    }
-
     @Subscribe
     private void handleHeaderPaneButtonEvent(final HeaderPaneButtonEvent event) {
         if (event.getType().equals(HeaderPaneButtonEvent.Type.SEND)) {
             refreshAccountBalance();
         }
+    }
+
+    @Override
+    protected void registerEventBusConsumer() {
+        super.registerEventBusConsumer();
+        EventBusFactory.getBus(HeaderPaneButtonEvent.ID).register(this);
+        EventBusFactory.getBus(EventPublisher.ACCOUNT_CHANGE_EVENT_ID).register(this);
+    }
+
+    private double convertBalanceToCcy(final AccountDTO account, final double exchangeRate) {
+        return Double.parseDouble(account.getBalance()) * exchangeRate;
     }
 
     private void setAccountBalanceText() {
@@ -97,58 +159,19 @@ public class SendController extends AbstractController {
     }
 
     private void refreshAccountBalance() {
-        if (this.account == null) {
+        if (account == null) {
             return;
         }
-        this.account.setBalance(BalanceUtils.formatBalance(blockchainConnector.getBalance(this.account.getPublicAddress())));
-        setAccountBalanceText();
-    }
-
-    protected void registerEventBusConsumer() {
-        super.registerEventBusConsumer();
-        EventBusFactory.getBus(HeaderPaneButtonEvent.ID).register(this);
-        EventBusFactory.getBus(EventPublisher.ACCOUNT_CHANGE_EVENT_ID).register(this);
-    }
-
-    private void setDefaults() {
-        nrgInput.setText(AionConstants.DEFAULT_NRG);
-        nrgPriceInput.setText(AionConstants.DEFAULT_NRG_PRICE.toString());
-
-        toInput.setText("");
-        valueInput.setText("");
-        passwordInput.setText("");
-    }
-
-    public void onSendAionClicked() {
-        final SendRequestDTO dto;
-        try {
-            dto = mapFormData();
-        } catch (ValidationException e) {
-            e.printStackTrace();
-            return;
-        }
-        txStatusLabel.setText("Sending transaction...");
-
-        final Task<String> sendTransactionTask = getApiTask(this::sendTransaction, dto);
-
-        final EventHandler<WorkerStateEvent> successHandler = evt -> {
-            setDefaults();
-            txStatusLabel.setText("Transaction Finished");
-        };
+        final Task<BigInteger> getBalanceTask = getApiTask(blockchainConnector::getBalance, account.getPublicAddress());
         runApiTask(
-                sendTransactionTask,
-                successHandler,
-                evt -> txStatusLabel.setText("An error has occurred: " + sendTransactionTask.getException().getMessage()),
+                getBalanceTask,
+                evt -> {
+                    account.setBalance(BalanceUtils.formatBalance(getBalanceTask.getValue()));
+                    setAccountBalanceText();
+                },
+                getErrorEvent(throwable -> {}, getBalanceTask),
                 getEmptyEvent()
         );
-    }
-
-    private String sendTransaction(final SendRequestDTO sendRequestDTO) {
-        try {
-            return blockchainConnector.sendTransaction(sendRequestDTO);
-        } catch (ValidationException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     private SendRequestDTO mapFormData() throws ValidationException {

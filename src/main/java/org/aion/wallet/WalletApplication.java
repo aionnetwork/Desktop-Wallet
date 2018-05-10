@@ -1,6 +1,5 @@
 package org.aion.wallet;
 
-import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.ui.MainWindow;
 import org.aion.wallet.util.ConfigUtils;
 

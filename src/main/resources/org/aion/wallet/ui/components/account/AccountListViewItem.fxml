@@ -15,14 +15,16 @@
                 <TextField text="Balance" styleClass="copyable-label" editable="false"/>
             </VBox>
             <VBox>
-                <TextField fx:id="name" styleClass="name-input-fields" editable="false" onMouseClicked="#onNameFieldClicked" />
+                <TextField fx:id="name" styleClass="name-input-fields" editable="false"/>
                 <TextField fx:id="publicAddress" styleClass="copyable-label" editable="false"/>
                 <TextField fx:id="balance" styleClass="copyable-label" editable="false"/>
             </VBox>
             <HBox>
-                <ImageView fx:id="enterNameForSave" fitHeight="30.0" fitWidth="30.0"
-                           pickOnBounds="true" preserveRatio="true" visible="false">
-                    <Image url="@../icons/enter-arrow.png"/>
+                <ImageView fx:id="editNameButton" fitHeight="30.0" fitWidth="30.0"
+                           pickOnBounds="true" preserveRatio="true"
+                           styleClass="clickable"
+                           onMouseClicked="#onNameFieldClicked">
+                    <Image url="@../icons/pencil-edit-button.png"/>
                 </ImageView>
             </HBox>
             <HBox>
