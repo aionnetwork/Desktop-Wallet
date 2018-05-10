@@ -7,6 +7,8 @@ import org.aion.wallet.connector.dto.TransactionDTO;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
+import org.aion.wallet.storage.ApiType;
+import org.aion.wallet.dto.LightAppSettings;
 import org.aion.wallet.storage.WalletStorage;
 import org.aion.wallet.util.ConfigUtils;
 
@@ -82,6 +84,12 @@ public abstract class BlockchainConnector {
         walletStorage.save();
     }
 
+    public void reloadSettings(final LightAppSettings settings){
+        walletStorage.saveLightAppSettings(settings);
+    }
+
+    public abstract LightAppSettings getSettings();
+
     protected final void lock(){
         lock.lock();
     }
@@ -96,6 +104,13 @@ public abstract class BlockchainConnector {
 
     protected final void storeAccountName(final String address, final String name) {
         walletStorage.setAccountName(address, name);
-        walletStorage.save();
+    }
+
+    protected final LightAppSettings getLightweightWalletSettings(final ApiType type){
+        return walletStorage.getLightAppSettings(type);
+    }
+
+    protected final void storeLightweightWalletSettings(final LightAppSettings lightAppSettings){
+        walletStorage.saveLightAppSettings(lightAppSettings);
     }
 }
