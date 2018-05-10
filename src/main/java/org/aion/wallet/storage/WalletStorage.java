@@ -115,7 +115,9 @@ public class WalletStorage {
     }
 
     public final void saveLightAppSettings(final LightAppSettings lightAppSettings) {
-        lightAppProperties.putAll(lightAppSettings.getSettingsProperties());
-        saveSettings();
+        if (lightAppSettings != null) {
+            lightAppProperties.putAll(lightAppSettings.getSettingsProperties());
+            saveSettings();
+        }
     }
 }

@@ -50,7 +50,8 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     private final static IAionAPI API = AionAPIImpl.inst();
 
     private static final int BLOCK_BATCH_SIZE = 300;
-    public static final int DISCONNECT_TIMER = 3000;
+
+    private static final int DISCONNECT_TIMER = 3000;
 
     private final Map<String, AccountDTO> addressToAccount = new HashMap<>();
 
@@ -475,7 +476,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         );
     }
 
-    private TransactionDTO recordTransaction(final String address, TxDetails transaction, final long timeStamp, long lastCheckedBlock) {
+    private TransactionDTO recordTransaction(final String address, final TxDetails transaction, final long timeStamp, final long lastCheckedBlock) {
         final TransactionDTO transactionDTO = mapTransaction(transaction, timeStamp);
         final long txCount = addressToLastTxInfo.get(address).getTxCount();
         if (transactionDTO.getFrom().equals(address)) {
@@ -497,7 +498,9 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     private class TransactionComparator implements Comparator<TransactionDTO> {
         @Override
         public int compare(final TransactionDTO tx1, final TransactionDTO tx2) {
-            return Long.compare(tx2.getTimeStamp(), tx1.getTimeStamp());
+            return tx1 == null ?
+                    (tx2 == null ? 0 : -1) :
+                    (tx2 == null ? 1 : Long.compare(tx2.getTimeStamp(), tx1.getTimeStamp()));
         }
     }
 }

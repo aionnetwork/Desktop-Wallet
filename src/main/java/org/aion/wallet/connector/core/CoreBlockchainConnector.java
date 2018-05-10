@@ -56,7 +56,7 @@ public class CoreBlockchainConnector extends BlockchainConnector {
 
     @Override
     public AccountDTO addPrivateKey(byte[] raw, String password, final boolean shouldKeep) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
