@@ -50,6 +50,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     private final static IAionAPI API = AionAPIImpl.inst();
 
     private static final int BLOCK_BATCH_SIZE = 300;
+    public static final int DISCONNECT_TIMER = 3000;
 
     private final Map<String, AccountDTO> addressToAccount = new HashMap<>();
 
@@ -57,17 +58,16 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     private final Map<String, TxInfo> addressToLastTxInfo = Collections.synchronizedMap(new HashMap<>());
 
-    private final ExecutorService backgroundExecutor;
+    private final ExecutorService backgroundExecutor = Executors.newSingleThreadExecutor();
+
+    private final Comparator<? super TransactionDTO> transactionComparator = new TransactionComparator();
 
     private LightAppSettings lightAppSettings = getLightweightWalletSettings(ApiType.JAVA);
-
-    private Comparator<? super TransactionDTO> transactionComparator = new TransactionComparator();
 
     private Future<?> connectionFuture;
 
 
     public ApiBlockchainConnector() {
-        backgroundExecutor = Executors.newSingleThreadExecutor();
         connect();
         loadLocallySavedAccounts();
         backgroundExecutor.submit(() -> processNewTransactions(0, addressToAccount.keySet()));
@@ -118,7 +118,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     }
 
     @Override
-    public AccountDTO addKeystoreUTCFile(byte[] file, String password, final boolean shouldKeep) throws ValidationException {
+    public AccountDTO addKeystoreUTCFile(final byte[] file, final String password, final boolean shouldKeep) throws ValidationException {
         try {
             ECKey key = KeystoreFormat.fromKeystore(file, password);
             if (key == null) {
@@ -141,7 +141,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     }
 
     @Override
-    public AccountDTO addPrivateKey(byte[] raw, String password, final boolean shouldKeep) throws ValidationException {
+    public AccountDTO addPrivateKey(final byte[] raw, final String password, final boolean shouldKeep) throws ValidationException {
         try {
             ECKey key = ECKeyFac.inst().fromPrivate(raw);
             String address = Keystore.create(password, key);
@@ -177,7 +177,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         return account;
     }
 
-    private void removeKeystoreFile(String address) {
+    private void removeKeystoreFile(final String address) {
         if (Keystore.exist(address)) {
             final String unwrappedAddress = address.substring(2);
             Arrays.stream(Keystore.list())
@@ -216,7 +216,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     }
 
     @Override
-    public BigInteger getBalance(String address) {
+    public BigInteger getBalance(final String address) {
         lock();
         final BigInteger balance;
         try {
@@ -232,7 +232,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     }
 
     @Override
-    protected String sendTransactionInternal(SendRequestDTO dto) {
+    protected String sendTransactionInternal(final SendRequestDTO dto) {
         final BigInteger latestTransactionNonce = getLatestTransactionNonce(dto.getFrom());
         TxArgs txArgs = new TxArgs.TxArgsBuilder()
                 .from(new Address(TypeConverter.toJsonHex(dto.getFrom())))
@@ -259,7 +259,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     }
 
     @Override
-    public TransactionDTO getTransaction(String txHash) throws NotFoundException {
+    public TransactionDTO getTransaction(final String txHash) throws NotFoundException {
         final ApiMsg txReceiptMsg;
         lock();
         try {
@@ -275,7 +275,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     }
 
     @Override
-    public List<TransactionDTO> getLatestTransactions(String address) {
+    public List<TransactionDTO> getLatestTransactions(final String address) {
         long lastBlockToCheck = addressToLastTxInfo.get(address).getLastCheckedBlock();
         processNewTransactions(lastBlockToCheck, Collections.singleton(address));
         return new ArrayList<>(addressToTransactions.getOrDefault(address, Collections.emptySortedSet()));
@@ -350,7 +350,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         lightAppSettings = getLightweightWalletSettings(ApiType.JAVA);
         disconnect();
         try {
-            Thread.sleep(3000);
+            Thread.sleep(DISCONNECT_TIMER);
         } catch (InterruptedException e) {
             log.error(e.getMessage(), e);
         }
@@ -376,7 +376,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         }
     }
 
-    private BigInteger getLatestTransactionNonce(String address) {
+    private BigInteger getLatestTransactionNonce(final String address) {
         final TxInfo transactionInfo = addressToLastTxInfo.get(address);
         final long lastCheckedBlock = transactionInfo.getLastCheckedBlock();
         long lastKnownTxCount = transactionInfo.getTxCount();
@@ -435,7 +435,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         return latest;
     }
 
-    private List<BlockDetails> getBlockDetailsByNumbers(List<Long> numbers) {
+    private List<BlockDetails> getBlockDetailsByNumbers(final List<Long> numbers) {
         List<BlockDetails> blockDetails;
         lock();
         try {
@@ -446,7 +446,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         return blockDetails;
     }
 
-    private TransactionDTO mapTransaction(Transaction transaction) {
+    private TransactionDTO mapTransaction(final Transaction transaction) {
         if (transaction == null) {
             return null;
         }

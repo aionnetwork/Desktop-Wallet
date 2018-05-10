@@ -13,7 +13,6 @@ import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
 import org.aion.wallet.ui.events.RefreshEvent;
-import org.aion.wallet.util.BalanceUtils;
 
 import java.net.URL;
 import java.util.List;
@@ -41,7 +40,7 @@ public class OverviewController extends AbstractController {
         EventBusFactory.getBus(EventPublisher.ACCOUNT_CHANGE_EVENT_ID).register(this);
     }
 
-    protected void reloadAccounts() {
+    private void reloadAccounts() {
         final Task<List<AccountDTO>> getAccountsTask = getApiTask(o -> blockchainConnector.getAccounts(), null);
         runApiTask(
                 getAccountsTask,

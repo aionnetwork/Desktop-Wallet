@@ -9,13 +9,13 @@ public class EventPublisher {
     public static final String ACCOUNT_UNLOCK_EVENT_ID = "account.unlock";
     public static final String SETTINGS_CHANGED_ID = "settings.changed";
 
-    public static void fireAccountChanged(AccountDTO account) {
+    public static void fireAccountChanged(final AccountDTO account) {
         if (account != null) {
             EventBusFactory.getBus(ACCOUNT_CHANGE_EVENT_ID).post(account);
         }
     }
 
-    public static void fireUnlockAccount(AccountDTO account) {
+    public static void fireUnlockAccount(final AccountDTO account) {
         if (account != null) {
             EventBusFactory.getBus(ACCOUNT_UNLOCK_EVENT_ID).post(account);
         }
