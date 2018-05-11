@@ -10,6 +10,7 @@ import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.*;
 import org.aion.wallet.connector.BlockchainConnector;
@@ -21,6 +22,10 @@ import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
 import org.aion.wallet.util.AddressUtils;
 import org.aion.wallet.util.BalanceUtils;
 
+import java.awt.*;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 import java.util.Optional;
@@ -106,6 +111,7 @@ public class HistoryController extends AbstractController {
 
     private void setEventHandlers() {
         txTable.setOnKeyPressed(new KeyTableCopyEventHandler());
+        txTable.setOnMouseClicked(new MouseTableCopyEventHandler());
         ContextMenu menu = new ContextMenu();
         final MenuItem copyItem = new MenuItem(COPY_MENU);
         copyItem.setOnAction(new ContextMenuTableCopyEventHandler(txTable));
@@ -121,6 +127,18 @@ public class HistoryController extends AbstractController {
                 if (keyEvent.getSource() instanceof TableView) {
                     copySelectionToClipboard((TableView<?>) keyEvent.getSource());
                     keyEvent.consume();
+                }
+            }
+        }
+    }
+
+    private static class MouseTableCopyEventHandler extends TableCopyEventHandler<MouseEvent> {
+
+        public void handle(final MouseEvent mouseEvent) {
+            if (MouseEvent.MOUSE_CLICKED.equals(mouseEvent.getEventType())) {
+                if (mouseEvent.getSource() instanceof TableView) {
+                    redirect((TableView<?>) mouseEvent.getSource());
+                    mouseEvent.consume();
                 }
             }
         }
@@ -167,6 +185,22 @@ public class HistoryController extends AbstractController {
             final ClipboardContent clipboardContent = new ClipboardContent();
             clipboardContent.putString(clipboardString.toString());
             Clipboard.getSystemClipboard().setContent(clipboardContent);
+        }
+
+        protected final void redirect(TableView<?> table) {
+            ObservableList<TablePosition> positionList = table.getSelectionModel().getSelectedCells();
+            for (TablePosition position : positionList) {
+                int row = position.getRow();
+                int col = position.getColumn();
+                if (col == 3) {
+                    Object cell = table.getColumns().get(col).getCellData(row);
+                try {
+                    Desktop.getDesktop().browse(new URI(""));
+                } catch (IOException | URISyntaxException e) {
+//                    log.error("Exception occurred trying to open website: %s", e.getMessage(), e);
+                }
+                }
+            }
         }
     }
 
