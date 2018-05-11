@@ -62,6 +62,14 @@ public class HistoryController extends AbstractController {
     private void handleHeaderPaneButtonEvent(final HeaderPaneButtonEvent event) {
         if (event.getType().equals(HeaderPaneButtonEvent.Type.HISTORY)) {
             reloadWalletView();
+            ObservableList<TablePosition> positionList = txTable.getSelectionModel().getSelectedCells();
+            for (TablePosition position : positionList) {
+                int col = position.getColumn();
+                if (txTable.getColumns().get(col).getText().equals("Tx Hash")) {
+                    final TableColumn tableColumn = txTable.getColumns().get(col);
+                    tableColumn.setStyle("-fx-text-fill: red;");
+                }
+            }
         }
     }
 
@@ -203,7 +211,6 @@ public class HistoryController extends AbstractController {
                 int col = position.getColumn();
                 if (table.getColumns().get(col).getText().equals("Tx Hash")) {
                     Object cell = table.getColumns().get(col).getCellData(row);
-                    (TableCell) cell.setStyle();
                     URLManager.openURL(AionConstants.AION_URL + "/#/transaction/" + cell.toString());
                 }
             }
