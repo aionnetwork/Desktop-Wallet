@@ -13,6 +13,8 @@ import javafx.scene.control.*;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.*;
+import org.aion.api.log.LogEnum;
+import org.aion.log.AionLoggerFactory;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.connector.dto.TransactionDTO;
 import org.aion.wallet.dto.AccountDTO;
@@ -20,7 +22,10 @@ import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
 import org.aion.wallet.util.AddressUtils;
+import org.aion.wallet.util.AionConstants;
 import org.aion.wallet.util.BalanceUtils;
+import org.aion.zero.impl.types.AionBlock;
+import org.slf4j.Logger;
 
 import java.awt.*;
 import java.io.IOException;
@@ -33,6 +38,8 @@ import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
 public class HistoryController extends AbstractController {
+
+    private static final Logger log = AionLoggerFactory.getLogger(LogEnum.WLT.name());
 
     private static final String COPY_MENU = "Copy";
 
@@ -194,11 +201,11 @@ public class HistoryController extends AbstractController {
                 int col = position.getColumn();
                 if (col == 3) {
                     Object cell = table.getColumns().get(col).getCellData(row);
-                try {
-                    Desktop.getDesktop().browse(new URI(""));
-                } catch (IOException | URISyntaxException e) {
-//                    log.error("Exception occurred trying to open website: %s", e.getMessage(), e);
-                }
+                    try {
+                        Desktop.getDesktop().browse(new URI(AionConstants.AION_URL + "/#/transaction/" + cell.toString()));
+                    } catch (IOException | URISyntaxException e) {
+                        log.error("Exception occurred trying to open website: %s", e.getMessage(), e);
+                    }
                 }
             }
         }

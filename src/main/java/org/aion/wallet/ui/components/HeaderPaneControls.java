@@ -19,6 +19,7 @@ import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
 import org.aion.wallet.ui.events.RefreshEvent;
+import org.aion.wallet.util.AionConstants;
 import org.aion.wallet.util.BalanceUtils;
 import org.aion.wallet.util.UIUtils;
 import org.slf4j.Logger;
@@ -36,8 +37,6 @@ import java.util.ResourceBundle;
 public class HeaderPaneControls extends AbstractController {
 
     private static final Logger log = AionLoggerFactory.getLogger(LogEnum.WLT.name());
-
-    private static final String AION_URL = "http://mainnet.aion.network";
 
     private static final String STYLE_DEFAULT = "default";
 
@@ -88,7 +87,7 @@ public class HeaderPaneControls extends AbstractController {
 
     public void openAionWebSite() {
         try {
-            Desktop.getDesktop().browse(new URI(AION_URL));
+            Desktop.getDesktop().browse(new URI(AionConstants.AION_URL));
         } catch (IOException | URISyntaxException e) {
             log.error("Exception occurred trying to open website: %s", e.getMessage(), e);
         }
