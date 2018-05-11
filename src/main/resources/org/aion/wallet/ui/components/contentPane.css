@@ -86,3 +86,7 @@
     -fx-text-fill: BLACK;
     -fx-display-caret: false;
 }
+
+.link-style {
+    -fx-text-fill: red;
+}

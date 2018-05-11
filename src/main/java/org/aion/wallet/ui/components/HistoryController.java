@@ -9,6 +9,7 @@ import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -24,6 +25,7 @@ import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
 import org.aion.wallet.util.AddressUtils;
 import org.aion.wallet.util.AionConstants;
 import org.aion.wallet.util.BalanceUtils;
+import org.aion.wallet.util.URLManager;
 import org.aion.zero.impl.types.AionBlock;
 import org.slf4j.Logger;
 
@@ -199,13 +201,10 @@ public class HistoryController extends AbstractController {
             for (TablePosition position : positionList) {
                 int row = position.getRow();
                 int col = position.getColumn();
-                if (col == 3) {
+                if (table.getColumns().get(col).getText().equals("Tx Hash")) {
                     Object cell = table.getColumns().get(col).getCellData(row);
-                    try {
-                        Desktop.getDesktop().browse(new URI(AionConstants.AION_URL + "/#/transaction/" + cell.toString()));
-                    } catch (IOException | URISyntaxException e) {
-                        log.error("Exception occurred trying to open website: %s", e.getMessage(), e);
-                    }
+                    (TableCell) cell.setStyle();
+                    URLManager.openURL(AionConstants.AION_URL + "/#/transaction/" + cell.toString());
                 }
             }
         }
