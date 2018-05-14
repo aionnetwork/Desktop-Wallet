@@ -62,14 +62,6 @@ public class HistoryController extends AbstractController {
     private void handleHeaderPaneButtonEvent(final HeaderPaneButtonEvent event) {
         if (event.getType().equals(HeaderPaneButtonEvent.Type.HISTORY)) {
             reloadWalletView();
-            ObservableList<TablePosition> positionList = txTable.getSelectionModel().getSelectedCells();
-            for (TablePosition position : positionList) {
-                int col = position.getColumn();
-                if (txTable.getColumns().get(col).getText().equals("Tx Hash")) {
-                    final TableColumn tableColumn = txTable.getColumns().get(col);
-                    tableColumn.setStyle("-fx-text-fill: red;");
-                }
-            }
         }
     }
 
@@ -100,7 +92,8 @@ public class HistoryController extends AbstractController {
 
         runApiTask(
                 getTransactionsTask,
-                event -> txTable.setItems(FXCollections.observableList(getTransactionsTask.getValue())),
+                event -> {
+                    txTable.setItems(FXCollections.observableList(getTransactionsTask.getValue())); },
                 getEmptyEvent(),
                 getEmptyEvent()
         );
@@ -129,6 +122,7 @@ public class HistoryController extends AbstractController {
     private void setEventHandlers() {
         txTable.setOnKeyPressed(new KeyTableCopyEventHandler());
         txTable.setOnMouseClicked(new MouseTableCopyEventHandler());
+
         ContextMenu menu = new ContextMenu();
         final MenuItem copyItem = new MenuItem(COPY_MENU);
         copyItem.setOnAction(new ContextMenuTableCopyEventHandler(txTable));
@@ -212,6 +206,17 @@ public class HistoryController extends AbstractController {
                 if (table.getColumns().get(col).getText().equals("Tx Hash")) {
                     Object cell = table.getColumns().get(col).getCellData(row);
                     URLManager.openURL(AionConstants.AION_URL + "/#/transaction/" + cell.toString());
+                }
+            }
+        }
+
+        private void changeStyleOfHashColumn(TableView<?> txTable) {
+            ObservableList<TablePosition> positionList = txTable.getSelectionModel().getSelectedCells();
+            for (TablePosition position : positionList) {
+                int col = position.getColumn();
+                if (txTable.getColumns().get(col).getText().equals("Tx Hash")) {
+                    final TableColumn tableColumn = txTable.getColumns().get(col);
+                    tableColumn.setStyle("-fx-text-fill: red;");
                 }
             }
         }
