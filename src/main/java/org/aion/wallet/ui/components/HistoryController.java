@@ -17,9 +17,9 @@ import org.aion.log.AionLoggerFactory;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.connector.dto.TransactionDTO;
 import org.aion.wallet.dto.AccountDTO;
-import org.aion.wallet.ui.events.EventBusFactory;
-import org.aion.wallet.ui.events.EventPublisher;
-import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
+import org.aion.wallet.events.AccountEvent;
+import org.aion.wallet.events.EventBusFactory;
+import org.aion.wallet.events.HeaderPaneButtonEvent;
 import org.aion.wallet.util.AddressUtils;
 import org.aion.wallet.util.BalanceUtils;
 import org.aion.wallet.util.URLManager;
@@ -60,17 +60,19 @@ public class HistoryController extends AbstractController {
     }
 
     @Subscribe
-    private void handleAccountChanged(final AccountDTO account) {
-        this.account = account;
-        if (isInView()) {
-            reloadWalletView();
+    private void handleAccountChanged(final AccountEvent event) {
+        if (AccountEvent.Type.CHANGED.equals(event.getType())) {
+            this.account = event.getAccount();
+            if (isInView()) {
+                reloadWalletView();
+            }
         }
     }
 
     protected void registerEventBusConsumer() {
         super.registerEventBusConsumer();
         EventBusFactory.getBus(HeaderPaneButtonEvent.ID).register(this);
-        EventBusFactory.getBus(EventPublisher.ACCOUNT_CHANGE_EVENT_ID).register(this);
+        EventBusFactory.getBus(AccountEvent.ID).register(this);
     }
 
     private void reloadWalletView() {

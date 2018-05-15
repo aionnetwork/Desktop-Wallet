@@ -6,7 +6,7 @@ import javafx.scene.control.Label;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.connector.dto.SyncInfoDTO;
 import org.aion.wallet.ui.components.AbstractController;
-import org.aion.wallet.ui.events.RefreshEvent;
+import org.aion.wallet.events.RefreshEvent;
 import org.aion.wallet.util.SyncStatusFormatter;
 
 import java.net.URL;

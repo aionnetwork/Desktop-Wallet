@@ -21,11 +21,11 @@ import org.aion.wallet.connector.dto.UnlockableAccount;
 import org.aion.wallet.crypto.SeededECKeyEd25519;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.dto.LightAppSettings;
+import org.aion.wallet.events.AccountEvent;
+import org.aion.wallet.events.EventBusFactory;
 import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
-import org.aion.wallet.ui.events.EventBusFactory;
-import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.util.AionConstants;
 import org.aion.wallet.util.BalanceUtils;
 import org.aion.zero.impl.types.AionBlock;
@@ -34,6 +34,7 @@ import org.slf4j.Logger;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -45,7 +46,7 @@ public class CoreBlockchainConnector extends BlockchainConnector {
     private final static WalletApi API = new WalletApi();
 
     public CoreBlockchainConnector() {
-        EventBusFactory.getBus(EventPublisher.ACCOUNT_CHANGE_EVENT_ID).register(this);
+        EventBusFactory.getBus(AccountEvent.ID).register(this);
     }
 
     public String createAccount(final String password, final String name) {
@@ -145,7 +146,11 @@ public class CoreBlockchainConnector extends BlockchainConnector {
     }
 
     private boolean unlock(UnlockableAccount account) {
-        return API.unlockAccount(account.getAddress(), account.getPassword(), AionConstants.DEFAULT_WALLET_UNLOCK_DURATION);
+        return API.unlockAccount(
+                account.getAddress(),
+                account.getPassword(),
+                (int) getSettings().getUnlockTimeout().get(ChronoUnit.SECONDS)
+        );
     }
 
     @Override
@@ -159,8 +164,11 @@ public class CoreBlockchainConnector extends BlockchainConnector {
     }
 
     @Subscribe
-    private void handleAccountChanged(final AccountDTO account) {
-        storeAccountName(account.getPublicAddress(), account.getName());
+    private void handleAccountChanged(final AccountEvent event) {
+        if (AccountEvent.Type.CHANGED.equals(event.getType())) {
+            final AccountDTO account = event.getAccount();
+            storeAccountName(account.getPublicAddress(), account.getName());
+        }
     }
 
     private SyncInfoDTO mapSyncInfo(SyncInfo sync) {

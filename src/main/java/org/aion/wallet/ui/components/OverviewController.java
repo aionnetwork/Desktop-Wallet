@@ -8,11 +8,11 @@ import javafx.scene.control.ListView;
 import javafx.scene.input.MouseEvent;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.dto.AccountDTO;
+import org.aion.wallet.events.AccountEvent;
+import org.aion.wallet.events.EventBusFactory;
+import org.aion.wallet.events.HeaderPaneButtonEvent;
+import org.aion.wallet.events.RefreshEvent;
 import org.aion.wallet.ui.components.partials.AddAccountDialog;
-import org.aion.wallet.ui.events.EventBusFactory;
-import org.aion.wallet.ui.events.EventPublisher;
-import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
-import org.aion.wallet.ui.events.RefreshEvent;
 
 import java.net.URL;
 import java.util.List;
@@ -37,7 +37,7 @@ public class OverviewController extends AbstractController {
     protected void registerEventBusConsumer() {
         super.registerEventBusConsumer();
         EventBusFactory.getBus(HeaderPaneButtonEvent.ID).register(this);
-        EventBusFactory.getBus(EventPublisher.ACCOUNT_CHANGE_EVENT_ID).register(this);
+        EventBusFactory.getBus(AccountEvent.ID).register(this);
     }
 
     private void reloadAccounts() {
@@ -58,11 +58,14 @@ public class OverviewController extends AbstractController {
     }
 
     @Subscribe
-    private void handleAccountChanged(final AccountDTO account) {
-        if (account.isActive()) {
-            this.account = account;
+    private void handleAccountChanged(final AccountEvent event) {
+        if (AccountEvent.Type.CHANGED.equals(event.getType())) {
+            final AccountDTO account = event.getAccount();
+            if (account.isActive()) {
+                this.account = account;
+            }
+            reloadAccounts();
         }
-        reloadAccounts();
     }
 
     @Subscribe

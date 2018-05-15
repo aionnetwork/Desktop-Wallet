@@ -31,7 +31,7 @@ import org.aion.base.util.Hex;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.exception.ValidationException;
-import org.aion.wallet.ui.events.EventPublisher;
+import org.aion.wallet.events.EventPublisher;
 import org.slf4j.Logger;
 
 import java.io.File;

@@ -15,10 +15,10 @@ import org.aion.api.log.LogEnum;
 import org.aion.log.AionLoggerFactory;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.dto.AccountDTO;
-import org.aion.wallet.ui.events.EventBusFactory;
-import org.aion.wallet.ui.events.EventPublisher;
-import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
-import org.aion.wallet.ui.events.RefreshEvent;
+import org.aion.wallet.events.AccountEvent;
+import org.aion.wallet.events.EventBusFactory;
+import org.aion.wallet.events.HeaderPaneButtonEvent;
+import org.aion.wallet.events.RefreshEvent;
 import org.aion.wallet.util.BalanceUtils;
 import org.aion.wallet.util.UIUtils;
 import org.aion.wallet.util.URLManager;
@@ -78,7 +78,7 @@ public class HeaderPaneControls extends AbstractController {
     @Override
     protected void registerEventBusConsumer() {
         super.registerEventBusConsumer();
-        EventBusFactory.getBus(EventPublisher.ACCOUNT_CHANGE_EVENT_ID).register(this);
+        EventBusFactory.getBus(AccountEvent.ID).register(this);
     }
 
     public void openAionWebSite() {
@@ -122,15 +122,18 @@ public class HeaderPaneControls extends AbstractController {
     }
 
     @Subscribe
-    private void handleAccountChanged(final AccountDTO account) {
-        if (account.isActive()) {
-            accountBalance.setVisible(true);
-            activeAccountLabel.setVisible(true);
-            activeAccount.setText(account.getName());
-            accountAddress = account.getPublicAddress();
-            accountBalance.setText(account.getBalance() + BalanceUtils.CCY_SEPARATOR + account.getCurrency());
-            UIUtils.setWidth(activeAccount);
-            UIUtils.setWidth(accountBalance);
+    private void handleAccountChanged(final AccountEvent event) {
+        if (AccountEvent.Type.CHANGED.equals(event.getType())) {
+            final AccountDTO account = event.getAccount();
+            if (account.isActive()) {
+                accountBalance.setVisible(true);
+                activeAccountLabel.setVisible(true);
+                activeAccount.setText(account.getName());
+                accountAddress = account.getPublicAddress();
+                accountBalance.setText(account.getBalance() + BalanceUtils.CCY_SEPARATOR + account.getCurrency());
+                UIUtils.setWidth(activeAccount);
+                UIUtils.setWidth(accountBalance);
+            }
         }
     }
 

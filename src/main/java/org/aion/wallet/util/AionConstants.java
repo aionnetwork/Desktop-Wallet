@@ -22,10 +22,6 @@ public class AionConstants {
 
     public static final Integer MAX_BLOCKS_FOR_LATEST_TRANSACTIONS_QUERY = 100000;
 
-    // todo: will we be able to access this from AccountManager?
-
-    public static final Integer DEFAULT_WALLET_UNLOCK_DURATION = 1000;
-
     public static final String EUR_CCY = "EUR";
 
     public static final String USD_CCY = "USD";

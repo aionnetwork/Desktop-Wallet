@@ -4,8 +4,8 @@ import com.google.common.eventbus.EventBus;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.input.MouseEvent;
-import org.aion.wallet.ui.events.EventBusFactory;
-import org.aion.wallet.ui.events.WindowControlsEvent;
+import org.aion.wallet.events.EventBusFactory;
+import org.aion.wallet.events.WindowControlsEvent;
 
 public class WindowControls {
 

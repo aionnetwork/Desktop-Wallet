@@ -16,10 +16,10 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import org.aion.api.log.AionLoggerFactory;
 import org.aion.api.log.LogEnum;
-import org.aion.wallet.ui.events.EventBusFactory;
-import org.aion.wallet.ui.events.EventPublisher;
+import org.aion.wallet.events.AccountEvent;
+import org.aion.wallet.events.EventBusFactory;
+import org.aion.wallet.events.UiMessageEvent;
 import org.slf4j.Logger;
-
 
 import java.io.IOException;
 import java.net.URL;
@@ -72,6 +72,6 @@ public class MnemonicDialog implements Initializable{
     }
 
     private void registerEventBusConsumer() {
-        EventBusFactory.getBus(EventPublisher.MNEMONIC_CREATED_EVENT_ID).register(this);
+        EventBusFactory.getBus(UiMessageEvent.ID).register(this);
     }
 }

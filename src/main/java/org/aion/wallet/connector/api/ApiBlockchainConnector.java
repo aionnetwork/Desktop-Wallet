@@ -25,13 +25,15 @@ import org.aion.wallet.connector.dto.TransactionDTO;
 import org.aion.wallet.crypto.SeededECKeyEd25519;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.dto.LightAppSettings;
+import org.aion.wallet.events.AccountEvent;
+import org.aion.wallet.events.EventBusFactory;
+import org.aion.wallet.events.EventPublisher;
+import org.aion.wallet.events.SettingsEvent;
 import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.storage.ApiType;
 import org.aion.wallet.storage.WalletStorage;
-import org.aion.wallet.ui.events.EventBusFactory;
-import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.util.AionConstants;
 import org.aion.wallet.util.BalanceUtils;
 import org.slf4j.Logger;
@@ -78,8 +80,8 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         connect();
         loadLocallySavedAccounts();
         backgroundExecutor.submit(() -> processNewTransactions(0, addressToAccount.keySet()));
-        EventBusFactory.getBus(EventPublisher.ACCOUNT_CHANGE_EVENT_ID).register(this);
-        EventBusFactory.getBus(EventPublisher.SETTINGS_CHANGED_ID).register(this);
+        EventBusFactory.getBus(AccountEvent.ID).register(this);
+        EventBusFactory.getBus(SettingsEvent.ID).register(this);
     }
 
     private void connect() {
@@ -390,14 +392,18 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     }
 
     @Subscribe
-    private void handleAccountChanged(final AccountDTO account) {
-        if (!account.getName().equalsIgnoreCase(getStoredAccountName(account.getPublicAddress()))) {
-            storeAccountName(account.getPublicAddress(), account.getName());
+    private void handleAccountChanged(final AccountEvent event) {
+        if (AccountEvent.Type.CHANGED.equals(event.getType())) {
+            final AccountDTO account = event.getAccount();
+            if (!account.getName().equalsIgnoreCase(getStoredAccountName(account.getPublicAddress()))) {
+                storeAccountName(account.getPublicAddress(), account.getName());
+            }
         }
     }
 
     @Subscribe
-    private void handleSettingsChanged(final LightAppSettings settings) {
+    private void handleSettingsChanged(final SettingsEvent event) {
+        final LightAppSettings settings = event.getSettings();
         if (settings != null) {
             reloadSettings(settings);
         }

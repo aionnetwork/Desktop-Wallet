@@ -7,11 +7,9 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.AnchorPane;
 import org.aion.wallet.dto.AccountDTO;
-import org.aion.wallet.ui.events.EventBusFactory;
-import org.aion.wallet.ui.events.EventPublisher;
+import org.aion.wallet.events.AccountEvent;
+import org.aion.wallet.events.EventBusFactory;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -26,7 +24,7 @@ public class ReceiveController implements Initializable{
     private AccountDTO accountDTO;
 
     @Override
-    public void initialize(URL location, ResourceBundle resources) {
+    public void initialize(final URL location, final ResourceBundle resources) {
         registerEventBusConsumer();
         copiedTooltip = new Tooltip();
         copiedTooltip.setText("Copied");
@@ -35,17 +33,18 @@ public class ReceiveController implements Initializable{
     }
 
     private void registerEventBusConsumer() {
-        EventBusFactory.getBus(EventPublisher.ACCOUNT_CHANGE_EVENT_ID).register(this);
+        EventBusFactory.getBus(AccountEvent.ID).register(this);
     }
 
     @Subscribe
-    private void handleAccountChanged(AccountDTO accountDTO) {
-        this.accountDTO = accountDTO;
-
-        accountAddress.setText(accountDTO.getPublicAddress());
+    private void handleAccountChanged(final AccountEvent event) {
+        if (AccountEvent.Type.CHANGED.equals(event.getType())) {
+            accountDTO = (AccountDTO) event.getAccount();
+            accountAddress.setText(accountDTO.getPublicAddress());
+        }
     }
 
-    public void onCopyToClipBoard(MouseEvent mouseEvent) {
+    public void onCopyToClipBoard() {
         if(accountDTO != null && accountDTO.getPublicAddress() != null) {
             final Clipboard clipboard = Clipboard.getSystemClipboard();
             final ClipboardContent content = new ClipboardContent();

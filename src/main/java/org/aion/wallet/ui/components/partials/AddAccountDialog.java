@@ -15,9 +15,9 @@ import javafx.stage.Popup;
 import org.aion.api.log.AionLoggerFactory;
 import org.aion.api.log.LogEnum;
 import org.aion.wallet.connector.BlockchainConnector;
-import org.aion.wallet.ui.events.EventBusFactory;
-import org.aion.wallet.ui.events.EventPublisher;
-import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
+import org.aion.wallet.events.EventBusFactory;
+import org.aion.wallet.events.EventPublisher;
+import org.aion.wallet.events.HeaderPaneButtonEvent;
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -26,8 +26,9 @@ public class AddAccountDialog {
 
     private static final Logger log = AionLoggerFactory.getLogger(LogEnum.WLT.name());
 
-    private ImportAccountDialog importAccountDialog = new ImportAccountDialog();
-    private MnemonicDialog mnemonicDialog = new MnemonicDialog();
+    private final ImportAccountDialog importAccountDialog = new ImportAccountDialog();
+
+    private final MnemonicDialog mnemonicDialog = new MnemonicDialog();
 
     @FXML
     private TextField newAccountName;
@@ -45,7 +46,7 @@ public class AddAccountDialog {
 
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
 
-    public void createAccount(InputEvent mouseEvent) {
+    public void createAccount(final InputEvent mouseEvent) {
         resetValidation();
 
         if (validateFields()) {
@@ -69,12 +70,12 @@ public class AddAccountDialog {
         }
     }
 
-    public void uploadKeystoreFile(MouseEvent e) {
+    public void uploadKeystoreFile(final MouseEvent e) {
         importAccountDialog.open(e);
     }
 
     private boolean validateFields() {
-        if(newPassword == null || newPassword.getText() == null || retypedPassword == null || retypedPassword.getText() == null) {
+        if (newPassword == null || newPassword.getText() == null || retypedPassword == null || retypedPassword.getText() == null) {
             return false;
         }
 

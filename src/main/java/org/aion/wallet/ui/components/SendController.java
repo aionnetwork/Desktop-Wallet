@@ -12,12 +12,11 @@ import org.aion.base.util.TypeConverter;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.connector.dto.SendRequestDTO;
 import org.aion.wallet.dto.AccountDTO;
+import org.aion.wallet.events.*;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
-import org.aion.wallet.ui.events.EventBusFactory;
-import org.aion.wallet.ui.events.EventPublisher;
-import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
-import org.aion.wallet.ui.events.RefreshEvent;
+import org.aion.wallet.events.HeaderPaneButtonEvent;
+import org.aion.wallet.events.RefreshEvent;
 import org.aion.wallet.util.AionConstants;
 import org.aion.wallet.util.BalanceUtils;
 import org.aion.wallet.util.ConfigUtils;
@@ -134,21 +133,23 @@ public class SendController extends AbstractController {
     }
 
     @Subscribe
-    private void handleAccountChanged(final AccountDTO account) {
-        this.account = account;
+    private void handleAccountChanged(final AccountEvent event) {
+        if (AccountEvent.Type.CHANGED.equals(event.getType())) {
+            account = event.getAccount();
 
-        accountAddress.setText(account.getPublicAddress());
+            accountAddress.setText(account.getPublicAddress());
 
-        accountBalance.setVisible(true);
-        setAccountBalanceText();
+            accountBalance.setVisible(true);
+            setAccountBalanceText();
 
-        equivalentEUR.setVisible(true);
-        equivalentEUR.setText(convertBalanceToCcy(account, AionConstants.AION_TO_EUR) + " " + AionConstants.EUR_CCY);
-        UIUtils.setWidth(equivalentEUR);
+            equivalentEUR.setVisible(true);
+            equivalentEUR.setText(convertBalanceToCcy(account, AionConstants.AION_TO_EUR) + " " + AionConstants.EUR_CCY);
+            UIUtils.setWidth(equivalentEUR);
 
-        equivalentUSD.setVisible(true);
-        equivalentUSD.setText(convertBalanceToCcy(account, AionConstants.AION_TO_USD) + " " + AionConstants.USD_CCY);
-        UIUtils.setWidth(equivalentUSD);
+            equivalentUSD.setVisible(true);
+            equivalentUSD.setText(convertBalanceToCcy(account, AionConstants.AION_TO_USD) + " " + AionConstants.USD_CCY);
+            UIUtils.setWidth(equivalentUSD);
+        }
     }
 
     @Subscribe
@@ -162,7 +163,7 @@ public class SendController extends AbstractController {
     protected void registerEventBusConsumer() {
         super.registerEventBusConsumer();
         EventBusFactory.getBus(HeaderPaneButtonEvent.ID).register(this);
-        EventBusFactory.getBus(EventPublisher.ACCOUNT_CHANGE_EVENT_ID).register(this);
+        EventBusFactory.getBus(AccountEvent.ID).register(this);
     }
 
     private double convertBalanceToCcy(final AccountDTO account, final double exchangeRate) {

@@ -18,28 +18,32 @@ import org.aion.api.log.LogEnum;
 import org.aion.crypto.ECKey;
 import org.aion.mcf.account.Keystore;
 import org.aion.wallet.dto.AccountDTO;
-import org.aion.wallet.ui.events.EventBusFactory;
-import org.aion.wallet.ui.events.EventPublisher;
+import org.aion.wallet.events.AccountEvent;
+import org.aion.wallet.events.EventBusFactory;
+import org.aion.wallet.events.EventPublisher;
 import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-public class UnlockAccountDialog implements Initializable{
+public class UnlockAccountDialog implements Initializable {
+
     private static final Logger log = AionLoggerFactory.getLogger(LogEnum.WLT.name());
 
+    private final Popup popup = new Popup();
     @FXML
     private PasswordField unlockPassword;
-
     @FXML
     private Label validationError;
-
     private AccountDTO account;
 
-    private final Popup popup = new Popup();
+    @Override
+    public void initialize(final URL location, final ResourceBundle resources) {
+        registerEventBusConsumer();
+    }
 
-    public void open(MouseEvent mouseEvent) {
+    public void open(final MouseEvent mouseEvent) {
         popup.setAutoHide(true);
         popup.setAutoFix(true);
 
@@ -60,42 +64,37 @@ public class UnlockAccountDialog implements Initializable{
         popup.show(eventSource.getScene().getWindow());
     }
 
-    public void unlockAccount(InputEvent event) {
-        if(unlockPassword.getText() != null && !unlockPassword.getText().isEmpty()) {
+    public void close(final InputEvent event) {
+        ((Node) event.getSource()).getScene().getWindow().hide();
+    }
+
+    public void unlockAccount(final InputEvent event) {
+        if (unlockPassword.getText() != null && !unlockPassword.getText().isEmpty()) {
             ECKey storedKey = Keystore.getKey(account.getPublicAddress(), unlockPassword.getText());
-            if(storedKey != null) {
+            if (storedKey != null) {
                 account.setActive(true);
                 account.setPrivateKey(storedKey.getPrivKeyBytes());
                 EventPublisher.fireAccountChanged(account);
                 this.close(event);
-            }
-            else {
+            } else {
                 validationError.setText("The password is incorrect!");
                 validationError.setVisible(true);
             }
-        }
-        else {
+        } else {
             validationError.setText("Please insert a password!");
             validationError.setVisible(true);
         }
     }
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        registerEventBusConsumer();
-    }
-
-    public void resetValidation(MouseEvent mouseEvent) {
+    public void resetValidation() {
         validationError.setVisible(false);
     }
 
-    public void close(InputEvent event) {
-        ((Node) event.getSource()).getScene().getWindow().hide();
-    }
-
     @Subscribe
-    private void handleUnlockStarted(AccountDTO account) {
-        this.account = account;
+    private void handleUnlockStarted(final AccountEvent event) {
+        if (AccountEvent.Type.UNLOCKED.equals(event.getType())) {
+            this.account = event.getAccount();
+        }
     }
 
     @FXML
@@ -104,7 +103,8 @@ public class UnlockAccountDialog implements Initializable{
             unlockAccount(event);
         }
     }
+
     private void registerEventBusConsumer() {
-        EventBusFactory.getBus(EventPublisher.ACCOUNT_UNLOCK_EVENT_ID).register(this);
+        EventBusFactory.getBus(AccountEvent.ID).register(this);
     }
 }

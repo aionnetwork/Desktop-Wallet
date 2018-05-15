@@ -1,12 +1,11 @@
 package org.aion.wallet.ui.components.partials;
 
-import com.google.common.eventbus.Subscribe;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.ui.components.AbstractController;
-import org.aion.wallet.ui.events.RefreshEvent;
+import org.aion.wallet.events.RefreshEvent;
 
 import java.net.URL;
 import java.util.ResourceBundle;

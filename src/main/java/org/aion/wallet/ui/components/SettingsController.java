@@ -1,24 +1,16 @@
 package org.aion.wallet.ui.components;
 
 import com.google.common.eventbus.Subscribe;
-import io.github.novacrypto.bip39.MnemonicValidator;
-import io.github.novacrypto.bip39.Validation.InvalidChecksumException;
-import io.github.novacrypto.bip39.Validation.InvalidWordCountException;
-import io.github.novacrypto.bip39.Validation.UnexpectedWhiteSpaceException;
-import io.github.novacrypto.bip39.Validation.WordNotFoundException;
-import io.github.novacrypto.bip39.wordlists.English;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-import javafx.scene.input.MouseEvent;
 import org.aion.api.log.LogEnum;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.dto.LightAppSettings;
 import org.aion.wallet.log.WalletLoggerFactory;
-import org.aion.wallet.ui.events.EventBusFactory;
-import org.aion.wallet.ui.events.EventPublisher;
-import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
+import org.aion.wallet.events.EventBusFactory;
+import org.aion.wallet.events.EventPublisher;
+import org.aion.wallet.events.HeaderPaneButtonEvent;
 import org.slf4j.Logger;
 
 import java.net.URL;
@@ -38,6 +30,9 @@ public class SettingsController extends AbstractController {
     public TextField port;
     @FXML
     public Label notification;
+    @FXML
+    private TextField timeout;
+
 
     private LightAppSettings settings;
 
@@ -53,7 +48,7 @@ public class SettingsController extends AbstractController {
 
     public void changeSettings() {
         EventPublisher.fireApplicationSettingsChanged(new LightAppSettings(address.getText().trim(), port.getText().trim(),
-                protocol.getText().trim(), settings.getType()));
+                protocol.getText().trim(), settings.getType(), timeout.getText()));
         notification.setText("Changes applied");
     }
 
@@ -69,6 +64,7 @@ public class SettingsController extends AbstractController {
         protocol.setText(settings.getProtocol());
         address.setText(settings.getAddress());
         port.setText(settings.getPort());
+        timeout.setText(settings.getUnlockTimeout().toString().substring(2).toLowerCase());
         notification.setText("");
     }
 }
