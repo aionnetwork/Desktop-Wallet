@@ -88,5 +88,7 @@
 }
 
 .link-style {
-    -fx-text-fill: red;
+    -fx-text-fill: blue;
+    -fx-underline: true ;
+    -fx-cursor: hand;
 }
