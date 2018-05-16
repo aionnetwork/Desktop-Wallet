@@ -19,6 +19,7 @@ import org.aion.wallet.events.AccountEvent;
 import org.aion.wallet.events.EventBusFactory;
 import org.aion.wallet.events.HeaderPaneButtonEvent;
 import org.aion.wallet.events.RefreshEvent;
+import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.util.BalanceUtils;
 import org.aion.wallet.util.UIUtils;
 import org.aion.wallet.util.URLManager;
@@ -32,7 +33,7 @@ import java.util.ResourceBundle;
 
 public class HeaderPaneControls extends AbstractController {
 
-    private static final Logger log = AionLoggerFactory.getLogger(LogEnum.WLT.name());
+    private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
 
     private static final String STYLE_DEFAULT = "default";
 

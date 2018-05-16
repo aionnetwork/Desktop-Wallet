@@ -18,13 +18,14 @@ import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.events.EventBusFactory;
 import org.aion.wallet.events.EventPublisher;
 import org.aion.wallet.events.HeaderPaneButtonEvent;
+import org.aion.wallet.log.WalletLoggerFactory;
 import org.slf4j.Logger;
 
 import java.io.IOException;
 
 public class AddAccountDialog {
 
-    private static final Logger log = AionLoggerFactory.getLogger(LogEnum.WLT.name());
+    private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
 
     private final ImportAccountDialog importAccountDialog = new ImportAccountDialog();
 

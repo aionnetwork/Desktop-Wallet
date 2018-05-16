@@ -32,6 +32,7 @@ import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.events.EventPublisher;
+import org.aion.wallet.log.WalletLoggerFactory;
 import org.slf4j.Logger;
 
 import java.io.File;
@@ -42,7 +43,7 @@ import java.util.ResourceBundle;
 
 public class ImportAccountDialog implements Initializable {
 
-    private static final Logger log = AionLoggerFactory.getLogger(LogEnum.WLT.name());
+    private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
 
     private static final String PK_RADIO_BUTTON_ID = "PK_RB";
 
