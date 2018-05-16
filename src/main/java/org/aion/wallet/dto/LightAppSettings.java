@@ -1,14 +1,18 @@
 package org.aion.wallet.dto;
 
+import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.storage.ApiType;
 
 import java.time.Duration;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.regex.Pattern;
 
 public class LightAppSettings {
 
-    public static final String DEFAULT_UNLOCK_TIMEOUT = "3m";
+    private static final SettingsValidator VALIDATOR = new SettingsValidator();
+
+    private static final String DEFAULT_UNLOCK_TIMEOUT = "PT3M";
 
     private static final String ADDRESS = ".address";
     private static final String PORT = ".port";
@@ -32,10 +36,10 @@ public class LightAppSettings {
         address = Optional.ofNullable(lightSettingsProps.getProperty(type + ADDRESS)).orElse(DEFAULT_IP);
         port = Optional.ofNullable(lightSettingsProps.getProperty(type + PORT)).orElse(DEFAULT_PORT);
         protocol = Optional.ofNullable(lightSettingsProps.getProperty(type + PROTOCOL)).orElse(DEFAULT_PROTOCOL);
-        unlockTimeout = Duration.parse(Optional.ofNullable(lightSettingsProps.getProperty(ACCOUNTS + UNLOCK_TIMEOUT)).orElse(convertToDurationString(DEFAULT_UNLOCK_TIMEOUT)));
+        unlockTimeout = Duration.parse(Optional.ofNullable(lightSettingsProps.getProperty(ACCOUNTS + UNLOCK_TIMEOUT)).orElse(DEFAULT_UNLOCK_TIMEOUT));
     }
 
-    public LightAppSettings(final String address, final String port, final String protocol, final ApiType type, final String timeout) {
+    public LightAppSettings(final String address, final String port, final String protocol, final ApiType type, final String timeout) throws ValidationException {
         this.type = type;
         this.address = address;
         this.port = port;
@@ -72,7 +76,19 @@ public class LightAppSettings {
         return properties;
     }
 
-    private String convertToDurationString(final String string) {
-        return "PT" + string.toUpperCase();
+    private String convertToDurationString(final String string) throws ValidationException {
+        final String formattedString = "PT" + string.toUpperCase();
+        if (!VALIDATOR.validateTimeout(formattedString)) {
+            throw new ValidationException(String.format("Invalid timeout pattern: %s, should be like: XhYmZ[.zzz]s", string));
+        }
+        return formattedString;
+    }
+
+    private static final class SettingsValidator {
+        private static final Pattern timeoutPattern = Pattern.compile("^(-?)P(?=\\d|T\\d)(?:(\\d+)Y)?(?:(\\d+)M)?(?:(\\d+)([DW]))?(?:T(?:(\\d+)H)?(?:(\\d+)M)?(?:(\\d+(?:\\.\\d+)?)S)?)?$");
+
+        private boolean validateTimeout(final String timeoutString) {
+            return timeoutPattern.matcher(timeoutString).matches();
+        }
     }
 }

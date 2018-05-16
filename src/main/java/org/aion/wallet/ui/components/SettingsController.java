@@ -7,6 +7,7 @@ import javafx.scene.control.TextField;
 import org.aion.api.log.LogEnum;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.dto.LightAppSettings;
+import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.events.EventBusFactory;
 import org.aion.wallet.events.EventPublisher;
@@ -29,10 +30,9 @@ public class SettingsController extends AbstractController {
     @FXML
     public TextField port;
     @FXML
-    public Label notification;
-    @FXML
     private TextField timeout;
-
+    @FXML
+    public Label notification;
 
     private LightAppSettings settings;
 
@@ -47,9 +47,16 @@ public class SettingsController extends AbstractController {
     }
 
     public void changeSettings() {
-        EventPublisher.fireApplicationSettingsChanged(new LightAppSettings(address.getText().trim(), port.getText().trim(),
-                protocol.getText().trim(), settings.getType(), timeout.getText()));
-        notification.setText("Changes applied");
+        final LightAppSettings newSettings;
+        try {
+            newSettings = new LightAppSettings(address.getText().trim(), port.getText().trim(),
+                    protocol.getText().trim(), this.settings.getType(), timeout.getText());
+            EventPublisher.fireApplicationSettingsChanged(newSettings);
+            notification.setText("Changes applied");
+        } catch (ValidationException e) {
+            log.error(e.getMessage(), e);
+            notification.setText(e.getMessage());
+        }
     }
 
     @Subscribe
