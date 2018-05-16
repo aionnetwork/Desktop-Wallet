@@ -19,7 +19,6 @@ import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
 import org.aion.wallet.ui.events.RefreshEvent;
-import org.aion.wallet.util.AionConstants;
 import org.aion.wallet.util.BalanceUtils;
 import org.aion.wallet.util.UIUtils;
 import org.aion.wallet.util.URLManager;
@@ -83,7 +82,7 @@ public class HeaderPaneControls extends AbstractController {
     }
 
     public void openAionWebSite() {
-        URLManager.openURL(AionConstants.AION_URL);
+        URLManager.openDashboard();
     }
 
     public void handleButtonPressed(final MouseEvent pressed) {
@@ -144,8 +143,7 @@ public class HeaderPaneControls extends AbstractController {
             runApiTask(
                     getBalanceTask,
                     evt -> updateNewBalance(currency, getBalanceTask.getValue()),
-                    getErrorEvent(throwable -> {
-                    }, getBalanceTask),
+                    getErrorEvent(throwable -> {}, getBalanceTask),
                     getEmptyEvent()
             );
         }

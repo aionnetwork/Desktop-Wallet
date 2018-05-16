@@ -11,6 +11,17 @@ import java.net.URISyntaxException;
 
 public class URLManager {
     private static final Logger log = AionLoggerFactory.getLogger(LogEnum.WLT.name());
+    public static final String TRANSACTION_URL = "/#/transaction/";
+
+    public static void openDashboard() {
+        openURL(AionConstants.AION_URL);
+    }
+
+    public static void openTransaction(final String transactionHash) {
+        if(transactionHash != null && !transactionHash.isEmpty()) {
+            openURL(AionConstants.AION_URL + TRANSACTION_URL + transactionHash);
+        }
+    }
 
     public static void openURL(String URL) {
         if(URL != null) {

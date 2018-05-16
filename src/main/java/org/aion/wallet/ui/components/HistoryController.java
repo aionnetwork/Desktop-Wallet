@@ -21,7 +21,6 @@ import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
 import org.aion.wallet.util.AddressUtils;
-import org.aion.wallet.util.AionConstants;
 import org.aion.wallet.util.BalanceUtils;
 import org.aion.wallet.util.URLManager;
 import org.slf4j.Logger;
@@ -201,7 +200,7 @@ public class HistoryController extends AbstractController {
                 int col = position.getColumn();
                 if (table.getColumns().get(col).getText().equals("Tx Hash")) {
                     Object cell = table.getColumns().get(col).getCellData(row);
-                    URLManager.openURL(AionConstants.AION_URL + "/#/transaction/" + cell.toString());
+                    URLManager.openTransaction(cell.toString());
                 }
             }
         }
@@ -289,7 +288,7 @@ public class HistoryController extends AbstractController {
             updateStyles(empty ? null : item);
         }
 
-        private void updateStyles(String item) {
+        private void updateStyles(final String item) {
             if (item == null) {
                 return;
             }
