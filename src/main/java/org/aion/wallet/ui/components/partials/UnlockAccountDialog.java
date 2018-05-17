@@ -5,7 +5,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
-import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.input.InputEvent;
@@ -13,12 +12,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
-import javafx.scene.paint.Color;
-import javafx.stage.Modality;
 import javafx.stage.Popup;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 import org.aion.api.log.AionLoggerFactory;
 import org.aion.api.log.LogEnum;
 import org.aion.crypto.ECKey;
@@ -26,12 +20,10 @@ import org.aion.mcf.account.Keystore;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.ui.events.EventBusFactory;
 import org.aion.wallet.ui.events.EventPublisher;
-import org.aion.wallet.util.DataUpdater;
 import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.Map;
 import java.util.ResourceBundle;
 
 public class UnlockAccountDialog implements Initializable{

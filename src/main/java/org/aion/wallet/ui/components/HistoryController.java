@@ -12,6 +12,8 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.*;
+import org.aion.api.log.LogEnum;
+import org.aion.log.AionLoggerFactory;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.connector.dto.TransactionDTO;
 import org.aion.wallet.dto.AccountDTO;
@@ -20,16 +22,22 @@ import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
 import org.aion.wallet.util.AddressUtils;
 import org.aion.wallet.util.BalanceUtils;
+import org.aion.wallet.util.URLManager;
+import org.slf4j.Logger;
 
 import java.net.URL;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
 public class HistoryController extends AbstractController {
 
+    private static final Logger log = AionLoggerFactory.getLogger(LogEnum.WLT.name());
+
     private static final String COPY_MENU = "Copy";
+
+    private static final String LINK_STYLE = "link-style";
 
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
     @FXML
@@ -85,27 +93,28 @@ public class HistoryController extends AbstractController {
     }
 
     private void buildTableModel() {
-        final TableColumn<TxRow, String> typeCol = new TableColumn<>("Type");
-        final TableColumn<TxRow, String> nameCol = new TableColumn<>("Name");
-        final TableColumn<TxRow, String> addrCol = new TableColumn<>("Address");
-        final TableColumn<TxRow, String> hashCol = new TableColumn<>("Tx Hash");
-        final TableColumn<TxRow, String> valueCol = new TableColumn<>("Value");
-        typeCol.setCellValueFactory(new PropertyValueFactory<>("type"));
-        nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
-        addrCol.setCellValueFactory(new PropertyValueFactory<>("address"));
-        hashCol.setCellValueFactory(new PropertyValueFactory<>("txHash"));
-        valueCol.setCellValueFactory(new PropertyValueFactory<>("value"));
-        typeCol.prefWidthProperty().bind(txTable.widthProperty().multiply(0.08));
-        nameCol.prefWidthProperty().bind(txTable.widthProperty().multiply(0.09));
-        addrCol.prefWidthProperty().bind(txTable.widthProperty().multiply(0.36));
-        hashCol.prefWidthProperty().bind(txTable.widthProperty().multiply(0.36));
-        valueCol.prefWidthProperty().bind(txTable.widthProperty().multiply(0.11));
+        final TableColumn<TxRow, String> typeCol = getTableColumn("Type", "type", 0.08);
+        final TableColumn<TxRow, String> nameCol = getTableColumn("Name", "name", 0.09);
+        final TableColumn<TxRow, String> addressCol = getTableColumn("Address", "address", 0.36);
+        final TableColumn<TxRow, String> hashCol = getTableColumn("Tx Hash", "txHash", 0.36);
+        final TableColumn<TxRow, String> valueCol = getTableColumn("Value", "value", 0.11);
 
-        txTable.getColumns().addAll(typeCol, nameCol, addrCol, hashCol, valueCol);
+        hashCol.setCellFactory(column -> new TransactionHashCell());
+
+        txTable.getColumns().addAll(Arrays.asList(typeCol, nameCol, addressCol, hashCol, valueCol));
+    }
+
+    private TableColumn<TxRow, String> getTableColumn(final String header, final String property, final double sizePercent) {
+        final TableColumn<TxRow, String> valueCol = new TableColumn<>(header);
+        valueCol.setCellValueFactory(new PropertyValueFactory<>(property));
+        valueCol.prefWidthProperty().bind(txTable.widthProperty().multiply(sizePercent));
+        return valueCol;
     }
 
     private void setEventHandlers() {
         txTable.setOnKeyPressed(new KeyTableCopyEventHandler());
+        txTable.setOnMouseClicked(new MouseLinkEventHandler());
+
         ContextMenu menu = new ContextMenu();
         final MenuItem copyItem = new MenuItem(COPY_MENU);
         copyItem.setOnAction(new ContextMenuTableCopyEventHandler(txTable));
@@ -127,6 +136,8 @@ public class HistoryController extends AbstractController {
     }
 
     private static class ContextMenuTableCopyEventHandler extends TableCopyEventHandler<ActionEvent> {
+
+
         private final TableView<TxRow> txTable;
 
         public ContextMenuTableCopyEventHandler(final TableView<TxRow> txTable) {
@@ -167,6 +178,31 @@ public class HistoryController extends AbstractController {
             final ClipboardContent clipboardContent = new ClipboardContent();
             clipboardContent.putString(clipboardString.toString());
             Clipboard.getSystemClipboard().setContent(clipboardContent);
+        }
+    }
+
+    private static class MouseLinkEventHandler implements EventHandler<MouseEvent> {
+
+        @Override
+        public void handle(final MouseEvent mouseEvent) {
+            if (MouseEvent.MOUSE_CLICKED.equals(mouseEvent.getEventType()) && MouseButton.PRIMARY.equals(mouseEvent.getButton())) {
+                if (mouseEvent.getSource() instanceof TableView) {
+                    redirect((TableView<?>) mouseEvent.getSource());
+                    mouseEvent.consume();
+                }
+            }
+        }
+
+        private void redirect(final TableView<?> table) {
+            ObservableList<TablePosition> positionList = table.getSelectionModel().getSelectedCells();
+            for (TablePosition position : positionList) {
+                int row = position.getRow();
+                int col = position.getColumn();
+                if (table.getColumns().get(col).getText().equals("Tx Hash")) {
+                    Object cell = table.getColumns().get(col).getCellData(row);
+                    URLManager.openTransaction(cell.toString());
+                }
+            }
         }
     }
 
@@ -238,6 +274,25 @@ public class HistoryController extends AbstractController {
 
         public TransactionDTO getTransaction() {
             return transaction;
+        }
+    }
+
+    private class TransactionHashCell extends TableCell<TxRow, String> {
+        @Override
+        protected void updateItem(final String item, final boolean empty) {
+            super.updateItem(item, empty);
+
+            setText(empty ? "" : item);
+
+            getStyleClass().clear();
+            updateStyles(empty ? null : item);
+        }
+
+        private void updateStyles(final String item) {
+            if (item == null) {
+                return;
+            }
+            getStyleClass().add(LINK_STYLE);
         }
     }
 }

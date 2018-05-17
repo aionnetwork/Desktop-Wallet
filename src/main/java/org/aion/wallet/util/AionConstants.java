@@ -6,6 +6,8 @@ public class AionConstants {
 
     private AionConstants() {}
 
+    public static final String AION_URL = "http://mainnet.aion.network";
+
     private static final long AMP = (long) 1E9;
 
     public final static String CCY = "AION";
