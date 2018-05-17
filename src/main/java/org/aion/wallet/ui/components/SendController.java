@@ -32,8 +32,6 @@ public class SendController extends AbstractController {
 
     private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
 
-    private static final String ERROR_STYLE = "error-label";
-
     private static final String PENDING_MESSAGE = "Sending transaction...";
 
     private static final String SUCCESS_MESSAGE = "Transaction finished";
@@ -64,6 +62,9 @@ public class SendController extends AbstractController {
     private AccountDTO account;
 
     public void onSendAionClicked() {
+        if (account == null) {
+            return;
+        }
         final SendRequestDTO dto;
         try {
             dto = mapFormData();

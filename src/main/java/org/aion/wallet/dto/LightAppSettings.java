@@ -4,6 +4,7 @@ import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.storage.ApiType;
 
 import java.time.Duration;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.regex.Pattern;
@@ -74,6 +75,24 @@ public class LightAppSettings {
         properties.setProperty(type + PROTOCOL, protocol);
         properties.setProperty(ACCOUNTS + UNLOCK_TIMEOUT, unlockTimeout.toString());
         return properties;
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        if (this == other) return true;
+        if (other == null || getClass() != other.getClass()) return false;
+        LightAppSettings that = (LightAppSettings) other;
+        return type == that.type &&
+                Objects.equals(address, that.address) &&
+                Objects.equals(port, that.port) &&
+                Objects.equals(protocol, that.protocol) &&
+                Objects.equals(unlockTimeout, that.unlockTimeout);
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(type, address, port, protocol, unlockTimeout);
     }
 
     private String convertToDurationString(final String string) throws ValidationException {

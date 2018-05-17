@@ -1,24 +1,18 @@
 package org.aion.wallet.connector.core;
 
 import com.google.common.eventbus.Subscribe;
-import io.github.novacrypto.bip39.MnemonicGenerator;
-import io.github.novacrypto.bip39.SeedCalculator;
-import io.github.novacrypto.bip39.Words;
-import io.github.novacrypto.bip39.wordlists.English;
 import org.aion.api.log.LogEnum;
 import org.aion.api.server.types.ArgTxCall;
 import org.aion.api.server.types.SyncInfo;
 import org.aion.base.type.Address;
 import org.aion.base.util.ByteUtil;
 import org.aion.base.util.TypeConverter;
-import org.aion.mcf.account.Keystore;
+import org.aion.wallet.account.AccountManager;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.connector.api.TxState;
 import org.aion.wallet.connector.dto.SendRequestDTO;
 import org.aion.wallet.connector.dto.SyncInfoDTO;
 import org.aion.wallet.connector.dto.TransactionDTO;
-import org.aion.wallet.connector.dto.UnlockableAccount;
-import org.aion.wallet.crypto.SeededECKeyEd25519;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.dto.LightAppSettings;
 import org.aion.wallet.events.AccountEvent;
@@ -26,14 +20,13 @@ import org.aion.wallet.events.EventBusFactory;
 import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
+import org.aion.wallet.storage.ApiType;
 import org.aion.wallet.util.AionConstants;
-import org.aion.wallet.util.BalanceUtils;
 import org.aion.zero.impl.types.AionBlock;
 import org.aion.zero.types.AionTransaction;
 import org.slf4j.Logger;
 
 import java.math.BigInteger;
-import java.security.SecureRandom;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,41 +36,39 @@ public class CoreBlockchainConnector extends BlockchainConnector {
 
     private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
 
-    private final static WalletApi API = new WalletApi();
+    private static final WalletApi API = new WalletApi();
+
+    private LightAppSettings lightAppSettings = getLightweightWalletSettings(ApiType.CORE);
+
+    private AccountManager accountManager;
 
     public CoreBlockchainConnector() {
         EventBusFactory.getBus(AccountEvent.ID).register(this);
+        accountManager = new AccountManager(lightAppSettings, this::getBalance, this::getCurrency);
     }
 
     public String createAccount(final String password, final String name) {
-        StringBuilder sb = new StringBuilder();
-        byte[] entropy = new byte[Words.TWELVE.byteLength()];
-        new SecureRandom().nextBytes(entropy);
-        new MnemonicGenerator(English.INSTANCE)
-                .createMnemonic(entropy, sb::append);
-        byte[] seed = new SeedCalculator().calculateSeed(sb.toString(), password);
-        SeededECKeyEd25519 seededKey = new SeededECKeyEd25519(seed);
-        final String address = Keystore.create(password, seededKey);
-        AccountDTO account = getAccount(address);
-        account.setName(name);
-        storeAccountName(address, name);
-        return sb.toString();
+        return accountManager.createAccount(password, name);
     }
 
     @Override
-    public AccountDTO addKeystoreUTCFile(byte[] file, String password, final boolean shouldKeep) throws ValidationException {
-        throw new ValidationException("Unsupported operation");
+    public AccountDTO importKeystoreFile(byte[] file, String password, final boolean shouldKeep) throws ValidationException {
+        return accountManager.importKeystore(file, password, shouldKeep);
     }
 
     @Override
-    public AccountDTO addPrivateKey(byte[] raw, String password, final boolean shouldKeep) {
-        throw new UnsupportedOperationException();
+    public AccountDTO importPrivateKey(byte[] raw, String password, final boolean shouldKeep) throws ValidationException {
+        return accountManager.importPrivateKey(raw, password, shouldKeep);
+    }
+
+    @Override
+    public AccountDTO importMnemonic(final String mnemonic, final String password, boolean shouldKeep) throws ValidationException {
+        return accountManager.importMnemonic(mnemonic, password, shouldKeep);
     }
 
     @Override
     public AccountDTO getAccount(final String publicAddress) {
-        final String name = getStoredAccountName(publicAddress);
-        return new AccountDTO(name, publicAddress, BalanceUtils.formatBalance(getBalance(publicAddress)), getCurrency());
+        return accountManager.getAccount(publicAddress);
     }
 
     @Override
@@ -101,7 +92,7 @@ public class CoreBlockchainConnector extends BlockchainConnector {
 
     @Override
     protected String sendTransactionInternal(SendRequestDTO dto) throws ValidationException {
-        if (!unlock(dto)) {
+        if (!API.unlockAccount(dto.getFrom(), dto.getPassword(), (int) getSettings().getUnlockTimeout().get(ChronoUnit.SECONDS))) {
             throw new ValidationException("Failed to unlock wallet");
         }
         ArgTxCall transactionParams = new ArgTxCall(Address.wrap(ByteUtil.hexStringToBytes(dto.getFrom()))
@@ -145,29 +136,15 @@ public class CoreBlockchainConnector extends BlockchainConnector {
         throw new UnsupportedOperationException();
     }
 
-    private boolean unlock(UnlockableAccount account) {
-        return API.unlockAccount(
-                account.getAddress(),
-                account.getPassword(),
-                (int) getSettings().getUnlockTimeout().get(ChronoUnit.SECONDS)
-        );
-    }
-
     @Override
     public int getPeerCount() {
         return API.peerCount();
     }
 
-    @Override
-    public AccountDTO importAccountWithMnemonic(final String mnemonic, final String password) {
-        throw new UnsupportedOperationException();
-    }
-
     @Subscribe
-    private void handleAccountChanged(final AccountEvent event) {
+    private void handleAccountEvent(final AccountEvent event) {
         if (AccountEvent.Type.CHANGED.equals(event.getType())) {
-            final AccountDTO account = event.getAccount();
-            storeAccountName(account.getPublicAddress(), account.getName());
+            accountManager.updateAccount(event.getAccount());
         }
     }
 

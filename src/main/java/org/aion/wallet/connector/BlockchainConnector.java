@@ -5,10 +5,10 @@ import org.aion.wallet.connector.dto.SendRequestDTO;
 import org.aion.wallet.connector.dto.SyncInfoDTO;
 import org.aion.wallet.connector.dto.TransactionDTO;
 import org.aion.wallet.dto.AccountDTO;
+import org.aion.wallet.dto.LightAppSettings;
 import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.storage.ApiType;
-import org.aion.wallet.dto.LightAppSettings;
 import org.aion.wallet.storage.WalletStorage;
 import org.aion.wallet.util.ConfigUtils;
 
@@ -45,9 +45,11 @@ public abstract class BlockchainConnector {
 
     public abstract String createAccount(final String password, final String name);
 
-    public abstract AccountDTO addKeystoreUTCFile(final byte[] file, final String password, final boolean shouldKeep) throws ValidationException;
+    public abstract AccountDTO importKeystoreFile(final byte[] file, final String password, final boolean shouldKeep) throws ValidationException;
 
-    public abstract AccountDTO addPrivateKey(final byte[] raw, final String password, final boolean shouldKeep) throws ValidationException;
+    public abstract AccountDTO importPrivateKey(final byte[] raw, final String password, final boolean shouldKeep) throws ValidationException;
+
+    public abstract AccountDTO importMnemonic(final String mnemonic, final String password, boolean shouldKeep) throws ValidationException;
 
     public abstract AccountDTO getAccount(final String address);
 
@@ -74,8 +76,8 @@ public abstract class BlockchainConnector {
     public abstract boolean getConnectionStatusByConnectedPeers();
 
     public abstract SyncInfoDTO getSyncInfo();
-
     public abstract int getPeerCount();
+
     // todo: Add balances with different currencies in AccountDTO
 
     public abstract String getCurrency();
@@ -90,22 +92,12 @@ public abstract class BlockchainConnector {
 
     public abstract LightAppSettings getSettings();
 
-    public abstract AccountDTO importAccountWithMnemonic(final String mnemonic, final String password);
-
     protected final void lock(){
         lock.lock();
     }
 
     protected final void unLock() {
         lock.unlock();
-    }
-
-    protected final String getStoredAccountName(final String publicAddress) {
-        return walletStorage.getAccountName(publicAddress);
-    }
-
-    protected final void storeAccountName(final String address, final String name) {
-        walletStorage.setAccountName(address, name);
     }
 
     protected final LightAppSettings getLightweightWalletSettings(final ApiType type){

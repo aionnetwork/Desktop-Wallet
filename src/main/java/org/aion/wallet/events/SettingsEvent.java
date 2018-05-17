@@ -19,6 +19,6 @@ public class SettingsEvent extends AbstractEvent<SettingsEvent.Type> {
     }
 
     public enum Type {
-        CHANGED
+        CHANGED, APPLIED
     }
 }

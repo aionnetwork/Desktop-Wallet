@@ -18,6 +18,6 @@ public class AccountEvent extends AbstractEvent<AccountEvent.Type> {
     }
 
     public enum Type {
-        CHANGED, UNLOCKED, LOCKED
+        CHANGED, UNLOCKED, ADDED, LOCKED
     }
 }

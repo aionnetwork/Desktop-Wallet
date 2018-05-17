@@ -12,7 +12,6 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.Popup;
-import org.aion.api.log.AionLoggerFactory;
 import org.aion.api.log.LogEnum;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.events.EventBusFactory;
@@ -58,13 +57,11 @@ public class AddAccountDialog {
             }
 
             EventBusFactory.getBus(HeaderPaneButtonEvent.ID).post(new HeaderPaneButtonEvent(HeaderPaneButtonEvent.Type.OVERVIEW));
-        }
-        else {
+        } else {
             String error = "";
-            if(newPassword.getText().isEmpty() || retypedPassword.getText().isEmpty()) {
+            if (newPassword.getText().isEmpty() || retypedPassword.getText().isEmpty()) {
                 error = "Please complete the fields!";
-            }
-            else if(!newPassword.getText().equals(retypedPassword.getText())) {
+            } else if (!newPassword.getText().equals(retypedPassword.getText())) {
                 error = "Passwords don't match!";
             }
             showInvalidFieldsError(error);

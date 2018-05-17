@@ -7,18 +7,13 @@ import org.aion.wallet.util.ConfigUtils;
 
 import java.math.BigInteger;
 
-public class SendRequestDTO implements UnlockableAccount {
+public class SendRequestDTO {
     private String from;
     private String password;
     private String to;
     private Long nrg;
     private BigInteger nrgPrice;
     private BigInteger value;
-
-    @Override
-    public String getAddress() {
-        return this.from;
-    }
 
     public String getPassword() {
         return password;

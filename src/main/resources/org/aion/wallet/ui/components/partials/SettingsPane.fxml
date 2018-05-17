@@ -13,10 +13,10 @@
             <VBox>
                 <Label text="Protocol" styleClass="paragraph-text" alignment="CENTER"/>
                 <TextField fx:id="protocol" prefColumnCount="30"/>
-                <Label styleClass="paragraph-text" alignment="CENTER"/>
+                <Label/>
                 <Label text="Address" styleClass="paragraph-text" alignment="CENTER"/>
                 <TextField fx:id="address" prefColumnCount="30"/>
-                <Label styleClass="paragraph-text" alignment="CENTER"/>
+                <Label/>
                 <Label text="Port" styleClass="paragraph-text" alignment="CENTER"/>
                 <TextField fx:id="port" prefColumnCount="30"/>
             </VBox>
@@ -30,7 +30,7 @@
         <HBox alignment="BASELINE_RIGHT">
             <Button text="Apply" onMouseClicked="#changeSettings" styleClass="disabled"/>
         </HBox>
-        <Label fx:id="notification" styleClass="paragraph-text" alignment="CENTER"/>
+        <Label fx:id="notification" alignment="CENTER"/>
         <ScrollPane VBox.vgrow="NEVER" hbarPolicy="NEVER" vbarPolicy="NEVER" prefViewportHeight="250"
                     prefViewportWidth="830"/>
     </VBox>

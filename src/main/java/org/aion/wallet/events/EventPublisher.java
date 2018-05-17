@@ -12,17 +12,27 @@ public class EventPublisher {
         }
     }
 
-    public static void fireAccountChanged(final AccountDTO account) {
+    public static void fireAccountAdded(final AccountDTO account) {
         if (account != null) {
-            EventBusFactory.getBus(AccountEvent.ID)
-                    .post(new AccountEvent(AccountEvent.Type.CHANGED, account));
+            EventBusFactory.getBus(AccountEvent.ID).post(new AccountEvent(AccountEvent.Type.ADDED, account));
         }
     }
 
-    public static void fireUnlockAccount(final AccountDTO account) {
+    public static void fireAccountChanged(final AccountDTO account) {
         if (account != null) {
-            EventBusFactory.getBus(AccountEvent.ID)
-                    .post(new AccountEvent(AccountEvent.Type.UNLOCKED, account));
+            EventBusFactory.getBus(AccountEvent.ID).post(new AccountEvent(AccountEvent.Type.CHANGED, account));
+        }
+    }
+
+    public static void fireAccountUnlocked(final AccountDTO account) {
+        if (account != null) {
+            EventBusFactory.getBus(AccountEvent.ID).post(new AccountEvent(AccountEvent.Type.UNLOCKED, account));
+        }
+    }
+
+    public static void fireAccountLocked(final AccountDTO account) {
+        if (account != null) {
+            EventBusFactory.getBus(AccountEvent.ID).post(new AccountEvent(AccountEvent.Type.UNLOCKED, account));
         }
     }
 
@@ -32,5 +42,9 @@ public class EventPublisher {
 
     public static void fireApplicationSettingsChanged(final LightAppSettings settings) {
         EventBusFactory.getBus(SettingsEvent.ID).post(new SettingsEvent(SettingsEvent.Type.CHANGED, settings));
+    }
+
+    public static void fireApplicationSettingsApplied(final LightAppSettings settings) {
+        EventBusFactory.getBus(SettingsEvent.ID).post(new SettingsEvent(SettingsEvent.Type.APPLIED, settings));
     }
 }

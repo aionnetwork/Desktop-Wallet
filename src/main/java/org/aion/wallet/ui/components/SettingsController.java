@@ -7,11 +7,12 @@ import javafx.scene.control.TextField;
 import org.aion.api.log.LogEnum;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.dto.LightAppSettings;
-import org.aion.wallet.exception.ValidationException;
-import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.events.EventBusFactory;
 import org.aion.wallet.events.EventPublisher;
 import org.aion.wallet.events.HeaderPaneButtonEvent;
+import org.aion.wallet.events.SettingsEvent;
+import org.aion.wallet.exception.ValidationException;
+import org.aion.wallet.log.WalletLoggerFactory;
 import org.slf4j.Logger;
 
 import java.net.URL;
@@ -44,6 +45,7 @@ public class SettingsController extends AbstractController {
     @Override
     protected void registerEventBusConsumer() {
         EventBusFactory.getBus(HeaderPaneButtonEvent.ID).register(this);
+        EventBusFactory.getBus(SettingsEvent.ID).register(this);
     }
 
     public void changeSettings() {
@@ -51,10 +53,11 @@ public class SettingsController extends AbstractController {
         try {
             newSettings = new LightAppSettings(address.getText().trim(), port.getText().trim(),
                     protocol.getText().trim(), this.settings.getType(), timeout.getText());
+            notification.setText("");
             EventPublisher.fireApplicationSettingsChanged(newSettings);
-            notification.setText("Changes applied");
         } catch (ValidationException e) {
             log.error(e.getMessage(), e);
+            notification.getStyleClass().add(ERROR_STYLE);
             notification.setText(e.getMessage());
         }
     }
@@ -66,12 +69,21 @@ public class SettingsController extends AbstractController {
         }
     }
 
+    @Subscribe
+    private void handleSettingsChanged(final SettingsEvent event) {
+        if (SettingsEvent.Type.APPLIED.equals(event.getType())) {
+            notification.getStyleClass().removeAll(ERROR_STYLE);
+            notification.setText("Changes applied");
+        }
+    }
+
     private void reloadView() {
         settings = blockchainConnector.getSettings();
         protocol.setText(settings.getProtocol());
         address.setText(settings.getAddress());
         port.setText(settings.getPort());
         timeout.setText(settings.getUnlockTimeout().toString().substring(2).toLowerCase());
+        notification.getStyleClass().removeAll(ERROR_STYLE);
         notification.setText("");
     }
 }

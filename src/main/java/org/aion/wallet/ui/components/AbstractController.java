@@ -24,6 +24,8 @@ public abstract class AbstractController implements Initializable {
 
     private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
 
+    protected static final String ERROR_STYLE = "error-label";
+
     @FXML
     private Node parent;
 

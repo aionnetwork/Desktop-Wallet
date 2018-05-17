@@ -16,7 +16,6 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import org.aion.api.log.AionLoggerFactory;
 import org.aion.api.log.LogEnum;
-import org.aion.wallet.events.AccountEvent;
 import org.aion.wallet.events.EventBusFactory;
 import org.aion.wallet.events.UiMessageEvent;
 import org.slf4j.Logger;
@@ -66,9 +65,11 @@ public class MnemonicDialog implements Initializable{
         registerEventBusConsumer();
     }
     @Subscribe
-    private void handleReceivedMnemonic(String mnemonic) {
-        mnemonicTextArea.setText(mnemonic);
-        mnemonicTextArea.setEditable(false);
+    private void handleReceivedMnemonic(UiMessageEvent event) {
+        if (UiMessageEvent.Type.MNEMONIC_CREATED.equals(event.getType())) {
+            mnemonicTextArea.setText(event.getMnemonic());
+            mnemonicTextArea.setEditable(false);
+        }
     }
 
     private void registerEventBusConsumer() {

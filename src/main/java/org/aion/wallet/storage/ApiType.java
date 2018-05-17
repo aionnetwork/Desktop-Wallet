@@ -1,5 +1,5 @@
 package org.aion.wallet.storage;
 
 public enum ApiType {
-    JAVA, WEB3
+    JAVA, CORE, WEB3
 }

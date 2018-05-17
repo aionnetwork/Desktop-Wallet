@@ -1,10 +1,6 @@
 package org.aion.wallet.connector.api;
 
 import com.google.common.eventbus.Subscribe;
-import io.github.novacrypto.bip39.MnemonicGenerator;
-import io.github.novacrypto.bip39.SeedCalculator;
-import io.github.novacrypto.bip39.Words;
-import io.github.novacrypto.bip39.wordlists.English;
 import org.aion.api.IAionAPI;
 import org.aion.api.impl.AionAPIImpl;
 import org.aion.api.log.LogEnum;
@@ -13,16 +9,11 @@ import org.aion.base.type.Address;
 import org.aion.base.type.Hash256;
 import org.aion.base.util.ByteArrayWrapper;
 import org.aion.base.util.TypeConverter;
-import org.aion.crypto.ECKey;
-import org.aion.crypto.ECKeyFac;
-import org.aion.mcf.account.Keystore;
-import org.aion.mcf.account.KeystoreFormat;
-import org.aion.mcf.account.KeystoreItem;
+import org.aion.wallet.account.AccountManager;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.connector.dto.SendRequestDTO;
 import org.aion.wallet.connector.dto.SyncInfoDTO;
 import org.aion.wallet.connector.dto.TransactionDTO;
-import org.aion.wallet.crypto.SeededECKeyEd25519;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.dto.LightAppSettings;
 import org.aion.wallet.events.AccountEvent;
@@ -33,17 +24,14 @@ import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.storage.ApiType;
-import org.aion.wallet.storage.WalletStorage;
 import org.aion.wallet.util.AionConstants;
-import org.aion.wallet.util.BalanceUtils;
 import org.slf4j.Logger;
 
-import java.io.IOException;
 import java.math.BigInteger;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.security.SecureRandom;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -61,35 +49,35 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     private static final int DISCONNECT_TIMER = 3000;
 
-    private final Map<String, AccountDTO> addressToAccount = new HashMap<>();
-
-    private final Map<String, SortedSet<TransactionDTO>> addressToTransactions = Collections.synchronizedMap(new HashMap<>());
-
-    private final Map<String, TxInfo> addressToLastTxInfo = Collections.synchronizedMap(new HashMap<>());
-
     private final ExecutorService backgroundExecutor = Executors.newSingleThreadExecutor();
-
-    private final Comparator<? super TransactionDTO> transactionComparator = new TransactionComparator();
 
     private LightAppSettings lightAppSettings = getLightweightWalletSettings(ApiType.JAVA);
 
     private Future<?> connectionFuture;
 
+    private AccountManager accountManager;
+
+    private String connectionString;
 
     public ApiBlockchainConnector() {
-        connect();
-        loadLocallySavedAccounts();
-        backgroundExecutor.submit(() -> processNewTransactions(0, addressToAccount.keySet()));
+        connect(getConnectionString());
+        accountManager = new AccountManager(lightAppSettings, this::getBalance, this::getCurrency);
+        backgroundExecutor.submit(() -> processNewTransactions(0, accountManager.getAddresses()));
+        registerEventBusConsumer();
+    }
+
+    private void registerEventBusConsumer() {
         EventBusFactory.getBus(AccountEvent.ID).register(this);
         EventBusFactory.getBus(SettingsEvent.ID).register(this);
     }
 
-    private void connect() {
+    private void connect(final String newConnectionString) {
+        connectionString = newConnectionString;
         if (connectionFuture != null) {
             connectionFuture.cancel(true);
         }
         connectionFuture = backgroundExecutor.submit(() -> {
-            API.connect(getConnectionString(), true);
+            API.connect(newConnectionString, true);
             EventPublisher.fireOperationFinished();
         });
     }
@@ -104,148 +92,37 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         }
     }
 
-    private void loadLocallySavedAccounts() {
-        for (String address : Keystore.list()) {
-            addressToAccount.put(address, getAccount(address));
-            addressToTransactions.put(address, new TreeSet<>(transactionComparator));
-            addressToLastTxInfo.put(address, new TxInfo(0, -1));
-        }
-    }
-
     @Override
     public String createAccount(final String password, final String name) {
-        StringBuilder sb = new StringBuilder();
-        byte[] entropy = new byte[Words.TWELVE.byteLength()];
-        new SecureRandom().nextBytes(entropy);
-        new MnemonicGenerator(English.INSTANCE)
-                .createMnemonic(entropy, sb::append);
-        byte[] seed = new SeedCalculator().calculateSeed(sb.toString(), "");
-        SeededECKeyEd25519 seededKey = new SeededECKeyEd25519(seed);
-        final String address = Keystore.create(password, seededKey);
-        final ECKey ecKey = Keystore.getKey(address, password);
-        if (ecKey != null) {
-            final AccountDTO account = createAccountWithPrivateKey(address, ecKey.getPrivKeyBytes());
-            account.setName(name);
-            processAccountAdded(address, true);
-            storeAccountName(address, name);
-            return sb.toString();
-        } else {
-            log.error("An exception occurred while creating the new account: ");
-            return null;
-        }
+        return accountManager.createAccount(password, name);
     }
 
     @Override
-    public AccountDTO addKeystoreUTCFile(final byte[] file, final String password, final boolean shouldKeep) throws ValidationException {
-        try {
-            ECKey key = KeystoreFormat.fromKeystore(file, password);
-            if (key == null) {
-                throw new ValidationException("Could Not extract ECKey from keystore file");
-            }
-            KeystoreItem keystoreItem = KeystoreItem.parse(file);
-            String address = keystoreItem.getAddress();
-            final AccountDTO accountDTO;
-            if (!Keystore.exist(address) && shouldKeep) {
-                address = Keystore.create(password, key);
-                accountDTO = createAccountWithPrivateKey(address, key.getPrivKeyBytes());
-            } else {
-                accountDTO = addressToAccount.getOrDefault(address, createAccountWithPrivateKey(address, key.getPrivKeyBytes()));
-            }
-            processAccountAdded(accountDTO.getPublicAddress(), false);
-            return accountDTO;
-        } catch (final Exception e) {
-            throw new ValidationException("Could not open Keystore File", e);
-        }
+    public AccountDTO importKeystoreFile(final byte[] file, final String password, final boolean shouldKeep) throws ValidationException {
+        return accountManager.importKeystore(file, password, shouldKeep);
     }
 
     @Override
-    public AccountDTO addPrivateKey(final byte[] raw, final String password, final boolean shouldKeep) throws ValidationException {
-        try {
-            ECKey key = ECKeyFac.inst().fromPrivate(raw);
-            String address = Keystore.create(password, key);
-            if (!address.equals("0x")) {
-                if (!shouldKeep) {
-                    removeKeystoreFile(address);
-                }
-                log.info("The private key was imported, the address is: " + address);
-                final AccountDTO account = createAccountWithPrivateKey(address, raw);
-                processAccountAdded(account.getPublicAddress(), false);
-                return account;
-            } else {
-                log.info("Failed to import the private key. Already exists?");
-                return null;
-            }
-        } catch (Exception e) {
-            throw new ValidationException("Unsupported key type", e);
-        }
+    public AccountDTO importPrivateKey(final byte[] raw, final String password, final boolean shouldKeep) throws ValidationException {
+        return accountManager.importPrivateKey(raw, password, shouldKeep);
     }
 
     @Override
-    public AccountDTO importAccountWithMnemonic(final String mnemonic, final String password) {
-        byte[] seed = new SeedCalculator().calculateSeed(mnemonic, "");
-        String publicAddress = Keystore.create(password, new SeededECKeyEd25519(seed));
-        ECKey someKey = Keystore.getKey(publicAddress, password);
-        if(someKey != null) {
-            return createAccountWithPrivateKey(publicAddress, someKey.getPrivKeyBytes());
-        }
-        return null;
+    public AccountDTO importMnemonic(final String mnemonic, final String password, boolean shouldKeep) throws ValidationException {
+        return accountManager.importMnemonic(mnemonic, password, shouldKeep);
     }
 
-    private void processAccountAdded(final String address, final boolean isCreated) {
-        addressToLastTxInfo.put(address, new TxInfo(isCreated ? -1 : 0, -1));
-        addressToTransactions.put(address, new TreeSet<>(transactionComparator));
-        backgroundExecutor.submit(() -> processNewTransactions(0, Collections.singleton(address)));
-    }
-
-    private AccountDTO createAccountWithPrivateKey(final String address, final byte[] privKeyBytes) {
-        final String name = getStoredAccountName(address);
-        final String balance = BalanceUtils.formatBalance(getBalance(address));
-        AccountDTO account = new AccountDTO(name, address, balance, getCurrency());
-        account.setPrivateKey(privKeyBytes);
-        addressToAccount.put(account.getPublicAddress(), account);
-        return account;
-    }
-
-    private void removeKeystoreFile(final String address) {
-        if (Keystore.exist(address)) {
-            final String unwrappedAddress = address.substring(2);
-            Arrays.stream(Keystore.list())
-                    .filter(s -> s.contains(unwrappedAddress))
-                    .forEach(account -> removeAssociatedKeyStoreFile(unwrappedAddress));
-        }
-    }
-
-    private void removeAssociatedKeyStoreFile(final String unwrappedAddress) {
-        try {
-            for (Path keystoreFile : Files.newDirectoryStream(WalletStorage.KEYSTORE_PATH)) {
-                if (keystoreFile.toString().contains(unwrappedAddress)) {
-                    Files.deleteIfExists(keystoreFile);
-                }
-            }
-        } catch (IOException e) {
-            log.error(e.getMessage(), e);
-        }
-    }
-
-    @Override
     public AccountDTO getAccount(final String publicAddress) {
-        final String name = getStoredAccountName(publicAddress);
-        final String balance = BalanceUtils.formatBalance(getBalance(publicAddress));
-        return new AccountDTO(name, publicAddress, balance, getCurrency());
+        return accountManager.getAccount(publicAddress);
     }
 
     @Override
     public List<AccountDTO> getAccounts() {
-        for (Map.Entry<String, AccountDTO> entry : addressToAccount.entrySet()) {
-            AccountDTO account = entry.getValue();
-            account.setBalance(BalanceUtils.formatBalance(getBalance(account.getPublicAddress())));
-            entry.setValue(account);
-        }
-        return new ArrayList<>(addressToAccount.values());
+        return accountManager.getAccounts();
     }
 
     @Override
-    public BigInteger getBalance(final String address) {
+    public final BigInteger getBalance(final String address) {
         lock();
         final BigInteger balance;
         try {
@@ -277,7 +154,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         try {
             response = API.getTx().sendSignedTransaction(
                     txArgs,
-                    new ByteArrayWrapper((addressToAccount.get(dto.getFrom())).getPrivateKey()),
+                    new ByteArrayWrapper((accountManager.getAccount(dto.getFrom())).getPrivateKey()),
                     dto.getPassword()
             ).getObject();
         } finally {
@@ -305,9 +182,9 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     @Override
     public List<TransactionDTO> getLatestTransactions(final String address) {
-        long lastBlockToCheck = addressToLastTxInfo.get(address).getLastCheckedBlock();
+        long lastBlockToCheck = accountManager.getLastTxInfo(address).getLastCheckedBlock();
         processNewTransactions(lastBlockToCheck, Collections.singleton(address));
-        return new ArrayList<>(addressToTransactions.getOrDefault(address, Collections.emptySortedSet()));
+        return new ArrayList<>(accountManager.getTransactions(address));
     }
 
     @Override
@@ -363,7 +240,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     }
 
     @Override
-    public String getCurrency() {
+    public final String getCurrency() {
         return AionConstants.CCY;
     }
 
@@ -375,15 +252,21 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     @Override
     public void reloadSettings(final LightAppSettings settings) {
-        super.reloadSettings(settings);
-        lightAppSettings = getLightweightWalletSettings(ApiType.JAVA);
-        disconnect();
-        try {
-            Thread.sleep(DISCONNECT_TIMER);
-        } catch (InterruptedException e) {
-            log.error(e.getMessage(), e);
+        if (!lightAppSettings.equals(settings)) {
+            super.reloadSettings(settings);
+            lightAppSettings = getLightweightWalletSettings(ApiType.JAVA);
+            final String newConnectionString = getConnectionString();
+            if (!newConnectionString.equalsIgnoreCase(this.connectionString)) {
+                disconnect();
+                try {
+                    Thread.sleep(DISCONNECT_TIMER);
+                } catch (InterruptedException e) {
+                    log.error(e.getMessage(), e);
+                }
+                connect(newConnectionString);
+            }
+            EventPublisher.fireApplicationSettingsApplied(settings);
         }
-        connect();
     }
 
     @Override
@@ -392,25 +275,27 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     }
 
     @Subscribe
-    private void handleAccountChanged(final AccountEvent event) {
+    private void handleAccountEvent(final AccountEvent event) {
+        final AccountDTO account = event.getAccount();
         if (AccountEvent.Type.CHANGED.equals(event.getType())) {
-            final AccountDTO account = event.getAccount();
-            if (!account.getName().equalsIgnoreCase(getStoredAccountName(account.getPublicAddress()))) {
-                storeAccountName(account.getPublicAddress(), account.getName());
-            }
+            accountManager.updateAccount(account);
+        } else if (AccountEvent.Type.ADDED.equals(event.getType())) {
+            backgroundExecutor.submit(() -> processNewTransactions(0, Collections.singleton(account.getPublicAddress())));
         }
     }
 
     @Subscribe
     private void handleSettingsChanged(final SettingsEvent event) {
-        final LightAppSettings settings = event.getSettings();
-        if (settings != null) {
-            reloadSettings(settings);
+        if (SettingsEvent.Type.CHANGED.equals(event.getType())) {
+            final LightAppSettings settings = event.getSettings();
+            if (settings != null) {
+                reloadSettings(settings);
+            }
         }
     }
 
     private BigInteger getLatestTransactionNonce(final String address) {
-        final TxInfo transactionInfo = addressToLastTxInfo.get(address);
+        final TxInfo transactionInfo = accountManager.getLastTxInfo(address);
         final long lastCheckedBlock = transactionInfo.getLastCheckedBlock();
         long lastKnownTxCount = transactionInfo.getTxCount();
         if (lastCheckedBlock >= 0) {
@@ -428,8 +313,8 @@ public class ApiBlockchainConnector extends BlockchainConnector {
                 blk.forEach(getBlockDetailsConsumer(latest, addresses));
             }
             for (String address : addresses) {
-                final long txCount = addressToLastTxInfo.get(address).getTxCount();
-                addressToLastTxInfo.put(address, new TxInfo(latest, txCount));
+                final long txCount = accountManager.getLastTxInfo(address).getTxCount();
+                accountManager.updateTxInfo(address, new TxInfo(latest, txCount));
             }
         }
     }
@@ -439,7 +324,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
             if (blockDetails != null) {
                 final long timestamp = blockDetails.getTimestamp();
                 for (final String address : addresses) {
-                    Set<TransactionDTO> txs = addressToTransactions.get(address);
+                    Set<TransactionDTO> txs = accountManager.getTransactions(address);
                     txs.addAll(blockDetails.getTxDetails().stream()
                             .filter(t -> TypeConverter.toJsonHex(t.getFrom().toString()).equals(address)
                                     || TypeConverter.toJsonHex(t.getTo().toString()).equals(address))
@@ -510,11 +395,11 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     private TransactionDTO recordTransaction(final String address, final TxDetails transaction, final long timeStamp, final long lastCheckedBlock) {
         final TransactionDTO transactionDTO = mapTransaction(transaction, timeStamp);
-        final long txCount = addressToLastTxInfo.get(address).getTxCount();
+        final long txCount = accountManager.getLastTxInfo(address).getTxCount();
         if (transactionDTO.getFrom().equals(address)) {
             final long txNonce = transaction.getNonce().longValue();
             if (txCount < txNonce) {
-                addressToLastTxInfo.put(address, new TxInfo(lastCheckedBlock, txNonce));
+                accountManager.updateTxInfo(address, new TxInfo(lastCheckedBlock, txNonce));
             }
         }
         return transactionDTO;
@@ -525,14 +410,5 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         final String ip = lightAppSettings.getAddress();
         final String port = lightAppSettings.getPort();
         return protocol + "://" + ip + ":" + port;
-    }
-
-    private class TransactionComparator implements Comparator<TransactionDTO> {
-        @Override
-        public int compare(final TransactionDTO tx1, final TransactionDTO tx2) {
-            return tx1 == null ?
-                    (tx2 == null ? 0 : -1) :
-                    (tx2 == null ? 1 : Long.compare(tx2.getTimeStamp(), tx1.getTimeStamp()));
-        }
     }
 }

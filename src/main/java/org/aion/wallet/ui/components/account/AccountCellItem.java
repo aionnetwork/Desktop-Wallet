@@ -109,7 +109,7 @@ public class AccountCellItem extends ListCell<AccountDTO> {
         final AccountDTO modifiedAccount = this.getItem();
         if (!modifiedAccount.isUnlocked()) {
             accountUnlockDialog.open(mouseEvent);
-            EventPublisher.fireUnlockAccount(modifiedAccount);
+            EventPublisher.fireAccountUnlocked(modifiedAccount);
         } else {
             modifiedAccount.setActive(true);
             EventPublisher.fireAccountChanged(modifiedAccount);
