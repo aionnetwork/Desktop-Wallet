@@ -33,7 +33,7 @@ public class SendController extends AbstractController {
 
     private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
 
-    private static final String ERROR_LABEL = "error-label";
+    private static final String ERROR_STYLE = "error-label";
 
     private static final String PENDING_MESSAGE = "Sending transaction...";
 
@@ -70,34 +70,33 @@ public class SendController extends AbstractController {
             dto = mapFormData();
         } catch (ValidationException e) {
             log.error(e.getMessage(), e);
-            setErrorStatus(e.getMessage());
+            displayStatus(e.getMessage(), true);
             return;
         }
-        setNormalStatus(PENDING_MESSAGE);
+        displayStatus(PENDING_MESSAGE, false);
 
         final Task<String> sendTransactionTask = getApiTask(this::sendTransaction, dto);
 
         runApiTask(
                 sendTransactionTask,
                 evt -> handleTransactionFinished(sendTransactionTask.getValue()),
-                getErrorEvent(t -> Optional.ofNullable(t.getCause()).ifPresent(cause -> setErrorStatus(cause.getMessage())), sendTransactionTask),
+                getErrorEvent(t -> Optional.ofNullable(t.getCause()).ifPresent(cause -> displayStatus(cause.getMessage(), true)), sendTransactionTask),
                 getEmptyEvent()
         );
     }
 
     private void handleTransactionFinished(final String txHash) {
         log.info("%s: %s", SUCCESS_MESSAGE, txHash);
-        setNormalStatus(SUCCESS_MESSAGE);
+        displayStatus(SUCCESS_MESSAGE, false);
         EventPublisher.fireOperationFinished();
     }
 
-    private void setErrorStatus(final String message) {
-        txStatusLabel.getStyleClass().add(ERROR_LABEL);
-        txStatusLabel.setText(message);
-    }
-
-    private void setNormalStatus(final String message) {
-        txStatusLabel.getStyleClass().removeAll(ERROR_LABEL);
+    private void displayStatus(final String message, final boolean isError) {
+        if (isError) {
+            txStatusLabel.getStyleClass().add(ERROR_STYLE);
+        } else {
+            txStatusLabel.getStyleClass().removeAll(ERROR_STYLE);
+        }
         txStatusLabel.setText(message);
     }
 
