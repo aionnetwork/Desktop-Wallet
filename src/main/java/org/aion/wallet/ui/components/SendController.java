@@ -26,11 +26,18 @@ import org.slf4j.Logger;
 
 import java.math.BigInteger;
 import java.net.URL;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class SendController extends AbstractController {
 
     private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
+
+    private static final String ERROR_STYLE = "error-label";
+
+    private static final String PENDING_MESSAGE = "Sending transaction...";
+
+    private static final String SUCCESS_MESSAGE = "Transaction finished";
 
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
 
@@ -63,24 +70,34 @@ public class SendController extends AbstractController {
             dto = mapFormData();
         } catch (ValidationException e) {
             log.error(e.getMessage(), e);
+            displayStatus(e.getMessage(), true);
             return;
         }
-        txStatusLabel.setText("Sending transaction...");
+        displayStatus(PENDING_MESSAGE, false);
 
         final Task<String> sendTransactionTask = getApiTask(this::sendTransaction, dto);
 
         runApiTask(
                 sendTransactionTask,
                 evt -> handleTransactionFinished(sendTransactionTask.getValue()),
-                getErrorEvent(t -> txStatusLabel.setText(t.getMessage()), sendTransactionTask),
+                getErrorEvent(t -> Optional.ofNullable(t.getCause()).ifPresent(cause -> displayStatus(cause.getMessage(), true)), sendTransactionTask),
                 getEmptyEvent()
         );
     }
 
     private void handleTransactionFinished(final String txHash) {
-        log.info("Transaction finished: " + txHash);
-        txStatusLabel.setText("Transaction Finished");
+        log.info("%s: %s", SUCCESS_MESSAGE, txHash);
+        displayStatus(SUCCESS_MESSAGE, false);
         EventPublisher.fireOperationFinished();
+    }
+
+    private void displayStatus(final String message, final boolean isError) {
+        if (isError) {
+            txStatusLabel.getStyleClass().add(ERROR_STYLE);
+        } else {
+            txStatusLabel.getStyleClass().removeAll(ERROR_STYLE);
+        }
+        txStatusLabel.setText(message);
     }
 
     private String sendTransaction(final SendRequestDTO sendRequestDTO) {

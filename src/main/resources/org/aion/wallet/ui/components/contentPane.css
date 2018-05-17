@@ -91,4 +91,7 @@
     -fx-text-fill: blue;
     -fx-underline: true ;
     -fx-cursor: hand;
+
+.error-label {
+    -fx-text-fill: RED;
 }
