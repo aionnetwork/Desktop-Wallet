@@ -44,6 +44,7 @@ public class AddAccountDialog {
 
     public void createAccount() {
         resetValidation();
+
         if (validateFields()) {
             blockchainConnector.createAccount(newPassword.getText(), newAccountName.getText());
             EventBusFactory.getBus(HeaderPaneButtonEvent.ID).post(new HeaderPaneButtonEvent(HeaderPaneButtonEvent.Type.OVERVIEW));

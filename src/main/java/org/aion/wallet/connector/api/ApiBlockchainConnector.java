@@ -1,6 +1,10 @@
 package org.aion.wallet.connector.api;
 
 import com.google.common.eventbus.Subscribe;
+import io.github.novacrypto.bip39.MnemonicGenerator;
+import io.github.novacrypto.bip39.SeedCalculator;
+import io.github.novacrypto.bip39.Words;
+import io.github.novacrypto.bip39.wordlists.English;
 import org.aion.api.IAionAPI;
 import org.aion.api.impl.AionAPIImpl;
 import org.aion.api.log.LogEnum;
@@ -18,6 +22,7 @@ import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.connector.dto.SendRequestDTO;
 import org.aion.wallet.connector.dto.SyncInfoDTO;
 import org.aion.wallet.connector.dto.TransactionDTO;
+import org.aion.wallet.crypto.SeededECKeyEd25519;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.dto.LightAppSettings;
 import org.aion.wallet.exception.NotFoundException;
@@ -35,6 +40,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.SecureRandom;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -106,7 +112,15 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     @Override
     public void createAccount(final String password, final String name) {
-        final String address = Keystore.create(password);
+        StringBuilder sb = new StringBuilder();
+        byte[] entropy = new byte[Words.TWELVE.byteLength()];
+        new SecureRandom().nextBytes(entropy);
+        new MnemonicGenerator(English.INSTANCE)
+                .createMnemonic(entropy, sb::append);
+        System.out.println(sb.toString());
+        byte[] seed = new SeedCalculator().calculateSeed(sb.toString(), password);
+        SeededECKeyEd25519 seededKey = new SeededECKeyEd25519(seed);
+        final String address = Keystore.create(password, seededKey);
         final ECKey ecKey = Keystore.getKey(address, password);
         if (ecKey != null) {
             final AccountDTO account = createAccountWithPrivateKey(address, ecKey.getPrivKeyBytes());
