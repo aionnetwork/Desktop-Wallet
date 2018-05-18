@@ -139,6 +139,11 @@ public class CoreBlockchainConnector extends BlockchainConnector {
         return API.peerCount();
     }
 
+    @Override
+    public AccountDTO importAccountWithMnemonic(final String mnemonic, final String password) {
+        throw new UnsupportedOperationException();
+    }
+
     @Subscribe
     private void handleAccountChanged(final AccountDTO account) {
         storeAccountName(account.getPublicAddress(), account.getName());

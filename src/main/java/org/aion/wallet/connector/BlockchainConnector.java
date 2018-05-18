@@ -90,6 +90,8 @@ public abstract class BlockchainConnector {
 
     public abstract LightAppSettings getSettings();
 
+    public abstract AccountDTO importAccountWithMnemonic(final String mnemonic, final String password);
+
     protected final void lock(){
         lock.lock();
     }

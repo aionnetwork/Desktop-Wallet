@@ -1,5 +1,11 @@
 package org.aion.wallet.ui.components.partials;
 
+import io.github.novacrypto.bip39.MnemonicValidator;
+import io.github.novacrypto.bip39.Validation.InvalidChecksumException;
+import io.github.novacrypto.bip39.Validation.InvalidWordCountException;
+import io.github.novacrypto.bip39.Validation.UnexpectedWhiteSpaceException;
+import io.github.novacrypto.bip39.Validation.WordNotFoundException;
+import io.github.novacrypto.bip39.wordlists.English;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -42,6 +48,8 @@ public class ImportAccountDialog implements Initializable {
 
     private static final String KEYSTORE_RADIO_BUTTON_ID = "KEYSTORE_RB";
 
+    private static final String MNEMONIC_RADIO_BUTTON_ID = "MNEMONIC_RB";
+
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
 
     @FXML
@@ -63,6 +71,9 @@ public class ImportAccountDialog implements Initializable {
     private RadioButton keystoreRadioButton;
 
     @FXML
+    private RadioButton mnemonicRadioButton;
+
+    @FXML
     private ToggleGroup accountTypeToggleGroup;
 
     @FXML
@@ -70,6 +81,15 @@ public class ImportAccountDialog implements Initializable {
 
     @FXML
     private VBox importPrivateKeyView;
+
+    @FXML
+    private VBox importMnemonicView;
+
+    @FXML
+    public TextField mnemonicTextField;
+
+    @FXML
+    public PasswordField mnemonicPasswordField;
 
     @FXML
     private CheckBox rememberAccount;
@@ -109,7 +129,7 @@ public class ImportAccountDialog implements Initializable {
                 validationError.setVisible(true);
                 return;
             }
-        } else {
+        } else if(importPrivateKeyView.isVisible()){
             String password = privateKeyPassword.getText();
             String privateKey = privateKeyInput.getText();
             if (password != null && !password.isEmpty() && privateKey != null && !privateKey.isEmpty()) {
@@ -121,6 +141,47 @@ public class ImportAccountDialog implements Initializable {
                 try {
                     account = blockchainConnector.addPrivateKey(raw, password, rememberAccount.isSelected());
                 } catch (ValidationException e) {
+                    log.error(e.getMessage(), e);
+                    return;
+                }
+            }
+            else {
+                validationError.setText("Please complete the fields!");
+                validationError.setVisible(true);
+                return;
+            }
+        }
+        else if(importMnemonicView.isVisible()) {
+            String mnemonic = mnemonicTextField.getText();
+            String mnemonicPassword = mnemonicPasswordField.getText();
+            if(mnemonic != null && !mnemonic.isEmpty() && mnemonicPassword != null && !mnemonicPassword.isEmpty()) {
+                try {
+                    MnemonicValidator
+                            .ofWordList(English.INSTANCE)
+                            .validate(mnemonicTextField.getText());
+                    account = blockchainConnector.importAccountWithMnemonic(mnemonicTextField.getText(), mnemonicPasswordField.getText());
+                } catch (UnexpectedWhiteSpaceException e) {
+                    validationError.setText("There are spaces in the mnemonic!");
+                    validationError.setVisible(true);
+
+                    log.error(e.getMessage(), e);
+                    return;
+                } catch (InvalidWordCountException e) {
+                    validationError.setText("Mnemonic word length is invalid!");
+                    validationError.setVisible(true);
+
+                    log.error(e.getMessage(), e);
+                    return;
+                } catch (InvalidChecksumException e) {
+                    validationError.setText("Invalid mnemonic!");
+                    validationError.setVisible(true);
+
+                    log.error(e.getMessage(), e);
+                    return;
+                } catch (WordNotFoundException e) {
+                    validationError.setText("Word in mnemonic was not found!");
+                    validationError.setVisible(true);
+
                     log.error(e.getMessage(), e);
                     return;
                 }
@@ -171,6 +232,7 @@ public class ImportAccountDialog implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         privateKeyRadioButton.setUserData(PK_RADIO_BUTTON_ID);
         keystoreRadioButton.setUserData(KEYSTORE_RADIO_BUTTON_ID);
+        mnemonicRadioButton.setUserData(MNEMONIC_RADIO_BUTTON_ID);
         accountTypeToggleGroup.selectedToggleProperty().addListener(this::radioButtonChanged);
     }
 
@@ -192,10 +254,17 @@ public class ImportAccountDialog implements Initializable {
                 case PK_RADIO_BUTTON_ID:
                     importPrivateKeyView.setVisible(true);
                     importKeystoreView.setVisible(false);
+                    importMnemonicView.setVisible(false);
                     break;
                 case KEYSTORE_RADIO_BUTTON_ID:
                     importPrivateKeyView.setVisible(false);
                     importKeystoreView.setVisible(true);
+                    importMnemonicView.setVisible(false);
+                    break;
+                case MNEMONIC_RADIO_BUTTON_ID:
+                    importPrivateKeyView.setVisible(false);
+                    importKeystoreView.setVisible(false);
+                    importMnemonicView.setVisible(true);
                     break;
             }
         }

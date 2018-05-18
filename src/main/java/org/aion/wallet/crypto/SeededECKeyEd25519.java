@@ -16,10 +16,6 @@ public class SeededECKeyEd25519 extends ECKeyEd25519 {
     public SeededECKeyEd25519(final byte[] seed) {
         publicKey = new byte[PUBKEY_BYTES];
         secretKey = new byte[SECKEY_BYTES];
-        final int expectedSeedLength = Sodium.crypto_sign_ed25519_seedbytes();
-        if (seed.length != expectedSeedLength) {
-            throw new IllegalArgumentException(String.format("Seed has %s length and should be %s", seed.length, expectedSeedLength));
-        }
         Sodium.crypto_sign_ed25519_seed_keypair(publicKey, secretKey, seed);
         address = computeAddress(publicKey);
     }
