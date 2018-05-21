@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import java.net.URL?>
+<?import javafx.scene.control.Button?>
+<AnchorPane prefHeight="450.0" prefWidth="350.0"
+            xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="org.aion.wallet.ui.components.partials.MnemonicDialog"
+            styleClass="anchor-pane">
+    <stylesheets>
+        <URL value="@dialog.css"/>
+    </stylesheets>
+
+    <Label AnchorPane.leftAnchor="90" AnchorPane.topAnchor="100" text="Please write down the following words!" styleClass="main-text" />
+
+    <Button AnchorPane.topAnchor="200"  AnchorPane.leftAnchor="130" styleClass="submit-button" text="Continue"/>
+</AnchorPane>

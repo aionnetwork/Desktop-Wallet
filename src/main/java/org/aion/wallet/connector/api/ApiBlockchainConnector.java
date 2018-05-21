@@ -117,7 +117,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         new SecureRandom().nextBytes(entropy);
         new MnemonicGenerator(English.INSTANCE)
                 .createMnemonic(entropy, sb::append);
-        byte[] seed = new SeedCalculator().calculateSeed(sb.toString(), password);
+        byte[] seed = new SeedCalculator().calculateSeed(sb.toString(), "");
         SeededECKeyEd25519 seededKey = new SeededECKeyEd25519(seed);
         final String address = Keystore.create(password, seededKey);
         final ECKey ecKey = Keystore.getKey(address, password);
