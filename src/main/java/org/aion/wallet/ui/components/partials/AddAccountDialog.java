@@ -6,6 +6,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.input.InputEvent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
@@ -25,6 +26,7 @@ public class AddAccountDialog {
     private static final Logger log = AionLoggerFactory.getLogger(LogEnum.WLT.name());
 
     private ImportAccountDialog importAccountDialog = new ImportAccountDialog();
+    private MnemonicDialog mnemonicDialog = new MnemonicDialog();
 
     @FXML
     private TextField newAccountName;
@@ -42,11 +44,13 @@ public class AddAccountDialog {
 
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
 
-    public void createAccount() {
+    public void createAccount(InputEvent mouseEvent) {
         resetValidation();
 
         if (validateFields()) {
-            blockchainConnector.createAccount(newPassword.getText(), newAccountName.getText());
+            String mnemonic = blockchainConnector.createAccount(newPassword.getText(), newAccountName.getText());
+            mnemonicDialog.open(mouseEvent);
+
             EventBusFactory.getBus(HeaderPaneButtonEvent.ID).post(new HeaderPaneButtonEvent(HeaderPaneButtonEvent.Type.OVERVIEW));
         }
         else {
@@ -112,7 +116,7 @@ public class AddAccountDialog {
     @FXML
     private void submitOnEnterPressed(final KeyEvent event) {
         if (event.getCode().equals(KeyCode.ENTER)) {
-            createAccount();
+            createAccount(event);
         }
     }
 }

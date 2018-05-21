@@ -111,13 +111,12 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     }
 
     @Override
-    public void createAccount(final String password, final String name) {
+    public String createAccount(final String password, final String name) {
         StringBuilder sb = new StringBuilder();
         byte[] entropy = new byte[Words.TWELVE.byteLength()];
         new SecureRandom().nextBytes(entropy);
         new MnemonicGenerator(English.INSTANCE)
                 .createMnemonic(entropy, sb::append);
-        System.out.println(sb.toString());
         byte[] seed = new SeedCalculator().calculateSeed(sb.toString(), password);
         SeededECKeyEd25519 seededKey = new SeededECKeyEd25519(seed);
         final String address = Keystore.create(password, seededKey);
@@ -127,8 +126,10 @@ public class ApiBlockchainConnector extends BlockchainConnector {
             account.setName(name);
             processAccountAdded(address, true);
             storeAccountName(address, name);
+            return sb.toString();
         } else {
             log.error("An exception occurred while creating the new account: ");
+            return null;
         }
     }
 
@@ -180,10 +181,10 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     @Override
     public AccountDTO importAccountWithMnemonic(final String mnemonic, final String password) {
         byte[] seed = new SeedCalculator().calculateSeed(mnemonic, password);
-        String publicAdress = Keystore.create(password, new SeededECKeyEd25519(seed));
-        ECKey someKey = Keystore.getKey(publicAdress, password);
+        String publicAddress = Keystore.create(password, new SeededECKeyEd25519(seed));
+        ECKey someKey = Keystore.getKey(publicAddress, password);
         if(someKey != null) {
-            return createAccountWithPrivateKey(publicAdress, someKey.getPrivKeyBytes());
+            return createAccountWithPrivateKey(publicAddress, someKey.getPrivKeyBytes());
         }
         return null;
     }

@@ -43,7 +43,7 @@ public abstract class BlockchainConnector {
         return INST;
     }
 
-    public abstract void createAccount(final String password, final String name);
+    public abstract String createAccount(final String password, final String name);
 
     public abstract AccountDTO addKeystoreUTCFile(final byte[] file, final String password, final boolean shouldKeep) throws ValidationException;
 
