@@ -14,7 +14,9 @@ import org.aion.wallet.events.HeaderPaneButtonEvent;
 import org.aion.wallet.events.RefreshEvent;
 import org.aion.wallet.ui.components.partials.AddAccountDialog;
 
+import javax.crypto.AEADBadTagException;
 import java.net.URL;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -58,8 +60,8 @@ public class OverviewController extends AbstractController {
     }
 
     @Subscribe
-    private void handleAccountChanged(final AccountEvent event) {
-        if (AccountEvent.Type.CHANGED.equals(event.getType())) {
+    private void handleAccountEvent(final AccountEvent event) {
+        if (EnumSet.of(AccountEvent.Type.CHANGED, AccountEvent.Type.ADDED).contains(event.getType())) {
             final AccountDTO account = event.getAccount();
             if (account.isActive()) {
                 this.account = account;

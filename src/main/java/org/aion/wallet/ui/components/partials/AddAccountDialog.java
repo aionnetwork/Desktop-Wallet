@@ -55,8 +55,6 @@ public class AddAccountDialog {
                 mnemonicDialog.open(mouseEvent);
                 EventPublisher.fireMnemonicCreated(mnemonic);
             }
-
-            EventBusFactory.getBus(HeaderPaneButtonEvent.ID).post(new HeaderPaneButtonEvent(HeaderPaneButtonEvent.Type.OVERVIEW));
         } else {
             String error = "";
             if (newPassword.getText().isEmpty() || retypedPassword.getText().isEmpty()) {

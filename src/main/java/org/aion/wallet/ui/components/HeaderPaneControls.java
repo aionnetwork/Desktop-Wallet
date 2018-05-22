@@ -12,7 +12,6 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import org.aion.api.log.LogEnum;
-import org.aion.log.AionLoggerFactory;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.events.AccountEvent;
@@ -27,6 +26,7 @@ import org.slf4j.Logger;
 
 import java.math.BigInteger;
 import java.net.URL;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -123,8 +123,8 @@ public class HeaderPaneControls extends AbstractController {
     }
 
     @Subscribe
-    private void handleAccountChanged(final AccountEvent event) {
-        if (AccountEvent.Type.CHANGED.equals(event.getType())) {
+    private void handleAccountEvent(final AccountEvent event) {
+        if (EnumSet.of(AccountEvent.Type.CHANGED, AccountEvent.Type.ADDED).contains(event.getType())) {
             final AccountDTO account = event.getAccount();
             if (account.isActive()) {
                 accountBalance.setVisible(true);

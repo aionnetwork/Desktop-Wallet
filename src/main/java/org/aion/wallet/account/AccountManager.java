@@ -30,9 +30,7 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.concurrent.Future;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -48,8 +46,6 @@ public class AccountManager {
 
     private final Map<String, AccountDTO> addressToAccount = new HashMap<>();
 
-    private final Map<String, Future> addressToLockFutures = new HashMap<>();
-
     private final Map<String, SortedSet<TransactionDTO>> addressToTransactions = Collections.synchronizedMap(new HashMap<>());
 
     private final Map<String, TxInfo> addressToLastTxInfo = Collections.synchronizedMap(new HashMap<>());
@@ -58,14 +54,16 @@ public class AccountManager {
 
     private final KeystoreFormat keystoreFormat = new KeystoreFormat();
 
-    private Duration unlockTimeOut;
+    private final Timer lockTimer = new Timer(true);
 
-    private Function<String, BigInteger> balanceProvider;
+    private final Function<String, BigInteger> balanceProvider;
 
-    private Supplier<String> currencySupplier;
+    private final Supplier<String> currencySupplier;
+
+    private Duration lockTimeOut;
 
     public AccountManager(final LightAppSettings lightAppSettings, final Function<String, BigInteger> balanceProvider, final Supplier<String> currencySupplier) {
-        this.unlockTimeOut = lightAppSettings.getUnlockTimeout();
+        this.lockTimeOut = lightAppSettings.getUnlockTimeout();
         this.balanceProvider = balanceProvider;
         this.currencySupplier = currencySupplier;
         for (String address : Keystore.list()) {
@@ -74,14 +72,6 @@ public class AccountManager {
             addressToLastTxInfo.put(address, new TxInfo(0, -1));
         }
         registerEventBusConsumer();
-        final Timer unlockTimer = new Timer();
-        final TimerTask task = new TimerTask() {
-            @Override
-            public void run() {
-                
-            }
-        };
-        unlockTimer.schedule(task, unlockTimeOut.get(ChronoUnit.SECONDS));
     }
 
     private void registerEventBusConsumer() {
@@ -93,7 +83,7 @@ public class AccountManager {
         if (SettingsEvent.Type.CHANGED.equals(event.getType())) {
             final LightAppSettings settings = event.getSettings();
             if (settings != null) {
-                unlockTimeOut = settings.getUnlockTimeout();
+                lockTimeOut = settings.getUnlockTimeout();
             }
         }
     }
@@ -125,6 +115,7 @@ public class AccountManager {
         final String balance = BalanceUtils.formatBalance(balanceProvider.apply(address));
         AccountDTO account = new AccountDTO(name, address, balance, currencySupplier.get());
         account.setPrivateKey(privateKeyBytes);
+        account.setActive(true);
         addressToAccount.put(account.getPublicAddress(), account);
         return account;
     }
@@ -134,6 +125,7 @@ public class AccountManager {
         addressToLastTxInfo.put(address, new TxInfo(isCreated ? -1 : 0, -1));
         addressToTransactions.put(address, new TreeSet<>(transactionComparator));
         addressToKeystoreContent.put(address, keystoreContent);
+        lockTimer.schedule(getAccountLockTask(account), lockTimeOut.toMillis());
         EventPublisher.fireAccountAdded(account);
     }
 
@@ -176,7 +168,7 @@ public class AccountManager {
             if (key == null) {
                 throw new ValidationException("Could Not extract ECKey from keystore file");
             }
-            return getAccountFromKey(key, file, password, shouldKeep);
+            return getUnlockedAccountFromKey(key, file, password, shouldKeep);
         } catch (final Exception e) {
             throw new ValidationException(e);
         }
@@ -186,7 +178,7 @@ public class AccountManager {
         try {
             ECKey key = ECKeyFac.inst().fromPrivate(raw);
             final byte[] keystoreContent = keystoreFormat.toKeystore(key, password);
-            return getAccountFromKey(key, keystoreContent, password, shouldKeep);
+            return getUnlockedAccountFromKey(key, keystoreContent, password, shouldKeep);
         } catch (final Exception e) {
             throw new ValidationException(e);
         }
@@ -197,13 +189,13 @@ public class AccountManager {
             byte[] seed = new SeedCalculator().calculateSeed(mnemonic, DEFAULT_MNEMONIC_SALT);
             final ECKey key = new SeededECKeyEd25519(seed);
             final byte[] fileContent = keystoreFormat.toKeystore(key, password);
-            return getAccountFromKey(key, fileContent, password, shouldKeep);
+            return getUnlockedAccountFromKey(key, fileContent, password, shouldKeep);
         } catch (final Exception e) {
             throw new ValidationException(e);
         }
     }
 
-    private AccountDTO getAccountFromKey(final ECKey key, final byte[] fileContent, final String password, final boolean shouldKeep) throws UnsupportedEncodingException, ValidationException {
+    private AccountDTO getUnlockedAccountFromKey(final ECKey key, final byte[] fileContent, final String password, final boolean shouldKeep) throws UnsupportedEncodingException, ValidationException {
         String address = TypeConverter.toJsonHex(KeystoreItem.parse(fileContent).getAddress());
         final AccountDTO accountDTO;
         if (shouldKeep) {
@@ -238,6 +230,17 @@ public class AccountManager {
 
     public void updateTxInfo(final String address, final TxInfo txInfo) {
         addressToLastTxInfo.put(address, txInfo);
+    }
+
+    private TimerTask getAccountLockTask(final AccountDTO accountDTO) {
+        return new TimerTask() {
+            @Override
+            public void run() {
+                accountDTO.setPrivateKey(null);
+                accountDTO.setActive(false);
+                EventPublisher.fireAccountLocked(accountDTO);
+            }
+        };
     }
 
     private class TransactionComparator implements Comparator<TransactionDTO> {
