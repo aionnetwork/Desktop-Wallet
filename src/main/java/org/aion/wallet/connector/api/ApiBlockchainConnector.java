@@ -290,12 +290,13 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         return blockDetails -> {
             if (blockDetails != null) {
                 final long timestamp = blockDetails.getTimestamp();
+                final long blockNumber = blockDetails.getNumber();
                 for (final String address : addresses) {
                     Set<TransactionDTO> txs = getAccountManager().getTransactions(address);
                     txs.addAll(blockDetails.getTxDetails().stream()
                             .filter(t -> TypeConverter.toJsonHex(t.getFrom().toString()).equals(address)
                                     || TypeConverter.toJsonHex(t.getTo().toString()).equals(address))
-                            .map(t -> recordTransaction(address, t, timestamp, latest))
+                            .map(t -> recordTransaction(address, t, timestamp, latest, blockNumber))
                             .collect(Collectors.toList()));
                 }
             }
@@ -340,11 +341,12 @@ public class ApiBlockchainConnector extends BlockchainConnector {
                 transaction.getNrgConsumed(),
                 transaction.getNrgPrice(),
                 transaction.getTimeStamp(),
-                TxState.FINISHED
+                TxState.FINISHED,
+                transaction.getBlockNumber()
         );
     }
 
-    private TransactionDTO mapTransaction(final TxDetails transaction, final long timeStamp) {
+    private TransactionDTO mapTransaction(final TxDetails transaction, final long timeStamp, final long blockNumber) {
         if (transaction == null) {
             return null;
         }
@@ -356,12 +358,13 @@ public class ApiBlockchainConnector extends BlockchainConnector {
                 transaction.getNrgConsumed(),
                 transaction.getNrgPrice(),
                 timeStamp,
-                TxState.FINISHED
+                TxState.FINISHED,
+                blockNumber
         );
     }
 
-    private TransactionDTO recordTransaction(final String address, final TxDetails transaction, final long timeStamp, final long lastCheckedBlock) {
-        final TransactionDTO transactionDTO = mapTransaction(transaction, timeStamp);
+    private TransactionDTO recordTransaction(final String address, final TxDetails transaction, final long timeStamp, final long lastCheckedBlock, final long blockNumber) {
+        final TransactionDTO transactionDTO = mapTransaction(transaction, timeStamp, blockNumber);
         final long txCount = getAccountManager().getLastTxInfo(address).getTxCount();
         if (transactionDTO.getFrom().equals(address)) {
             final long txNonce = transaction.getNonce().longValue();
