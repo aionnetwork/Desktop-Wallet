@@ -56,7 +56,7 @@
                 <TextField fx:id="mnemonicTextField" promptText="Mnemonic" styleClass="add-account-input-fields"
                            onMouseClicked="#resetValidation"/>
                 <PasswordField fx:id="mnemonicPasswordField"
-                               prefWidth="275.0" promptText="Password" styleClass="add-account-input-fields"
+                               prefWidth="275.0" promptText="New password" styleClass="add-account-input-fields"
                                onKeyPressed="#submitOnEnterPressed" onMouseClicked="#resetValidation"/>
             </VBox>
             <AnchorPane AnchorPane.bottomAnchor="160">

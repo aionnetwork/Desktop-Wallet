@@ -180,7 +180,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     @Override
     public AccountDTO importAccountWithMnemonic(final String mnemonic, final String password) {
-        byte[] seed = new SeedCalculator().calculateSeed(mnemonic, password);
+        byte[] seed = new SeedCalculator().calculateSeed(mnemonic, "");
         String publicAddress = Keystore.create(password, new SeededECKeyEd25519(seed));
         ECKey someKey = Keystore.getKey(publicAddress, password);
         if(someKey != null) {
