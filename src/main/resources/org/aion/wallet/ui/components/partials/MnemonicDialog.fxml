@@ -4,7 +4,8 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import java.net.URL?>
 <?import javafx.scene.control.Button?>
-<AnchorPane prefHeight="450.0" prefWidth="350.0"
+<?import javafx.scene.control.TextArea?>
+<AnchorPane prefHeight="350.0" prefWidth="500.0"
             xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="org.aion.wallet.ui.components.partials.MnemonicDialog"
@@ -13,7 +14,9 @@
         <URL value="@dialog.css"/>
     </stylesheets>
 
-    <Label AnchorPane.leftAnchor="90" AnchorPane.topAnchor="100" text="Please write down the following words!" styleClass="main-text" />
+    <Label AnchorPane.leftAnchor="25" AnchorPane.topAnchor="75" text="Please write down the following words!" styleClass="main-text" />
 
-    <Button AnchorPane.topAnchor="200"  AnchorPane.leftAnchor="130" styleClass="submit-button" text="Continue"/>
+    <TextArea AnchorPane.topAnchor="150" AnchorPane.leftAnchor="75" fx:id="mnemonicTextArea" styleClass="mnemonic-textarea" promptText="Mnemonic" wrapText="true" prefRowCount="2" prefColumnCount="25"/>
+
+    <Button AnchorPane.topAnchor="275"  AnchorPane.leftAnchor="200" styleClass="submit-button" text="Continue" onMouseClicked="#close"/>
 </AnchorPane>

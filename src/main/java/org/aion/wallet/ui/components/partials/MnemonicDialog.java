@@ -1,10 +1,13 @@
 package org.aion.wallet.ui.components.partials;
 
+import com.google.common.eventbus.Subscribe;
+import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.TextArea;
 import javafx.scene.input.InputEvent;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -13,12 +16,20 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import org.aion.api.log.AionLoggerFactory;
 import org.aion.api.log.LogEnum;
+import org.aion.wallet.ui.events.EventBusFactory;
+import org.aion.wallet.ui.events.EventPublisher;
 import org.slf4j.Logger;
 
-import java.io.IOException;
 
-public class MnemonicDialog {
+import java.io.IOException;
+import java.net.URL;
+import java.util.ResourceBundle;
+
+public class MnemonicDialog implements Initializable{
     private static final Logger log = AionLoggerFactory.getLogger(LogEnum.WLT.name());
+
+    @FXML
+    private TextArea mnemonicTextArea;
 
     public void open(InputEvent mouseEvent) {
         StackPane pane = new StackPane();
@@ -44,5 +55,23 @@ public class MnemonicDialog {
         popup.initStyle(StageStyle.TRANSPARENT);
 
         popup.show();
+    }
+
+    public void close(InputEvent eventSource) {
+        ((Node) eventSource.getSource()).getScene().getWindow().hide();
+    }
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        registerEventBusConsumer();
+    }
+    @Subscribe
+    private void handleReceivedMnemonic(String mnemonic) {
+        mnemonicTextArea.setText(mnemonic);
+        mnemonicTextArea.setEditable(false);
+    }
+
+    private void registerEventBusConsumer() {
+        EventBusFactory.getBus(EventPublisher.MNEMONIC_CREATED_EVENT_ID).register(this);
     }
 }

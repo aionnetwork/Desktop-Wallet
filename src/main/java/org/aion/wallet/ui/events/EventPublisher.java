@@ -5,6 +5,7 @@ import org.aion.wallet.dto.LightAppSettings;
 import org.aion.wallet.util.DataUpdater;
 
 public class EventPublisher {
+    public static final String MNEMONIC_CREATED_EVENT_ID = "mnemonic.created";
     public static final String ACCOUNT_CHANGE_EVENT_ID = "account.changed";
     public static final String ACCOUNT_UNLOCK_EVENT_ID = "account.unlock";
     public static final String SETTINGS_CHANGED_ID = "settings.changed";
@@ -12,6 +13,12 @@ public class EventPublisher {
     public static void fireAccountChanged(final AccountDTO account) {
         if (account != null) {
             EventBusFactory.getBus(ACCOUNT_CHANGE_EVENT_ID).post(account);
+        }
+    }
+
+    public static void fireMnemonicCreated(String mnemonic) {
+        if (mnemonic != null) {
+            EventBusFactory.getBus(MNEMONIC_CREATED_EVENT_ID).post(mnemonic);
         }
     }
 

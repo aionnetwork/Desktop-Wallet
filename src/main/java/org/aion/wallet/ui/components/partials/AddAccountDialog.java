@@ -16,6 +16,7 @@ import org.aion.api.log.AionLoggerFactory;
 import org.aion.api.log.LogEnum;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.ui.events.EventBusFactory;
+import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
 import org.slf4j.Logger;
 
@@ -49,7 +50,10 @@ public class AddAccountDialog {
 
         if (validateFields()) {
             String mnemonic = blockchainConnector.createAccount(newPassword.getText(), newAccountName.getText());
-            mnemonicDialog.open(mouseEvent);
+            if(mnemonic != null) {
+                mnemonicDialog.open(mouseEvent);
+                EventPublisher.fireMnemonicCreated(mnemonic);
+            }
 
             EventBusFactory.getBus(HeaderPaneButtonEvent.ID).post(new HeaderPaneButtonEvent(HeaderPaneButtonEvent.Type.OVERVIEW));
         }
