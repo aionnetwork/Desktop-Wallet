@@ -9,21 +9,28 @@
     <VBox AnchorPane.leftAnchor="10" AnchorPane.rightAnchor="10" AnchorPane.topAnchor="25"
           alignment="TOP_CENTER" spacing="10">
         <Label text="Settings" styleClass="tile-label" alignment="CENTER"/>
-        <VBox>
-            <Label text="Protocol" styleClass="paragraph-text" alignment="CENTER"/>
-            <TextField fx:id="protocol" prefColumnCount="30"/>
-            <Label styleClass="paragraph-text" alignment="CENTER"/>
-            <Label text="IP" styleClass="paragraph-text" alignment="CENTER"/>
-            <TextField fx:id="address" prefColumnCount="30"/>
-            <Label styleClass="paragraph-text" alignment="CENTER"/>
-            <Label text="Port" styleClass="paragraph-text" alignment="CENTER"/>
-            <TextField fx:id="port" prefColumnCount="30"/>
-        </VBox>
+        <HBox spacing="10">
+            <VBox>
+                <Label text="Protocol" styleClass="paragraph-text" alignment="CENTER"/>
+                <TextField fx:id="protocol" prefColumnCount="30"/>
+                <Label/>
+                <Label text="Address" styleClass="paragraph-text" alignment="CENTER"/>
+                <TextField fx:id="address" prefColumnCount="30"/>
+                <Label/>
+                <Label text="Port" styleClass="paragraph-text" alignment="CENTER"/>
+                <TextField fx:id="port" prefColumnCount="30"/>
+            </VBox>
+            <VBox>
+                <Label text="Account unlock timeout" styleClass="paragraph-text" alignment="CENTER"/>
+                <TextField fx:id="timeout" prefColumnCount="30"/>
+            </VBox>
+        </HBox>
+
 
         <HBox alignment="BASELINE_RIGHT">
             <Button text="Apply" onMouseClicked="#changeSettings" styleClass="disabled"/>
         </HBox>
-        <Label fx:id="notification" styleClass="paragraph-text" alignment="CENTER"/>
+        <Label fx:id="notification" alignment="CENTER"/>
         <ScrollPane VBox.vgrow="NEVER" hbarPolicy="NEVER" vbarPolicy="NEVER" prefViewportHeight="250"
                     prefViewportWidth="830"/>
     </VBox>

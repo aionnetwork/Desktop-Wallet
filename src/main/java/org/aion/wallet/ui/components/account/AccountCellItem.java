@@ -12,7 +12,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.ui.components.partials.UnlockAccountDialog;
-import org.aion.wallet.ui.events.EventPublisher;
+import org.aion.wallet.events.EventPublisher;
 import org.aion.wallet.util.BalanceUtils;
 import org.aion.wallet.util.UIUtils;
 
@@ -109,7 +109,7 @@ public class AccountCellItem extends ListCell<AccountDTO> {
         final AccountDTO modifiedAccount = this.getItem();
         if (!modifiedAccount.isUnlocked()) {
             accountUnlockDialog.open(mouseEvent);
-            EventPublisher.fireUnlockAccount(modifiedAccount);
+            EventPublisher.fireAccountUnlocked(modifiedAccount);
         } else {
             modifiedAccount.setActive(true);
             EventPublisher.fireAccountChanged(modifiedAccount);

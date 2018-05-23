@@ -8,10 +8,9 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import org.aion.api.log.LogEnum;
+import org.aion.wallet.events.EventBusFactory;
+import org.aion.wallet.events.RefreshEvent;
 import org.aion.wallet.log.WalletLoggerFactory;
-import org.aion.wallet.ui.events.EventBusFactory;
-import org.aion.wallet.ui.events.RefreshEvent;
-import org.aion.wallet.util.DataUpdater;
 import org.slf4j.Logger;
 
 import java.net.URL;
@@ -25,6 +24,8 @@ public abstract class AbstractController implements Initializable {
 
     private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
 
+    protected static final String ERROR_STYLE = "error-label";
+
     @FXML
     private Node parent;
 
@@ -37,7 +38,7 @@ public abstract class AbstractController implements Initializable {
     }
 
     protected void registerEventBusConsumer() {
-        EventBusFactory.getBus(DataUpdater.UI_DATA_REFRESH).register(this);
+        EventBusFactory.getBus(RefreshEvent.ID).register(this);
     }
 
     @Subscribe

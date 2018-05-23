@@ -1,4 +1,4 @@
-package org.aion.wallet.ui.events;
+package org.aion.wallet.events;
 
 import com.google.common.eventbus.EventBus;
 

@@ -12,13 +12,13 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import org.aion.api.log.LogEnum;
-import org.aion.log.AionLoggerFactory;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.dto.AccountDTO;
-import org.aion.wallet.ui.events.EventBusFactory;
-import org.aion.wallet.ui.events.EventPublisher;
-import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
-import org.aion.wallet.ui.events.RefreshEvent;
+import org.aion.wallet.events.AccountEvent;
+import org.aion.wallet.events.EventBusFactory;
+import org.aion.wallet.events.HeaderPaneButtonEvent;
+import org.aion.wallet.events.RefreshEvent;
+import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.util.BalanceUtils;
 import org.aion.wallet.util.UIUtils;
 import org.aion.wallet.util.URLManager;
@@ -26,13 +26,14 @@ import org.slf4j.Logger;
 
 import java.math.BigInteger;
 import java.net.URL;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 
 public class HeaderPaneControls extends AbstractController {
 
-    private static final Logger log = AionLoggerFactory.getLogger(LogEnum.WLT.name());
+    private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
 
     private static final String STYLE_DEFAULT = "default";
 
@@ -61,7 +62,7 @@ public class HeaderPaneControls extends AbstractController {
     @FXML
     private VBox settingsButton;
 
-    private String accountAddress;
+    private String accountAddress = "";
 
     @Override
     public void internalInit(URL location, ResourceBundle resources) {
@@ -78,7 +79,7 @@ public class HeaderPaneControls extends AbstractController {
     @Override
     protected void registerEventBusConsumer() {
         super.registerEventBusConsumer();
-        EventBusFactory.getBus(EventPublisher.ACCOUNT_CHANGE_EVENT_ID).register(this);
+        EventBusFactory.getBus(AccountEvent.ID).register(this);
     }
 
     public void openAionWebSite() {
@@ -122,21 +123,31 @@ public class HeaderPaneControls extends AbstractController {
     }
 
     @Subscribe
-    private void handleAccountChanged(final AccountDTO account) {
-        if (account.isActive()) {
-            accountBalance.setVisible(true);
-            activeAccountLabel.setVisible(true);
-            activeAccount.setText(account.getName());
-            accountAddress = account.getPublicAddress();
-            accountBalance.setText(account.getBalance() + BalanceUtils.CCY_SEPARATOR + account.getCurrency());
-            UIUtils.setWidth(activeAccount);
-            UIUtils.setWidth(accountBalance);
+    private void handleAccountEvent(final AccountEvent event) {
+        final AccountDTO account = event.getAccount();
+        if (EnumSet.of(AccountEvent.Type.CHANGED, AccountEvent.Type.ADDED).contains(event.getType())) {
+            if (account.isActive()) {
+                accountBalance.setText(account.getBalance() + BalanceUtils.CCY_SEPARATOR + account.getCurrency());
+                accountBalance.setVisible(true);
+                activeAccount.setText(account.getName());
+                activeAccountLabel.setVisible(true);
+                accountAddress = account.getPublicAddress();
+                UIUtils.setWidth(activeAccount);
+                UIUtils.setWidth(accountBalance);
+            }
+        } else if (AccountEvent.Type.LOCKED.equals(event.getType())){
+            if (account.getPublicAddress().equals(accountAddress)){
+                accountAddress = "";
+                activeAccountLabel.setVisible(false);
+                accountBalance.setVisible(false);
+                activeAccount.setText("");
+            }
         }
     }
 
     @Override
     protected final void refreshView(final RefreshEvent event) {
-        if (accountAddress != null && !accountAddress.isEmpty()) {
+        if (!accountAddress.isEmpty()) {
             final String[] text = accountBalance.getText().split(BalanceUtils.CCY_SEPARATOR);
             final String currency = text[1];
             final Task<BigInteger> getBalanceTask = getApiTask(blockchainConnector::getBalance, accountAddress);

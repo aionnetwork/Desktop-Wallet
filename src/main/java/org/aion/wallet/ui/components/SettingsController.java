@@ -1,24 +1,18 @@
 package org.aion.wallet.ui.components;
 
 import com.google.common.eventbus.Subscribe;
-import io.github.novacrypto.bip39.MnemonicValidator;
-import io.github.novacrypto.bip39.Validation.InvalidChecksumException;
-import io.github.novacrypto.bip39.Validation.InvalidWordCountException;
-import io.github.novacrypto.bip39.Validation.UnexpectedWhiteSpaceException;
-import io.github.novacrypto.bip39.Validation.WordNotFoundException;
-import io.github.novacrypto.bip39.wordlists.English;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-import javafx.scene.input.MouseEvent;
 import org.aion.api.log.LogEnum;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.dto.LightAppSettings;
+import org.aion.wallet.events.EventBusFactory;
+import org.aion.wallet.events.EventPublisher;
+import org.aion.wallet.events.HeaderPaneButtonEvent;
+import org.aion.wallet.events.SettingsEvent;
+import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
-import org.aion.wallet.ui.events.EventBusFactory;
-import org.aion.wallet.ui.events.EventPublisher;
-import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
 import org.slf4j.Logger;
 
 import java.net.URL;
@@ -37,6 +31,8 @@ public class SettingsController extends AbstractController {
     @FXML
     public TextField port;
     @FXML
+    private TextField timeout;
+    @FXML
     public Label notification;
 
     private LightAppSettings settings;
@@ -49,12 +45,25 @@ public class SettingsController extends AbstractController {
     @Override
     protected void registerEventBusConsumer() {
         EventBusFactory.getBus(HeaderPaneButtonEvent.ID).register(this);
+        EventBusFactory.getBus(SettingsEvent.ID).register(this);
     }
 
     public void changeSettings() {
-        EventPublisher.fireApplicationSettingsChanged(new LightAppSettings(address.getText().trim(), port.getText().trim(),
-                protocol.getText().trim(), settings.getType()));
-        notification.setText("Changes applied");
+        final LightAppSettings newSettings;
+        try {
+            newSettings = new LightAppSettings(
+                    address.getText().trim(),
+                    port.getText().trim(),
+                    protocol.getText().trim(),
+                    settings.getType(),
+                    timeout.getText()
+            );
+            displayNotification("", false);
+            EventPublisher.fireApplicationSettingsChanged(newSettings);
+        } catch (ValidationException e) {
+            log.error(e.getMessage(), e);
+            displayNotification(e.getMessage(), true);
+        }
     }
 
     @Subscribe
@@ -64,11 +73,28 @@ public class SettingsController extends AbstractController {
         }
     }
 
+    @Subscribe
+    private void handleSettingsChanged(final SettingsEvent event) {
+        if (SettingsEvent.Type.APPLIED.equals(event.getType())) {
+            displayNotification("Changes applied", false);
+        }
+    }
+
     private void reloadView() {
         settings = blockchainConnector.getSettings();
         protocol.setText(settings.getProtocol());
         address.setText(settings.getAddress());
         port.setText(settings.getPort());
-        notification.setText("");
+        timeout.setText(settings.getUnlockTimeout().toString().substring(2).toLowerCase());
+        displayNotification("", false);
+    }
+
+    private void displayNotification(final String message, final boolean isError) {
+        if (isError) {
+            notification.getStyleClass().add(ERROR_STYLE);
+        } else {
+            notification.getStyleClass().removeAll(ERROR_STYLE);
+        }
+        notification.setText(message);
     }
 }

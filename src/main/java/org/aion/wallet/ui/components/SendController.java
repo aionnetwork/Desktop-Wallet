@@ -10,14 +10,11 @@ import javafx.scene.control.TextField;
 import org.aion.api.log.LogEnum;
 import org.aion.base.util.TypeConverter;
 import org.aion.wallet.connector.BlockchainConnector;
-import org.aion.wallet.connector.dto.SendRequestDTO;
+import org.aion.wallet.connector.dto.SendTransactionDTO;
 import org.aion.wallet.dto.AccountDTO;
+import org.aion.wallet.events.*;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
-import org.aion.wallet.ui.events.EventBusFactory;
-import org.aion.wallet.ui.events.EventPublisher;
-import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
-import org.aion.wallet.ui.events.RefreshEvent;
 import org.aion.wallet.util.AionConstants;
 import org.aion.wallet.util.BalanceUtils;
 import org.aion.wallet.util.ConfigUtils;
@@ -32,8 +29,6 @@ import java.util.ResourceBundle;
 public class SendController extends AbstractController {
 
     private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
-
-    private static final String ERROR_STYLE = "error-label";
 
     private static final String PENDING_MESSAGE = "Sending transaction...";
 
@@ -65,7 +60,10 @@ public class SendController extends AbstractController {
     private AccountDTO account;
 
     public void onSendAionClicked() {
-        final SendRequestDTO dto;
+        if (account == null) {
+            return;
+        }
+        final SendTransactionDTO dto;
         try {
             dto = mapFormData();
         } catch (ValidationException e) {
@@ -100,9 +98,9 @@ public class SendController extends AbstractController {
         txStatusLabel.setText(message);
     }
 
-    private String sendTransaction(final SendRequestDTO sendRequestDTO) {
+    private String sendTransaction(final SendTransactionDTO sendTransactionDTO) {
         try {
-            return blockchainConnector.sendTransaction(sendRequestDTO);
+            return blockchainConnector.sendTransaction(sendTransactionDTO);
         } catch (ValidationException e) {
             throw new RuntimeException(e);
         }
@@ -134,21 +132,31 @@ public class SendController extends AbstractController {
     }
 
     @Subscribe
-    private void handleAccountChanged(final AccountDTO account) {
-        this.account = account;
+    private void handleAccountEvent(final AccountEvent event) {
+        if (AccountEvent.Type.CHANGED.equals(event.getType())) {
+            account = event.getAccount();
 
-        accountAddress.setText(account.getPublicAddress());
+            accountAddress.setText(account.getPublicAddress());
 
-        accountBalance.setVisible(true);
-        setAccountBalanceText();
+            accountBalance.setVisible(true);
+            setAccountBalanceText();
 
-        equivalentEUR.setVisible(true);
-        equivalentEUR.setText(convertBalanceToCcy(account, AionConstants.AION_TO_EUR) + " " + AionConstants.EUR_CCY);
-        UIUtils.setWidth(equivalentEUR);
+            equivalentEUR.setVisible(true);
+            equivalentEUR.setText(convertBalanceToCcy(account, AionConstants.AION_TO_EUR) + " " + AionConstants.EUR_CCY);
+            UIUtils.setWidth(equivalentEUR);
 
-        equivalentUSD.setVisible(true);
-        equivalentUSD.setText(convertBalanceToCcy(account, AionConstants.AION_TO_USD) + " " + AionConstants.USD_CCY);
-        UIUtils.setWidth(equivalentUSD);
+            equivalentUSD.setVisible(true);
+            equivalentUSD.setText(convertBalanceToCcy(account, AionConstants.AION_TO_USD) + " " + AionConstants.USD_CCY);
+            UIUtils.setWidth(equivalentUSD);
+        } else if (AccountEvent.Type.LOCKED.equals(event.getType())) {
+            if (event.getAccount().equals(account)) {
+                accountAddress.setText("");
+                accountBalance.setVisible(false);
+                equivalentEUR.setVisible(false);
+                equivalentUSD.setVisible(false);
+                account = null;
+            }
+        }
     }
 
     @Subscribe
@@ -162,7 +170,7 @@ public class SendController extends AbstractController {
     protected void registerEventBusConsumer() {
         super.registerEventBusConsumer();
         EventBusFactory.getBus(HeaderPaneButtonEvent.ID).register(this);
-        EventBusFactory.getBus(EventPublisher.ACCOUNT_CHANGE_EVENT_ID).register(this);
+        EventBusFactory.getBus(AccountEvent.ID).register(this);
     }
 
     private double convertBalanceToCcy(final AccountDTO account, final double exchangeRate) {
@@ -191,8 +199,8 @@ public class SendController extends AbstractController {
         );
     }
 
-    private SendRequestDTO mapFormData() throws ValidationException {
-        final SendRequestDTO dto = new SendRequestDTO();
+    private SendTransactionDTO mapFormData() throws ValidationException {
+        final SendTransactionDTO dto = new SendTransactionDTO();
         dto.setFrom(account.getPublicAddress());
         dto.setTo(toInput.getText());
         dto.setPassword(passwordInput.getText());

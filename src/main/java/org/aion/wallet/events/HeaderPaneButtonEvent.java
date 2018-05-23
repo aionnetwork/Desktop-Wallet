@@ -1,6 +1,6 @@
-package org.aion.wallet.ui.events;
+package org.aion.wallet.events;
 
-public class HeaderPaneButtonEvent extends AbstractUIEvent<HeaderPaneButtonEvent.Type> {
+public class HeaderPaneButtonEvent extends AbstractEvent<HeaderPaneButtonEvent.Type> {
 
     public static final String ID = "ui.header_button";
 
