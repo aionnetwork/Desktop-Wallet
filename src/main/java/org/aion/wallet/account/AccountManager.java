@@ -125,8 +125,12 @@ public class AccountManager {
         addressToLastTxInfo.put(address, new TxInfo(isCreated ? -1 : 0, -1));
         addressToTransactions.put(address, new TreeSet<>(transactionComparator));
         addressToKeystoreContent.put(address, keystoreContent);
-        lockTimer.schedule(getAccountLockTask(account), lockTimeOut.toMillis());
+        scheduleAccountLock(account);
         EventPublisher.fireAccountAdded(account);
+    }
+
+    public void scheduleAccountLock(final AccountDTO account) {
+        lockTimer.schedule(getAccountLockTask(account), lockTimeOut.toMillis());
     }
 
     public Set<String> getAddresses() {
@@ -241,6 +245,18 @@ public class AccountManager {
                 EventPublisher.fireAccountLocked(accountDTO);
             }
         };
+    }
+
+    public void unlockAccount(final AccountDTO account, final String password) throws ValidationException {
+        ECKey storedKey = Keystore.getKey(account.getPublicAddress(), password);
+        if (storedKey != null) {
+            account.setActive(true);
+            account.setPrivateKey(storedKey.getPrivKeyBytes());
+            scheduleAccountLock(account);
+            EventPublisher.fireAccountChanged(account);
+        } else {
+            throw new ValidationException("The password is incorrect!");
+        }
     }
 
     private class TransactionComparator implements Comparator<TransactionDTO> {

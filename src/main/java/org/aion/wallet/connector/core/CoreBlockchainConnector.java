@@ -67,6 +67,11 @@ public class CoreBlockchainConnector extends BlockchainConnector {
     }
 
     @Override
+    public void unlockAccount(final AccountDTO account, final String password) throws ValidationException {
+        accountManager.unlockAccount(account, password);
+    }
+
+    @Override
     public AccountDTO getAccount(final String publicAddress) {
         return accountManager.getAccount(publicAddress);
     }

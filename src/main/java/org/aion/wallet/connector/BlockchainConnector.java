@@ -107,4 +107,6 @@ public abstract class BlockchainConnector {
     protected final void storeLightweightWalletSettings(final LightAppSettings lightAppSettings){
         walletStorage.saveLightAppSettings(lightAppSettings);
     }
+
+    public abstract void unlockAccount(final AccountDTO account, final String password) throws ValidationException;
 }

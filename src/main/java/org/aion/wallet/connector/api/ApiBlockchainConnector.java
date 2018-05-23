@@ -9,6 +9,8 @@ import org.aion.base.type.Address;
 import org.aion.base.type.Hash256;
 import org.aion.base.util.ByteArrayWrapper;
 import org.aion.base.util.TypeConverter;
+import org.aion.crypto.ECKey;
+import org.aion.mcf.account.Keystore;
 import org.aion.wallet.account.AccountManager;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.connector.dto.SendRequestDTO;
@@ -112,6 +114,12 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         return accountManager.importMnemonic(mnemonic, password, shouldKeep);
     }
 
+    @Override
+    public void unlockAccount(final AccountDTO account, final String password) throws ValidationException {
+        accountManager.unlockAccount(account, password);
+    }
+
+    @Override
     public AccountDTO getAccount(final String publicAddress) {
         return accountManager.getAccount(publicAddress);
     }

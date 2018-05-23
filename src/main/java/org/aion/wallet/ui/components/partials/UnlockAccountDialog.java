@@ -14,12 +14,11 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.Popup;
 import org.aion.api.log.LogEnum;
-import org.aion.crypto.ECKey;
-import org.aion.mcf.account.Keystore;
+import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.events.AccountEvent;
 import org.aion.wallet.events.EventBusFactory;
-import org.aion.wallet.events.EventPublisher;
+import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
 import org.slf4j.Logger;
 
@@ -36,6 +35,9 @@ public class UnlockAccountDialog implements Initializable {
     private PasswordField unlockPassword;
     @FXML
     private Label validationError;
+
+    private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
+
     private AccountDTO account;
 
     @Override
@@ -69,15 +71,13 @@ public class UnlockAccountDialog implements Initializable {
     }
 
     public void unlockAccount(final InputEvent event) {
-        if (unlockPassword.getText() != null && !unlockPassword.getText().isEmpty()) {
-            ECKey storedKey = Keystore.getKey(account.getPublicAddress(), unlockPassword.getText());
-            if (storedKey != null) {
-                account.setActive(true);
-                account.setPrivateKey(storedKey.getPrivKeyBytes());
-                EventPublisher.fireAccountChanged(account);
+        final String password = unlockPassword.getText();
+        if (password != null && !password.isEmpty()) {
+            try {
+                blockchainConnector.unlockAccount(account, password);
                 this.close(event);
-            } else {
-                validationError.setText("The password is incorrect!");
+            } catch (ValidationException e) {
+                validationError.setText(e.getMessage());
                 validationError.setVisible(true);
             }
         } else {
