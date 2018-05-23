@@ -21,6 +21,7 @@ import org.aion.wallet.events.AccountEvent;
 import org.aion.wallet.events.EventBusFactory;
 import org.aion.wallet.events.HeaderPaneButtonEvent;
 import org.aion.wallet.util.AddressUtils;
+import org.aion.wallet.util.AionConstants;
 import org.aion.wallet.util.BalanceUtils;
 import org.aion.wallet.util.URLManager;
 import org.slf4j.Logger;
@@ -102,14 +103,14 @@ public class HistoryController extends AbstractController {
 
     private void buildTableModel() {
         final TableColumn<TxRow, String> typeCol = getTableColumn("Type", "type", 0.08);
-        final TableColumn<TxRow, String> nameCol = getTableColumn("Name", "name", 0.09);
-        final TableColumn<TxRow, String> addressCol = getTableColumn("Address", "address", 0.36);
-        final TableColumn<TxRow, String> hashCol = getTableColumn("Tx Hash", "txHash", 0.36);
-        final TableColumn<TxRow, String> valueCol = getTableColumn("Value", "value", 0.11);
+        final TableColumn<TxRow, String> nameCol = getTableColumn("Name", "name", 0.15);
+        final TableColumn<TxRow, String> hashCol = getTableColumn("Tx Hash", "txHash", 0.5);
+        final TableColumn<TxRow, String> valueCol = getTableColumn("Value", "value", 0.15);
+        final TableColumn<TxRow, String> statusCol = getTableColumn("Status", "status", 0.08);
 
         hashCol.setCellFactory(column -> new TransactionHashCell());
 
-        txTable.getColumns().addAll(Arrays.asList(typeCol, nameCol, addressCol, hashCol, valueCol));
+        txTable.getColumns().addAll(Arrays.asList(typeCol, nameCol, hashCol, valueCol, statusCol));
     }
 
     private TableColumn<TxRow, String> getTableColumn(final String header, final String property, final double sizePercent) {
@@ -222,7 +223,7 @@ public class HistoryController extends AbstractController {
         private final TransactionDTO transaction;
         private final SimpleStringProperty type;
         private final SimpleStringProperty name;
-        private final SimpleStringProperty address;
+        private final SimpleStringProperty status;
         private final SimpleStringProperty value;
 
         private final SimpleStringProperty txHash;
@@ -235,9 +236,18 @@ public class HistoryController extends AbstractController {
             boolean isFromTx = AddressUtils.equals(requestingAddress, fromAccount.getPublicAddress());
             this.type = new SimpleStringProperty(isFromTx ? TO : FROM);
             this.name = new SimpleStringProperty(isFromTx ? toAccount.getName() : fromAccount.getName());
-            this.address = new SimpleStringProperty(isFromTx ? toAccount.getPublicAddress() : fromAccount.getPublicAddress());
+            this.status = new SimpleStringProperty(getTransactionStatus(dto));
             this.value = new SimpleStringProperty(balance);
             this.txHash = new SimpleStringProperty(dto.getHash());
+        }
+
+        private String getTransactionStatus(TransactionDTO dto) {
+            if(dto.getBlockNumber() > blockchainConnector.getSyncInfo().getNetworkBestBlkNumber() + AionConstants.VALIDATION_BLOCKS_FOR_TRANSACTIONS) {
+                return "Finished";
+            }
+            else {
+                return "Pending";
+            }
         }
 
         public String getType() {
@@ -256,12 +266,12 @@ public class HistoryController extends AbstractController {
             this.name.setValue(name);
         }
 
-        public String getAddress() {
-            return address.get();
+        public String getStatus() {
+            return status.get();
         }
 
-        public void setAddress(final String address) {
-            this.address.setValue(address);
+        public void setStatus(final String status) {
+            this.status.setValue(status);
         }
 
         public String getValue() {
