@@ -1,6 +1,10 @@
 package org.aion.wallet.connector.core;
 
 import com.google.common.eventbus.Subscribe;
+import io.github.novacrypto.bip39.MnemonicGenerator;
+import io.github.novacrypto.bip39.SeedCalculator;
+import io.github.novacrypto.bip39.Words;
+import io.github.novacrypto.bip39.wordlists.English;
 import org.aion.api.log.LogEnum;
 import org.aion.api.server.types.ArgTxCall;
 import org.aion.api.server.types.SyncInfo;
@@ -14,6 +18,7 @@ import org.aion.wallet.connector.dto.SendRequestDTO;
 import org.aion.wallet.connector.dto.SyncInfoDTO;
 import org.aion.wallet.connector.dto.TransactionDTO;
 import org.aion.wallet.connector.dto.UnlockableAccount;
+import org.aion.wallet.crypto.SeededECKeyEd25519;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.dto.LightAppSettings;
 import org.aion.wallet.exception.NotFoundException;
@@ -28,6 +33,7 @@ import org.aion.zero.types.AionTransaction;
 import org.slf4j.Logger;
 
 import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -42,11 +48,19 @@ public class CoreBlockchainConnector extends BlockchainConnector {
         EventBusFactory.getBus(EventPublisher.ACCOUNT_CHANGE_EVENT_ID).register(this);
     }
 
-    public void createAccount(final String password, final String name) {
-        final String address = Keystore.create(password);
+    public String createAccount(final String password, final String name) {
+        StringBuilder sb = new StringBuilder();
+        byte[] entropy = new byte[Words.TWELVE.byteLength()];
+        new SecureRandom().nextBytes(entropy);
+        new MnemonicGenerator(English.INSTANCE)
+                .createMnemonic(entropy, sb::append);
+        byte[] seed = new SeedCalculator().calculateSeed(sb.toString(), password);
+        SeededECKeyEd25519 seededKey = new SeededECKeyEd25519(seed);
+        final String address = Keystore.create(password, seededKey);
         AccountDTO account = getAccount(address);
         account.setName(name);
         storeAccountName(address, name);
+        return sb.toString();
     }
 
     @Override
@@ -137,6 +151,11 @@ public class CoreBlockchainConnector extends BlockchainConnector {
     @Override
     public int getPeerCount() {
         return API.peerCount();
+    }
+
+    @Override
+    public AccountDTO importAccountWithMnemonic(final String mnemonic, final String password) {
+        throw new UnsupportedOperationException();
     }
 
     @Subscribe

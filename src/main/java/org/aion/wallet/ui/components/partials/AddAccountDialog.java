@@ -6,6 +6,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.input.InputEvent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
@@ -15,6 +16,7 @@ import org.aion.api.log.AionLoggerFactory;
 import org.aion.api.log.LogEnum;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.ui.events.EventBusFactory;
+import org.aion.wallet.ui.events.EventPublisher;
 import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
 import org.slf4j.Logger;
 
@@ -25,6 +27,7 @@ public class AddAccountDialog {
     private static final Logger log = AionLoggerFactory.getLogger(LogEnum.WLT.name());
 
     private ImportAccountDialog importAccountDialog = new ImportAccountDialog();
+    private MnemonicDialog mnemonicDialog = new MnemonicDialog();
 
     @FXML
     private TextField newAccountName;
@@ -42,10 +45,16 @@ public class AddAccountDialog {
 
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
 
-    public void createAccount() {
+    public void createAccount(InputEvent mouseEvent) {
         resetValidation();
+
         if (validateFields()) {
-            blockchainConnector.createAccount(newPassword.getText(), newAccountName.getText());
+            String mnemonic = blockchainConnector.createAccount(newPassword.getText(), newAccountName.getText());
+            if(mnemonic != null) {
+                mnemonicDialog.open(mouseEvent);
+                EventPublisher.fireMnemonicCreated(mnemonic);
+            }
+
             EventBusFactory.getBus(HeaderPaneButtonEvent.ID).post(new HeaderPaneButtonEvent(HeaderPaneButtonEvent.Type.OVERVIEW));
         }
         else {
@@ -111,7 +120,7 @@ public class AddAccountDialog {
     @FXML
     private void submitOnEnterPressed(final KeyEvent event) {
         if (event.getCode().equals(KeyCode.ENTER)) {
-            createAccount();
+            createAccount(event);
         }
     }
 }

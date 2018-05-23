@@ -1,9 +1,17 @@
 package org.aion.wallet.ui.components;
 
 import com.google.common.eventbus.Subscribe;
+import io.github.novacrypto.bip39.MnemonicValidator;
+import io.github.novacrypto.bip39.Validation.InvalidChecksumException;
+import io.github.novacrypto.bip39.Validation.InvalidWordCountException;
+import io.github.novacrypto.bip39.Validation.UnexpectedWhiteSpaceException;
+import io.github.novacrypto.bip39.Validation.WordNotFoundException;
+import io.github.novacrypto.bip39.wordlists.English;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.input.MouseEvent;
 import org.aion.api.log.LogEnum;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.dto.LightAppSettings;
