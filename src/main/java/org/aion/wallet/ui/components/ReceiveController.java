@@ -21,7 +21,7 @@ public class ReceiveController implements Initializable{
 
     private Tooltip copiedTooltip;
 
-    private AccountDTO accountDTO;
+    private AccountDTO account;
 
     @Override
     public void initialize(final URL location, final ResourceBundle resources) {
@@ -39,16 +39,21 @@ public class ReceiveController implements Initializable{
     @Subscribe
     private void handleAccountChanged(final AccountEvent event) {
         if (AccountEvent.Type.CHANGED.equals(event.getType())) {
-            accountDTO = event.getAccount();
-            accountAddress.setText(accountDTO.getPublicAddress());
+            account = event.getAccount();
+            accountAddress.setText(account.getPublicAddress());
+        } else if (AccountEvent.Type.LOCKED.equals(event.getType())) {
+            if (event.getAccount().equals(account)) {
+                account = null;
+                accountAddress.setText("");
+            }
         }
     }
 
     public void onCopyToClipBoard() {
-        if(accountDTO != null && accountDTO.getPublicAddress() != null) {
+        if (account != null && account.getPublicAddress() != null) {
             final Clipboard clipboard = Clipboard.getSystemClipboard();
             final ClipboardContent content = new ClipboardContent();
-            content.putString(accountDTO.getPublicAddress());
+            content.putString(account.getPublicAddress());
             clipboard.setContent(content);
 
             copiedTooltip.show(accountAddress.getScene().getWindow());

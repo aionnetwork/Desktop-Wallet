@@ -132,7 +132,7 @@ public class SendController extends AbstractController {
     }
 
     @Subscribe
-    private void handleAccountChanged(final AccountEvent event) {
+    private void handleAccountEvent(final AccountEvent event) {
         if (AccountEvent.Type.CHANGED.equals(event.getType())) {
             account = event.getAccount();
 
@@ -148,6 +148,14 @@ public class SendController extends AbstractController {
             equivalentUSD.setVisible(true);
             equivalentUSD.setText(convertBalanceToCcy(account, AionConstants.AION_TO_USD) + " " + AionConstants.USD_CCY);
             UIUtils.setWidth(equivalentUSD);
+        } else if (AccountEvent.Type.LOCKED.equals(event.getType())) {
+            if (event.getAccount().equals(account)) {
+                accountAddress.setText("");
+                accountBalance.setVisible(false);
+                equivalentEUR.setVisible(false);
+                equivalentUSD.setVisible(false);
+                account = null;
+            }
         }
     }
 

@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
@@ -65,6 +66,11 @@ public class HistoryController extends AbstractController {
             this.account = event.getAccount();
             if (isInView()) {
                 reloadWalletView();
+            }
+        } else if (AccountEvent.Type.LOCKED.equals(event.getType())) {
+            if (event.getAccount().equals(account)) {
+                account = null;
+                txTable.setItems(FXCollections.observableList(Collections.emptyList()));
             }
         }
     }

@@ -32,7 +32,7 @@ public class EventPublisher {
 
     public static void fireAccountLocked(final AccountDTO account) {
         if (account != null) {
-            EventBusFactory.getBus(AccountEvent.ID).post(new AccountEvent(AccountEvent.Type.UNLOCKED, account));
+            EventBusFactory.getBus(AccountEvent.ID).post(new AccountEvent(AccountEvent.Type.LOCKED, account));
         }
     }
 

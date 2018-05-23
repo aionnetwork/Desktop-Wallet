@@ -60,10 +60,15 @@ public class OverviewController extends AbstractController {
 
     @Subscribe
     private void handleAccountEvent(final AccountEvent event) {
+        final AccountDTO account = event.getAccount();
         if (EnumSet.of(AccountEvent.Type.CHANGED, AccountEvent.Type.ADDED).contains(event.getType())) {
-            final AccountDTO account = event.getAccount();
             if (account.isActive()) {
                 this.account = account;
+            }
+            reloadAccounts();
+        } else if (AccountEvent.Type.LOCKED.equals(event.getType())) {
+            if (this.account.equals(account)) {
+                this.account = null;
             }
             reloadAccounts();
         }

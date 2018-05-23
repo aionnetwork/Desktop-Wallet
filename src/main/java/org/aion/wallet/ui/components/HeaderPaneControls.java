@@ -62,7 +62,7 @@ public class HeaderPaneControls extends AbstractController {
     @FXML
     private VBox settingsButton;
 
-    private String accountAddress;
+    private String accountAddress = "";
 
     @Override
     public void internalInit(URL location, ResourceBundle resources) {
@@ -124,23 +124,30 @@ public class HeaderPaneControls extends AbstractController {
 
     @Subscribe
     private void handleAccountEvent(final AccountEvent event) {
+        final AccountDTO account = event.getAccount();
         if (EnumSet.of(AccountEvent.Type.CHANGED, AccountEvent.Type.ADDED).contains(event.getType())) {
-            final AccountDTO account = event.getAccount();
             if (account.isActive()) {
-                accountBalance.setVisible(true);
-                activeAccountLabel.setVisible(true);
-                activeAccount.setText(account.getName());
-                accountAddress = account.getPublicAddress();
                 accountBalance.setText(account.getBalance() + BalanceUtils.CCY_SEPARATOR + account.getCurrency());
+                accountBalance.setVisible(true);
+                activeAccount.setText(account.getName());
+                activeAccountLabel.setVisible(true);
+                accountAddress = account.getPublicAddress();
                 UIUtils.setWidth(activeAccount);
                 UIUtils.setWidth(accountBalance);
+            }
+        } else if (AccountEvent.Type.LOCKED.equals(event.getType())){
+            if (account.getPublicAddress().equals(accountAddress)){
+                accountAddress = "";
+                activeAccountLabel.setVisible(false);
+                accountBalance.setVisible(false);
+                activeAccount.setText("");
             }
         }
     }
 
     @Override
     protected final void refreshView(final RefreshEvent event) {
-        if (accountAddress != null && !accountAddress.isEmpty()) {
+        if (!accountAddress.isEmpty()) {
             final String[] text = accountBalance.getText().split(BalanceUtils.CCY_SEPARATOR);
             final String currency = text[1];
             final Task<BigInteger> getBalanceTask = getApiTask(blockchainConnector::getBalance, accountAddress);

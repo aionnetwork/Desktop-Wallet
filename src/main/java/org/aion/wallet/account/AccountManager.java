@@ -77,16 +77,6 @@ public class AccountManager {
         EventBusFactory.getBus(SettingsEvent.ID).register(this);
     }
 
-    @Subscribe
-    private void handleSettingsChanged(final SettingsEvent event) {
-        if (SettingsEvent.Type.CHANGED.equals(event.getType())) {
-            final LightAppSettings settings = event.getSettings();
-            if (settings != null) {
-                lockTimeOut = settings.getUnlockTimeout();
-            }
-        }
-    }
-
     public String  createAccount(final String password, final String name) {
         final StringBuilder mnemonicBuilder = new StringBuilder();
         final byte[] entropy = new byte[Words.TWELVE.byteLength()];
@@ -106,62 +96,6 @@ public class AccountManager {
             processAccountAdded(account, fileContent, true);
             storeAccountName(address, name);
             return mnemonic;
-        }
-    }
-
-    private AccountDTO createAccountWithPrivateKey(final String address, final byte[] privateKeyBytes) {
-        final String name = getStoredAccountName(address);
-        final String balance = BalanceUtils.formatBalance(balanceProvider.apply(address));
-        AccountDTO account = new AccountDTO(name, address, balance, currencySupplier.get());
-        account.setPrivateKey(privateKeyBytes);
-        account.setActive(true);
-        addressToAccount.put(account.getPublicAddress(), account);
-        return account;
-    }
-
-    private void processAccountAdded(final AccountDTO account, final byte[] keystoreContent, final boolean isCreated) {
-        final String address = account.getPublicAddress();
-        addressToLastTxInfo.put(address, new TxInfo(isCreated ? -1 : 0, -1));
-        addressToTransactions.put(address, new TreeSet<>(transactionComparator));
-        addressToKeystoreContent.put(address, keystoreContent);
-        scheduleAccountLock(account);
-        EventPublisher.fireAccountAdded(account);
-    }
-
-    public void scheduleAccountLock(final AccountDTO account) {
-        lockTimer.schedule(getAccountLockTask(account), lockTimeOut.toMillis());
-    }
-
-    public Set<String> getAddresses() {
-        return addressToAccount.keySet();
-    }
-
-    public AccountDTO getAccount(final String publicAddress) {
-        final String name = getStoredAccountName(publicAddress);
-        final String balance = BalanceUtils.formatBalance(balanceProvider.apply(publicAddress));
-        return new AccountDTO(name, publicAddress, balance, currencySupplier.get());
-    }
-
-    public final String getStoredAccountName(final String publicAddress) {
-        return walletStorage.getAccountName(publicAddress);
-    }
-
-    public final void storeAccountName(final String address, final String name) {
-        walletStorage.setAccountName(address, name);
-    }
-
-    public List<AccountDTO> getAccounts() {
-        for (Map.Entry<String, AccountDTO> entry : addressToAccount.entrySet()) {
-            AccountDTO account = entry.getValue();
-            account.setBalance(BalanceUtils.formatBalance(balanceProvider.apply(account.getPublicAddress())));
-            entry.setValue(account);
-        }
-        return new ArrayList<>(addressToAccount.values());
-    }
-
-    public void updateAccount(final AccountDTO account) {
-        if (!account.getName().equalsIgnoreCase(getStoredAccountName(account.getPublicAddress()))) {
-            storeAccountName(account.getPublicAddress(), account.getName());
         }
     }
 
@@ -235,6 +169,92 @@ public class AccountManager {
         addressToLastTxInfo.put(address, txInfo);
     }
 
+    public List<AccountDTO> getAccounts() {
+        for (Map.Entry<String, AccountDTO> entry : addressToAccount.entrySet()) {
+            AccountDTO account = entry.getValue();
+            account.setBalance(BalanceUtils.formatBalance(balanceProvider.apply(account.getPublicAddress())));
+            entry.setValue(account);
+        }
+        return new ArrayList<>(addressToAccount.values());
+    }
+
+    public Set<String> getAddresses() {
+        return addressToAccount.keySet();
+    }
+
+    public AccountDTO getAccount(final String publicAddress) {
+        final String name = getStoredAccountName(publicAddress);
+        final String balance = BalanceUtils.formatBalance(balanceProvider.apply(publicAddress));
+        return new AccountDTO(name, publicAddress, balance, currencySupplier.get());
+    }
+
+    public void updateAccount(final AccountDTO account) {
+        if (!account.getName().equalsIgnoreCase(getStoredAccountName(account.getPublicAddress()))) {
+            storeAccountName(account.getPublicAddress(), account.getName());
+        }
+    }
+
+    public void unlockAccount(final AccountDTO account, final String password) throws ValidationException {
+        final Optional<byte[]> fileContent = Optional.ofNullable(addressToKeystoreContent.get(account.getPublicAddress()));
+        final ECKey storedKey;
+        if (fileContent.isPresent()) {
+            storedKey = KeystoreFormat.fromKeystore(fileContent.get(), password);
+        } else {
+            storedKey = Keystore.getKey(account.getPublicAddress(), password);
+        }
+
+        if (storedKey != null) {
+            account.setActive(true);
+            account.setPrivateKey(storedKey.getPrivKeyBytes());
+            scheduleAccountLock(account);
+            EventPublisher.fireAccountChanged(account);
+        } else {
+            throw new ValidationException("The password is incorrect!");
+        }
+
+    }
+
+    @Subscribe
+    private void handleSettingsChanged(final SettingsEvent event) {
+        if (SettingsEvent.Type.CHANGED.equals(event.getType())) {
+            final LightAppSettings settings = event.getSettings();
+            if (settings != null) {
+                lockTimeOut = settings.getUnlockTimeout();
+            }
+        }
+    }
+
+    private AccountDTO createAccountWithPrivateKey(final String address, final byte[] privateKeyBytes) {
+        final String name = getStoredAccountName(address);
+        final String balance = BalanceUtils.formatBalance(balanceProvider.apply(address));
+        AccountDTO account = new AccountDTO(name, address, balance, currencySupplier.get());
+        account.setPrivateKey(privateKeyBytes);
+        account.setActive(true);
+        addressToAccount.put(account.getPublicAddress(), account);
+        return account;
+    }
+
+    private void processAccountAdded(final AccountDTO account, final byte[] keystoreContent, final boolean isCreated) {
+        final String address = account.getPublicAddress();
+        addressToLastTxInfo.put(address, new TxInfo(isCreated ? -1 : 0, -1));
+        addressToTransactions.put(address, new TreeSet<>(transactionComparator));
+        addressToKeystoreContent.put(address, keystoreContent);
+        scheduleAccountLock(account);
+        EventPublisher.fireAccountAdded(account);
+    }
+
+    private void scheduleAccountLock(final AccountDTO account) {
+        lockTimer.schedule(getAccountLockTask(account), lockTimeOut.toMillis());
+    }
+
+    private String getStoredAccountName(final String publicAddress) {
+        return walletStorage.getAccountName(publicAddress);
+    }
+
+    private void storeAccountName(final String address, final String name) {
+        walletStorage.setAccountName(address, name);
+    }
+
     private TimerTask getAccountLockTask(final AccountDTO accountDTO) {
         return new TimerTask() {
             @Override
@@ -244,18 +264,6 @@ public class AccountManager {
                 EventPublisher.fireAccountLocked(accountDTO);
             }
         };
-    }
-
-    public void unlockAccount(final AccountDTO account, final String password) throws ValidationException {
-        ECKey storedKey = Keystore.getKey(account.getPublicAddress(), password);
-        if (storedKey != null) {
-            account.setActive(true);
-            account.setPrivateKey(storedKey.getPrivKeyBytes());
-            scheduleAccountLock(account);
-            EventPublisher.fireAccountChanged(account);
-        } else {
-            throw new ValidationException("The password is incorrect!");
-        }
     }
 
     private class TransactionComparator implements Comparator<TransactionDTO> {

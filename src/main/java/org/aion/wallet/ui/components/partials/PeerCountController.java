@@ -4,8 +4,8 @@ import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import org.aion.wallet.connector.BlockchainConnector;
-import org.aion.wallet.ui.components.AbstractController;
 import org.aion.wallet.events.RefreshEvent;
+import org.aion.wallet.ui.components.AbstractController;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -34,10 +34,12 @@ public class PeerCountController extends AbstractController {
     }
 
     private void setPeerCount(int numberOfPeers) {
-        if(numberOfPeers == 1) {
-            peerCount.setText(numberOfPeers + " peer");
-            return;
+        final String description;
+        if (numberOfPeers == 1) {
+            description = " peer";
+        } else {
+            description = " peers";
         }
-        peerCount.setText(numberOfPeers + " peers");
+        peerCount.setText(numberOfPeers + description);
     }
 }
