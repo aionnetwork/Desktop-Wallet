@@ -51,14 +51,18 @@ public class SettingsController extends AbstractController {
     public void changeSettings() {
         final LightAppSettings newSettings;
         try {
-            newSettings = new LightAppSettings(address.getText().trim(), port.getText().trim(),
-                    protocol.getText().trim(), this.settings.getType(), timeout.getText());
-            notification.setText("");
+            newSettings = new LightAppSettings(
+                    address.getText().trim(),
+                    port.getText().trim(),
+                    protocol.getText().trim(),
+                    settings.getType(),
+                    timeout.getText()
+            );
+            displayNotification("", false);
             EventPublisher.fireApplicationSettingsChanged(newSettings);
         } catch (ValidationException e) {
             log.error(e.getMessage(), e);
-            notification.getStyleClass().add(ERROR_STYLE);
-            notification.setText(e.getMessage());
+            displayNotification(e.getMessage(), true);
         }
     }
 
@@ -72,8 +76,7 @@ public class SettingsController extends AbstractController {
     @Subscribe
     private void handleSettingsChanged(final SettingsEvent event) {
         if (SettingsEvent.Type.APPLIED.equals(event.getType())) {
-            notification.getStyleClass().removeAll(ERROR_STYLE);
-            notification.setText("Changes applied");
+            displayNotification("Changes applied", false);
         }
     }
 
@@ -83,7 +86,15 @@ public class SettingsController extends AbstractController {
         address.setText(settings.getAddress());
         port.setText(settings.getPort());
         timeout.setText(settings.getUnlockTimeout().toString().substring(2).toLowerCase());
-        notification.getStyleClass().removeAll(ERROR_STYLE);
-        notification.setText("");
+        displayNotification("", false);
+    }
+
+    private void displayNotification(final String message, boolean isError) {
+        if (isError) {
+            notification.getStyleClass().add(ERROR_STYLE);
+        } else {
+            notification.getStyleClass().removeAll(ERROR_STYLE);
+        }
+        notification.setText(message);
     }
 }

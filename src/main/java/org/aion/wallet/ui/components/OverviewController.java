@@ -14,7 +14,6 @@ import org.aion.wallet.events.HeaderPaneButtonEvent;
 import org.aion.wallet.events.RefreshEvent;
 import org.aion.wallet.ui.components.partials.AddAccountDialog;
 
-import javax.crypto.AEADBadTagException;
 import java.net.URL;
 import java.util.EnumSet;
 import java.util.List;

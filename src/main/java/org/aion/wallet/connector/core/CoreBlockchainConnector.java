@@ -10,15 +10,17 @@ import org.aion.base.util.TypeConverter;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.connector.api.TxInfo;
 import org.aion.wallet.connector.api.TxState;
-import org.aion.wallet.connector.dto.SendRequestDTO;
+import org.aion.wallet.connector.dto.SendTransactionDTO;
 import org.aion.wallet.connector.dto.SyncInfoDTO;
 import org.aion.wallet.connector.dto.TransactionDTO;
 import org.aion.wallet.dto.LightAppSettings;
 import org.aion.wallet.events.AccountEvent;
 import org.aion.wallet.events.EventBusFactory;
+import org.aion.wallet.events.EventPublisher;
 import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
+import org.aion.wallet.storage.ApiType;
 import org.aion.wallet.util.AionConstants;
 import org.aion.zero.impl.types.AionBlock;
 import org.aion.zero.types.AionTransaction;
@@ -40,6 +42,7 @@ public class CoreBlockchainConnector extends BlockchainConnector {
 
     public CoreBlockchainConnector() {
         EventBusFactory.getBus(AccountEvent.ID).register(this);
+        EventPublisher.fireApplicationSettingsChanged(getLightweightWalletSettings(ApiType.CORE));
     }
 
     @Override
@@ -53,7 +56,7 @@ public class CoreBlockchainConnector extends BlockchainConnector {
     }
 
     @Override
-    protected String sendTransactionInternal(SendRequestDTO dto) throws ValidationException {
+    protected String sendTransactionInternal(SendTransactionDTO dto) throws ValidationException {
         if (!API.unlockAccount(dto.getFrom(), dto.getPassword(), (int) getSettings().getUnlockTimeout().get(ChronoUnit.SECONDS))) {
             throw new ValidationException("Failed to unlock wallet");
         }

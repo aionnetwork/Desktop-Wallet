@@ -10,13 +10,11 @@ import javafx.scene.control.TextField;
 import org.aion.api.log.LogEnum;
 import org.aion.base.util.TypeConverter;
 import org.aion.wallet.connector.BlockchainConnector;
-import org.aion.wallet.connector.dto.SendRequestDTO;
+import org.aion.wallet.connector.dto.SendTransactionDTO;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.events.*;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
-import org.aion.wallet.events.HeaderPaneButtonEvent;
-import org.aion.wallet.events.RefreshEvent;
 import org.aion.wallet.util.AionConstants;
 import org.aion.wallet.util.BalanceUtils;
 import org.aion.wallet.util.ConfigUtils;
@@ -65,7 +63,7 @@ public class SendController extends AbstractController {
         if (account == null) {
             return;
         }
-        final SendRequestDTO dto;
+        final SendTransactionDTO dto;
         try {
             dto = mapFormData();
         } catch (ValidationException e) {
@@ -100,9 +98,9 @@ public class SendController extends AbstractController {
         txStatusLabel.setText(message);
     }
 
-    private String sendTransaction(final SendRequestDTO sendRequestDTO) {
+    private String sendTransaction(final SendTransactionDTO sendTransactionDTO) {
         try {
-            return blockchainConnector.sendTransaction(sendRequestDTO);
+            return blockchainConnector.sendTransaction(sendTransactionDTO);
         } catch (ValidationException e) {
             throw new RuntimeException(e);
         }
@@ -193,8 +191,8 @@ public class SendController extends AbstractController {
         );
     }
 
-    private SendRequestDTO mapFormData() throws ValidationException {
-        final SendRequestDTO dto = new SendRequestDTO();
+    private SendTransactionDTO mapFormData() throws ValidationException {
+        final SendTransactionDTO dto = new SendTransactionDTO();
         dto.setFrom(account.getPublicAddress());
         dto.setTo(toInput.getText());
         dto.setPassword(passwordInput.getText());

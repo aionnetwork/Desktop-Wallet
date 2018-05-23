@@ -104,10 +104,10 @@ public class LightAppSettings {
     }
 
     private static final class SettingsValidator {
-        private static final Pattern timeoutPattern = Pattern.compile("^(-?)P(?=\\d|T\\d)(?:(\\d+)Y)?(?:(\\d+)M)?(?:(\\d+)([DW]))?(?:T(?:(\\d+)H)?(?:(\\d+)M)?(?:(\\d+(?:\\.\\d+)?)S)?)?$");
+        private static final Pattern TIMEOUT_PATTERN = Pattern.compile("^(-?)P(?=\\d|T\\d)(?:(\\d+)Y)?(?:(\\d+)M)?(?:(\\d+)([DW]))?(?:T(?:(\\d+)H)?(?:(\\d+)M)?(?:(\\d+(?:\\.\\d+)?)S)?)?$");
 
         private boolean validateTimeout(final String timeoutString) {
-            return timeoutPattern.matcher(timeoutString).matches();
+            return TIMEOUT_PATTERN.matcher(timeoutString).matches();
         }
     }
 }

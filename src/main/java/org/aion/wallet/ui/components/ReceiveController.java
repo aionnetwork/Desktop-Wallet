@@ -39,7 +39,7 @@ public class ReceiveController implements Initializable{
     @Subscribe
     private void handleAccountChanged(final AccountEvent event) {
         if (AccountEvent.Type.CHANGED.equals(event.getType())) {
-            accountDTO = (AccountDTO) event.getAccount();
+            accountDTO = event.getAccount();
             accountAddress.setText(accountDTO.getPublicAddress());
         }
     }

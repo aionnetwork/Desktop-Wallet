@@ -66,7 +66,7 @@ public class UnlockAccountDialog implements Initializable {
         popup.show(eventSource.getScene().getWindow());
     }
 
-    public void close(final InputEvent event) {
+    private void close(final InputEvent event) {
         ((Node) event.getSource()).getScene().getWindow().hide();
     }
 
@@ -75,7 +75,7 @@ public class UnlockAccountDialog implements Initializable {
         if (password != null && !password.isEmpty()) {
             try {
                 blockchainConnector.unlockAccount(account, password);
-                this.close(event);
+                close(event);
             } catch (ValidationException e) {
                 validationError.setText(e.getMessage());
                 validationError.setVisible(true);

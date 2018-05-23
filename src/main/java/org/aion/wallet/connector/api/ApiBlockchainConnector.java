@@ -10,7 +10,7 @@ import org.aion.base.type.Hash256;
 import org.aion.base.util.ByteArrayWrapper;
 import org.aion.base.util.TypeConverter;
 import org.aion.wallet.connector.BlockchainConnector;
-import org.aion.wallet.connector.dto.SendRequestDTO;
+import org.aion.wallet.connector.dto.SendTransactionDTO;
 import org.aion.wallet.connector.dto.SyncInfoDTO;
 import org.aion.wallet.connector.dto.TransactionDTO;
 import org.aion.wallet.dto.AccountDTO;
@@ -105,7 +105,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     }
 
     @Override
-    protected String sendTransactionInternal(final SendRequestDTO dto) {
+    protected String sendTransactionInternal(final SendTransactionDTO dto) {
         final BigInteger latestTransactionNonce = getLatestTransactionNonce(dto.getFrom());
         TxArgs txArgs = new TxArgs.TxArgsBuilder()
                 .from(new Address(TypeConverter.toJsonHex(dto.getFrom())))

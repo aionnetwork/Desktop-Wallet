@@ -7,13 +7,15 @@ import org.aion.wallet.util.ConfigUtils;
 
 import java.math.BigInteger;
 
-public class SendRequestDTO {
+public class SendTransactionDTO {
     private String from;
     private String password;
     private String to;
     private Long nrg;
     private BigInteger nrgPrice;
     private BigInteger value;
+    private byte[] data = ByteArrayWrapper.NULL_BYTE;
+    private BigInteger nonce = BigInteger.ZERO;
 
     public String getPassword() {
         return password;
@@ -68,11 +70,19 @@ public class SendRequestDTO {
     }
 
     public byte[] getData() {
-        return ByteArrayWrapper.NULL_BYTE;
+        return data;
+    }
+
+    public void setData(byte[] data) {
+        this.data = data;
     }
 
     public BigInteger getNonce() {
-        return BigInteger.ZERO;
+        return nonce;
+    }
+
+    private void setNonce(final BigInteger nonce) {
+        this.nonce = nonce;
     }
 
     public boolean validate() throws ValidationException {

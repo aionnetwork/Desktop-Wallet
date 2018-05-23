@@ -14,9 +14,7 @@ import javafx.scene.layout.Pane;
 import javafx.stage.Popup;
 import org.aion.api.log.LogEnum;
 import org.aion.wallet.connector.BlockchainConnector;
-import org.aion.wallet.events.EventBusFactory;
 import org.aion.wallet.events.EventPublisher;
-import org.aion.wallet.events.HeaderPaneButtonEvent;
 import org.aion.wallet.log.WalletLoggerFactory;
 import org.slf4j.Logger;
 
