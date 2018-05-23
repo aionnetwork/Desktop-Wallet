@@ -11,6 +11,11 @@ import java.net.URL;
 import java.util.ResourceBundle;
 
 public class PeerCountController extends AbstractController {
+
+    private static final String ONE = " peer";
+
+    private static final String MANY = " peers";
+
     @FXML
     private Label peerCount;
 
@@ -33,13 +38,7 @@ public class PeerCountController extends AbstractController {
         }
     }
 
-    private void setPeerCount(int numberOfPeers) {
-        final String description;
-        if (numberOfPeers == 1) {
-            description = " peer";
-        } else {
-            description = " peers";
-        }
-        peerCount.setText(numberOfPeers + description);
+    private void setPeerCount(final int numberOfPeers) {
+        peerCount.setText(numberOfPeers + numberOfPeers == 1 ? ONE : MANY);
     }
 }

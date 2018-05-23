@@ -89,7 +89,7 @@ public class SettingsController extends AbstractController {
         displayNotification("", false);
     }
 
-    private void displayNotification(final String message, boolean isError) {
+    private void displayNotification(final String message, final boolean isError) {
         if (isError) {
             notification.getStyleClass().add(ERROR_STYLE);
         } else {

@@ -136,7 +136,6 @@
         <javac
                 debuglevel="source,lines,vars"
                 includeantruntime="false"
-                debug="true"
                 release="9"
                 srcdir="./"
                 destdir="${out.main}"

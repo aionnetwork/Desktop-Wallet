@@ -92,10 +92,14 @@ public class AccountManager {
         } else {
             final byte[] fileContent = keystoreFormat.toKeystore(ecKey, password);
             final AccountDTO account = createAccountWithPrivateKey(address, ecKey.getPrivKeyBytes());
-            account.setName(name);
-            processAccountAdded(account, fileContent, true);
-            storeAccountName(address, name);
-            return mnemonic;
+            if (account == null) {
+                return null;
+            } else {
+                account.setName(name);
+                processAccountAdded(account, fileContent, true);
+                storeAccountName(address, name);
+                return mnemonic;
+            }
         }
     }
 
@@ -152,6 +156,9 @@ public class AccountManager {
             } else {
                 throw new ValidationException("Account already exists!");
             }
+        }
+        if (accountDTO == null) {
+            throw new ValidationException("Failed to create account");
         }
         processAccountAdded(accountDTO, fileContent, false);
         return accountDTO;
@@ -225,6 +232,14 @@ public class AccountManager {
     }
 
     private AccountDTO createAccountWithPrivateKey(final String address, final byte[] privateKeyBytes) {
+        if (address == null) {
+            log.error("Can't create account with null address");
+            return null;
+        }
+        if (privateKeyBytes == null || privateKeyBytes.length == 0) {
+            log.error("Can't create account without private key");
+            return null;
+        }
         final String name = getStoredAccountName(address);
         final String balance = BalanceUtils.formatBalance(balanceProvider.apply(address));
         AccountDTO account = new AccountDTO(name, address, balance, currencySupplier.get());
@@ -235,6 +250,9 @@ public class AccountManager {
     }
 
     private void processAccountAdded(final AccountDTO account, final byte[] keystoreContent, final boolean isCreated) {
+        if (account == null || keystoreContent == null) {
+            throw new IllegalArgumentException(String.format("account %s ; keystoreContent: %s", account, Arrays.toString(keystoreContent)));
+        }
         final String address = account.getPublicAddress();
         addressToLastTxInfo.put(address, new TxInfo(isCreated ? -1 : 0, -1));
         addressToTransactions.put(address, new TreeSet<>(transactionComparator));

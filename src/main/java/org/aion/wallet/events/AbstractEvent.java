@@ -4,7 +4,7 @@ public class AbstractEvent<T extends Enum> {
 
     private final T eventType;
 
-    protected AbstractEvent(T eventType) {
+    protected AbstractEvent(final T eventType) {
         this.eventType = eventType;
     }
 
