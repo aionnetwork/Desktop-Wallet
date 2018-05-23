@@ -1,5 +1,6 @@
 package org.aion.wallet.connector;
 
+import org.aion.wallet.account.AccountManager;
 import org.aion.wallet.connector.api.ApiBlockchainConnector;
 import org.aion.wallet.connector.dto.SendRequestDTO;
 import org.aion.wallet.connector.dto.SyncInfoDTO;
@@ -27,6 +28,8 @@ public abstract class BlockchainConnector {
 
     private final ReentrantLock lock = new ReentrantLock();
 
+    private final AccountManager accountManager;
+
     public static BlockchainConnector getInstance() {
         if (INST != null) {
             return INST;
@@ -43,17 +46,37 @@ public abstract class BlockchainConnector {
         return INST;
     }
 
-    public abstract String createAccount(final String password, final String name);
+    protected BlockchainConnector() {
+        this.accountManager = new AccountManager(this::getBalance, this::getCurrency);
+    }
 
-    public abstract AccountDTO importKeystoreFile(final byte[] file, final String password, final boolean shouldKeep) throws ValidationException;
+    public final String createAccount(final String password, final String name) {
+        return accountManager.createAccount(password, name);
+    }
 
-    public abstract AccountDTO importPrivateKey(final byte[] raw, final String password, final boolean shouldKeep) throws ValidationException;
+    public final AccountDTO importKeystoreFile(final byte[] file, final String password, final boolean shouldKeep) throws ValidationException {
+        return accountManager.importKeystore(file, password, shouldKeep);
+    }
 
-    public abstract AccountDTO importMnemonic(final String mnemonic, final String password, boolean shouldKeep) throws ValidationException;
+    public final AccountDTO importPrivateKey(final byte[] raw, final String password, final boolean shouldKeep) throws ValidationException {
+        return accountManager.importPrivateKey(raw, password, shouldKeep);
+    }
 
-    public abstract AccountDTO getAccount(final String address);
+    public final AccountDTO importMnemonic(final String mnemonic, final String password, boolean shouldKeep) throws ValidationException {
+        return accountManager.importMnemonic(mnemonic, password, shouldKeep);
+    }
 
-    public abstract List<AccountDTO> getAccounts();
+    public final void unlockAccount(final AccountDTO account, final String password) throws ValidationException {
+        accountManager.unlockAccount(account, password);
+    }
+
+    public final AccountDTO getAccount(final String publicAddress) {
+        return accountManager.getAccount(publicAddress);
+    }
+
+    public final List<AccountDTO> getAccounts() {
+        return accountManager.getAccounts();
+    }
 
     public abstract BigInteger getBalance(final String address);
 
@@ -76,11 +99,12 @@ public abstract class BlockchainConnector {
     public abstract boolean getConnectionStatusByConnectedPeers();
 
     public abstract SyncInfoDTO getSyncInfo();
+
     public abstract int getPeerCount();
 
-    // todo: Add balances with different currencies in AccountDTO
-
     public abstract String getCurrency();
+
+    public abstract LightAppSettings getSettings();
 
     public void close() {
         walletStorage.save();
@@ -90,7 +114,9 @@ public abstract class BlockchainConnector {
         walletStorage.saveLightAppSettings(settings);
     }
 
-    public abstract LightAppSettings getSettings();
+    protected final AccountManager getAccountManager() {
+        return accountManager;
+    }
 
     protected final void lock(){
         lock.lock();
@@ -107,6 +133,4 @@ public abstract class BlockchainConnector {
     protected final void storeLightweightWalletSettings(final LightAppSettings lightAppSettings){
         walletStorage.saveLightAppSettings(lightAppSettings);
     }
-
-    public abstract void unlockAccount(final AccountDTO account, final String password) throws ValidationException;
 }

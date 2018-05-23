@@ -62,8 +62,7 @@ public class AccountManager {
 
     private Duration lockTimeOut;
 
-    public AccountManager(final LightAppSettings lightAppSettings, final Function<String, BigInteger> balanceProvider, final Supplier<String> currencySupplier) {
-        this.lockTimeOut = lightAppSettings.getUnlockTimeout();
+    public AccountManager(final Function<String, BigInteger> balanceProvider, final Supplier<String> currencySupplier) {
         this.balanceProvider = balanceProvider;
         this.currencySupplier = currencySupplier;
         for (String address : Keystore.list()) {

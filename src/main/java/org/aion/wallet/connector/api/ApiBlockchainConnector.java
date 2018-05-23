@@ -9,9 +9,6 @@ import org.aion.base.type.Address;
 import org.aion.base.type.Hash256;
 import org.aion.base.util.ByteArrayWrapper;
 import org.aion.base.util.TypeConverter;
-import org.aion.crypto.ECKey;
-import org.aion.mcf.account.Keystore;
-import org.aion.wallet.account.AccountManager;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.connector.dto.SendRequestDTO;
 import org.aion.wallet.connector.dto.SyncInfoDTO;
@@ -23,7 +20,6 @@ import org.aion.wallet.events.EventBusFactory;
 import org.aion.wallet.events.EventPublisher;
 import org.aion.wallet.events.SettingsEvent;
 import org.aion.wallet.exception.NotFoundException;
-import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.storage.ApiType;
 import org.aion.wallet.util.AionConstants;
@@ -57,14 +53,12 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     private Future<?> connectionFuture;
 
-    private AccountManager accountManager;
-
     private String connectionString;
 
     public ApiBlockchainConnector() {
         connect(getConnectionString());
-        accountManager = new AccountManager(lightAppSettings, this::getBalance, this::getCurrency);
-        backgroundExecutor.submit(() -> processNewTransactions(0, accountManager.getAddresses()));
+        backgroundExecutor.submit(() -> processNewTransactions(0, getAccountManager().getAddresses()));
+        EventPublisher.fireApplicationSettingsChanged(lightAppSettings);
         registerEventBusConsumer();
     }
 
@@ -92,41 +86,6 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         } finally {
             unLock();
         }
-    }
-
-    @Override
-    public String createAccount(final String password, final String name) {
-        return accountManager.createAccount(password, name);
-    }
-
-    @Override
-    public AccountDTO importKeystoreFile(final byte[] file, final String password, final boolean shouldKeep) throws ValidationException {
-        return accountManager.importKeystore(file, password, shouldKeep);
-    }
-
-    @Override
-    public AccountDTO importPrivateKey(final byte[] raw, final String password, final boolean shouldKeep) throws ValidationException {
-        return accountManager.importPrivateKey(raw, password, shouldKeep);
-    }
-
-    @Override
-    public AccountDTO importMnemonic(final String mnemonic, final String password, boolean shouldKeep) throws ValidationException {
-        return accountManager.importMnemonic(mnemonic, password, shouldKeep);
-    }
-
-    @Override
-    public void unlockAccount(final AccountDTO account, final String password) throws ValidationException {
-        accountManager.unlockAccount(account, password);
-    }
-
-    @Override
-    public AccountDTO getAccount(final String publicAddress) {
-        return accountManager.getAccount(publicAddress);
-    }
-
-    @Override
-    public List<AccountDTO> getAccounts() {
-        return accountManager.getAccounts();
     }
 
     @Override
@@ -162,7 +121,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         try {
             response = API.getTx().sendSignedTransaction(
                     txArgs,
-                    new ByteArrayWrapper((accountManager.getAccount(dto.getFrom())).getPrivateKey()),
+                    new ByteArrayWrapper((getAccountManager().getAccount(dto.getFrom())).getPrivateKey()),
                     dto.getPassword()
             ).getObject();
         } finally {
@@ -190,9 +149,9 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     @Override
     public List<TransactionDTO> getLatestTransactions(final String address) {
-        long lastBlockToCheck = accountManager.getLastTxInfo(address).getLastCheckedBlock();
+        long lastBlockToCheck = getAccountManager().getLastTxInfo(address).getLastCheckedBlock();
         processNewTransactions(lastBlockToCheck, Collections.singleton(address));
-        return new ArrayList<>(accountManager.getTransactions(address));
+        return new ArrayList<>(getAccountManager().getTransactions(address));
     }
 
     @Override
@@ -286,7 +245,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     private void handleAccountEvent(final AccountEvent event) {
         final AccountDTO account = event.getAccount();
         if (AccountEvent.Type.CHANGED.equals(event.getType())) {
-            accountManager.updateAccount(account);
+            getAccountManager().updateAccount(account);
         } else if (AccountEvent.Type.ADDED.equals(event.getType())) {
             backgroundExecutor.submit(() -> processNewTransactions(0, Collections.singleton(account.getPublicAddress())));
         }
@@ -303,7 +262,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     }
 
     private BigInteger getLatestTransactionNonce(final String address) {
-        final TxInfo transactionInfo = accountManager.getLastTxInfo(address);
+        final TxInfo transactionInfo = getAccountManager().getLastTxInfo(address);
         final long lastCheckedBlock = transactionInfo.getLastCheckedBlock();
         long lastKnownTxCount = transactionInfo.getTxCount();
         if (lastCheckedBlock >= 0) {
@@ -321,8 +280,8 @@ public class ApiBlockchainConnector extends BlockchainConnector {
                 blk.forEach(getBlockDetailsConsumer(latest, addresses));
             }
             for (String address : addresses) {
-                final long txCount = accountManager.getLastTxInfo(address).getTxCount();
-                accountManager.updateTxInfo(address, new TxInfo(latest, txCount));
+                final long txCount = getAccountManager().getLastTxInfo(address).getTxCount();
+                getAccountManager().updateTxInfo(address, new TxInfo(latest, txCount));
             }
         }
     }
@@ -332,7 +291,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
             if (blockDetails != null) {
                 final long timestamp = blockDetails.getTimestamp();
                 for (final String address : addresses) {
-                    Set<TransactionDTO> txs = accountManager.getTransactions(address);
+                    Set<TransactionDTO> txs = getAccountManager().getTransactions(address);
                     txs.addAll(blockDetails.getTxDetails().stream()
                             .filter(t -> TypeConverter.toJsonHex(t.getFrom().toString()).equals(address)
                                     || TypeConverter.toJsonHex(t.getTo().toString()).equals(address))
@@ -403,11 +362,11 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     private TransactionDTO recordTransaction(final String address, final TxDetails transaction, final long timeStamp, final long lastCheckedBlock) {
         final TransactionDTO transactionDTO = mapTransaction(transaction, timeStamp);
-        final long txCount = accountManager.getLastTxInfo(address).getTxCount();
+        final long txCount = getAccountManager().getLastTxInfo(address).getTxCount();
         if (transactionDTO.getFrom().equals(address)) {
             final long txNonce = transaction.getNonce().longValue();
             if (txCount < txNonce) {
-                accountManager.updateTxInfo(address, new TxInfo(lastCheckedBlock, txNonce));
+                getAccountManager().updateTxInfo(address, new TxInfo(lastCheckedBlock, txNonce));
             }
         }
         return transactionDTO;
