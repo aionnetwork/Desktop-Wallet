@@ -67,7 +67,7 @@ public class MnemonicDialog implements Initializable{
     @Subscribe
     private void handleReceivedMnemonic(UiMessageEvent event) {
         if (UiMessageEvent.Type.MNEMONIC_CREATED.equals(event.getType())) {
-            mnemonicTextArea.setText(event.getMnemonic());
+            mnemonicTextArea.setText(event.getMessage());
             mnemonicTextArea.setEditable(false);
         }
     }

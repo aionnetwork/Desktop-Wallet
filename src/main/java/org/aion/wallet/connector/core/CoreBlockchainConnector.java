@@ -119,7 +119,7 @@ public class CoreBlockchainConnector extends BlockchainConnector {
     }
 
     @Override
-    public boolean getConnectionStatusByConnectedPeers() {
+    public boolean getConnectionStatus() {
         return API.peerCount() > 0;
     }
 

@@ -43,9 +43,7 @@ public abstract class AbstractController implements Initializable {
 
     @Subscribe
     private void handleRefreshEvent(final RefreshEvent event) {
-        if (isInView()) {
-            refreshView(event);
-        }
+        refreshView(event);
     }
 
     protected final <T, R> Task<R> getApiTask(final Function<T, R> consumer, T param) {
@@ -84,8 +82,7 @@ public abstract class AbstractController implements Initializable {
         return parent != null && parent.isVisible();
     }
 
-    protected void refreshView(final RefreshEvent event) {
-    }
+    protected void refreshView(final RefreshEvent event) {}
 
     protected abstract void internalInit(final URL location, final ResourceBundle resources);
 }

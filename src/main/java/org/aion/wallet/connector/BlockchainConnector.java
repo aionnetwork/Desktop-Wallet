@@ -94,7 +94,7 @@ public abstract class BlockchainConnector {
 
     public abstract List<TransactionDTO> getLatestTransactions(final String address);
 
-    public abstract boolean getConnectionStatusByConnectedPeers();
+    public abstract boolean getConnectionStatus();
 
     public abstract SyncInfoDTO getSyncInfo();
 

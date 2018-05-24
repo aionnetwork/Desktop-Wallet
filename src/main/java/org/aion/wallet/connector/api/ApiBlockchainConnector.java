@@ -74,7 +74,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         }
         connectionFuture = backgroundExecutor.submit(() -> {
             API.connect(newConnectionString, true);
-            EventPublisher.fireOperationFinished();
+            EventPublisher.fireConnectionEstablished();
         });
     }
 
@@ -83,6 +83,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         lock();
         try {
             API.destroyApi().getObject();
+            EventPublisher.fireConnectionBroken();
         } finally {
             unLock();
         }
@@ -155,7 +156,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     }
 
     @Override
-    public boolean getConnectionStatusByConnectedPeers() {
+    public boolean getConnectionStatus() {
         final boolean connected;
         lock();
         try {

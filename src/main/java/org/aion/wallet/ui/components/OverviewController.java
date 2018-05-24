@@ -84,7 +84,7 @@ public class OverviewController extends AbstractController {
 
     @Subscribe
     private void handleRefreshEvent(final RefreshEvent event){
-        if (RefreshEvent.Type.OPERATION_FINISHED.equals(event.getType())){
+        if (RefreshEvent.Type.TRANSACTION_FINISHED.equals(event.getType())){
             reloadAccounts();
         }
     }

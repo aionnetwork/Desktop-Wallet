@@ -9,6 +9,9 @@ public class RefreshEvent extends AbstractEvent<RefreshEvent.Type> {
     }
 
     public enum Type {
-        TIMER, OPERATION_FINISHED
+        CONNECTED,
+        DISCONNECTED,
+        TRANSACTION_FINISHED,
+        TIMER
     }
 }

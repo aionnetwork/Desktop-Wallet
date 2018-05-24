@@ -4,15 +4,15 @@ public class UiMessageEvent extends AbstractEvent<UiMessageEvent.Type> {
 
     public static final String ID = "ui.message";
 
-    private final String mnemonic;
+    private final String message;
 
-    public UiMessageEvent(final Type eventType, final String mnemonic) {
+    public UiMessageEvent(final Type eventType, final String message) {
         super(eventType);
-        this.mnemonic = mnemonic;
+        this.message = message;
     }
 
-    public String getMnemonic() {
-        return mnemonic;
+    public String getMessage() {
+        return message;
     }
 
     public enum Type {
