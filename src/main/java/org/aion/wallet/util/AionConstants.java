@@ -29,4 +29,6 @@ public class AionConstants {
     public static final double AION_TO_EUR = 2.46;
 
     public static final double AION_TO_USD = 3.05;
+
+    public static final int VALIDATION_BLOCKS_FOR_TRANSACTIONS = 50;
 }
