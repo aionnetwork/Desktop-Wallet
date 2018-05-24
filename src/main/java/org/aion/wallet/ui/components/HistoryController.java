@@ -242,7 +242,7 @@ public class HistoryController extends AbstractController {
         }
 
         private String getTransactionStatus(TransactionDTO dto) {
-            if(dto.getBlockNumber() > blockchainConnector.getSyncInfo().getNetworkBestBlkNumber() + AionConstants.VALIDATION_BLOCKS_FOR_TRANSACTIONS) {
+            if(dto.getBlockNumber() <= blockchainConnector.getSyncInfo().getNetworkBestBlkNumber() + AionConstants.VALIDATION_BLOCKS_FOR_TRANSACTIONS) {
                 return "Finished";
             }
             else {
