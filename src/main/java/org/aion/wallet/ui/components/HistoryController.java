@@ -102,7 +102,7 @@ public class HistoryController extends AbstractController {
     }
 
     private void buildTableModel() {
-        final TableColumn<TxRow, String> typeCol = getTableColumn("Type", "type", 0.08);
+        final TableColumn<TxRow, String> typeCol = getTableColumn("Type", "type", 0.09);
         final TableColumn<TxRow, String> nameCol = getTableColumn("Name", "name", 0.15);
         final TableColumn<TxRow, String> hashCol = getTableColumn("Tx Hash", "txHash", 0.5);
         final TableColumn<TxRow, String> valueCol = getTableColumn("Value", "value", 0.15);
