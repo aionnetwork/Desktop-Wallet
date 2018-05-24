@@ -217,8 +217,8 @@ public class HistoryController extends AbstractController {
 
     public class TxRow {
 
-        private static final String TO = "to";
-        private static final String FROM = "from";
+        private static final String TO = "outgoing";
+        private static final String FROM = "incoming";
 
         private final TransactionDTO transaction;
         private final SimpleStringProperty type;

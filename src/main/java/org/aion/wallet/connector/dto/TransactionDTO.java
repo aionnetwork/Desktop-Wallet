@@ -1,7 +1,6 @@
 package org.aion.wallet.connector.dto;
 
 import org.aion.base.util.TypeConverter;
-import org.aion.wallet.connector.api.TxState;
 
 import java.math.BigInteger;
 
@@ -13,10 +12,9 @@ public class TransactionDTO {
     private final long nrg;
     private final long nrgPrice;
     private final long timeStamp;
-    private final TxState state;
     private final long blockNumber;
 
-    public TransactionDTO(final String from, final String to, final String hash, final BigInteger value, final long nrg, final long nrgPrice, final long timeStamp, final TxState state, final long blockNumber) {
+    public TransactionDTO(final String from, final String to, final String hash, final BigInteger value, final long nrg, final long nrgPrice, final long timeStamp, final long blockNumber) {
         this.from = TypeConverter.toJsonHex(from);
         this.to = TypeConverter.toJsonHex(to);
         this.hash = hash;
@@ -24,7 +22,6 @@ public class TransactionDTO {
         this.nrg = nrg;
         this.nrgPrice = nrgPrice;
         this.timeStamp = timeStamp;
-        this.state = state;
         this.blockNumber = blockNumber;
     }
 
@@ -54,10 +51,6 @@ public class TransactionDTO {
 
     public long getTimeStamp() {
         return timeStamp;
-    }
-
-    public TxState getState() {
-        return state;
     }
 
     public long getBlockNumber() {

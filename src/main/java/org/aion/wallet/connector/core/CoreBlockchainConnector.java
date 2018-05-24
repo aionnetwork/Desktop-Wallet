@@ -9,7 +9,6 @@ import org.aion.base.util.ByteUtil;
 import org.aion.base.util.TypeConverter;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.connector.api.TxInfo;
-import org.aion.wallet.connector.api.TxState;
 import org.aion.wallet.connector.dto.SendTransactionDTO;
 import org.aion.wallet.connector.dto.SyncInfoDTO;
 import org.aion.wallet.connector.dto.TransactionDTO;
@@ -170,7 +169,6 @@ public class CoreBlockchainConnector extends BlockchainConnector {
                 transaction.getNrg(),
                 transaction.getNrgPrice(),
                 transaction.getTimeStampBI().longValue(),
-                TxState.FINISHED,
                 0L);
     }
 }

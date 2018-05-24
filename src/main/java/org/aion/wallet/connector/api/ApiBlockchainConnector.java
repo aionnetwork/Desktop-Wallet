@@ -341,7 +341,6 @@ public class ApiBlockchainConnector extends BlockchainConnector {
                 transaction.getNrgConsumed(),
                 transaction.getNrgPrice(),
                 transaction.getTimeStamp(),
-                TxState.FINISHED,
                 transaction.getBlockNumber()
         );
     }
@@ -358,7 +357,6 @@ public class ApiBlockchainConnector extends BlockchainConnector {
                 transaction.getNrgConsumed(),
                 transaction.getNrgPrice(),
                 timeStamp,
-                TxState.FINISHED,
                 blockNumber
         );
     }
