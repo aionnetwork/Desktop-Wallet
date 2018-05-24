@@ -52,10 +52,6 @@ public class SendController extends AbstractController {
     private TextArea accountAddress;
     @FXML
     private TextField accountBalance;
-    @FXML
-    private TextField equivalentEUR;
-    @FXML
-    private TextField equivalentUSD;
 
     private AccountDTO account;
 
@@ -140,20 +136,10 @@ public class SendController extends AbstractController {
 
             accountBalance.setVisible(true);
             setAccountBalanceText();
-
-            equivalentEUR.setVisible(true);
-            equivalentEUR.setText(convertBalanceToCcy(account, AionConstants.AION_TO_EUR) + " " + AionConstants.EUR_CCY);
-            UIUtils.setWidth(equivalentEUR);
-
-            equivalentUSD.setVisible(true);
-            equivalentUSD.setText(convertBalanceToCcy(account, AionConstants.AION_TO_USD) + " " + AionConstants.USD_CCY);
-            UIUtils.setWidth(equivalentUSD);
         } else if (AccountEvent.Type.LOCKED.equals(event.getType())) {
             if (event.getAccount().equals(account)) {
                 accountAddress.setText("");
                 accountBalance.setVisible(false);
-                equivalentEUR.setVisible(false);
-                equivalentUSD.setVisible(false);
                 account = null;
             }
         }
@@ -171,10 +157,6 @@ public class SendController extends AbstractController {
         super.registerEventBusConsumer();
         EventBusFactory.getBus(HeaderPaneButtonEvent.ID).register(this);
         EventBusFactory.getBus(AccountEvent.ID).register(this);
-    }
-
-    private double convertBalanceToCcy(final AccountDTO account, final double exchangeRate) {
-        return Double.parseDouble(account.getBalance()) * exchangeRate;
     }
 
     private void setAccountBalanceText() {

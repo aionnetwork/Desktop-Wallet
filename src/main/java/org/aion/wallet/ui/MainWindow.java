@@ -41,7 +41,7 @@ public class MainWindow extends Application {
     private double xOffset;
     private double yOffset;
     private Stage stage;
-    private final Timer timer = new Timer();
+    private final Timer timer = new Timer(true);
 
     @Override
     public void start(final Stage stage) throws IOException {
