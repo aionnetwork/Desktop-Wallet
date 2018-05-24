@@ -16,19 +16,9 @@ public class AionConstants {
 
     public static final BigInteger DEFAULT_NRG_PRICE = BigInteger.valueOf(10 * AMP);
 
-    public static final int BLOCK_MINING_TIME_SECONDS = 10;
+    private static final int BLOCK_MINING_TIME_SECONDS = 10;
 
     public static final Long BLOCK_MINING_TIME_MILLIS = BLOCK_MINING_TIME_SECONDS * 1000L;
-
-    public static final Integer MAX_BLOCKS_FOR_LATEST_TRANSACTIONS_QUERY = 100000;
-
-    public static final String EUR_CCY = "EUR";
-
-    public static final String USD_CCY = "USD";
-
-    public static final double AION_TO_EUR = 2.46;
-
-    public static final double AION_TO_USD = 3.05;
 
     public static final int VALIDATION_BLOCKS_FOR_TRANSACTIONS = 50;
 }

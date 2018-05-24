@@ -21,13 +21,6 @@
                 <HBox>
                     <TextField fx:id="accountBalance" editable="false" styleClass="balance-value" visible="false"/>
                 </HBox>
-                <Label text="Equivalent values" styleClass="header-text"/>
-                <HBox>
-                    <TextField fx:id="equivalentEUR" editable="false" styleClass="balance-value" visible="false" />
-                </HBox>
-                <HBox>
-                    <TextField fx:id="equivalentUSD" editable="false" styleClass="balance-value" visible="false" />
-                </HBox>
             </VBox>
             <VBox spacing="5" prefWidth="400.0">
                 <Label text="New transaction" styleClass="header-text" />
