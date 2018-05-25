@@ -7,71 +7,41 @@ import org.aion.api.server.types.SyncInfo;
 import org.aion.base.type.Address;
 import org.aion.base.util.ByteUtil;
 import org.aion.base.util.TypeConverter;
-import org.aion.mcf.account.Keystore;
 import org.aion.wallet.connector.BlockchainConnector;
-import org.aion.wallet.connector.api.TxState;
-import org.aion.wallet.connector.dto.SendRequestDTO;
+import org.aion.wallet.connector.api.TxInfo;
+import org.aion.wallet.connector.dto.SendTransactionDTO;
 import org.aion.wallet.connector.dto.SyncInfoDTO;
 import org.aion.wallet.connector.dto.TransactionDTO;
-import org.aion.wallet.connector.dto.UnlockableAccount;
-import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.dto.LightAppSettings;
+import org.aion.wallet.events.AccountEvent;
+import org.aion.wallet.events.EventBusFactory;
+import org.aion.wallet.events.EventPublisher;
 import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
-import org.aion.wallet.ui.events.EventBusFactory;
-import org.aion.wallet.ui.events.EventPublisher;
+import org.aion.wallet.storage.ApiType;
 import org.aion.wallet.util.AionConstants;
-import org.aion.wallet.util.BalanceUtils;
 import org.aion.zero.impl.types.AionBlock;
 import org.aion.zero.types.AionTransaction;
 import org.slf4j.Logger;
 
 import java.math.BigInteger;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class CoreBlockchainConnector extends BlockchainConnector {
 
     private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
 
-    private final static WalletApi API = new WalletApi();
+    private static final WalletApi API = new WalletApi();
 
     public CoreBlockchainConnector() {
-        EventBusFactory.getBus(EventPublisher.ACCOUNT_CHANGE_EVENT_ID).register(this);
-    }
-
-    public void createAccount(final String password, final String name) {
-        final String address = Keystore.create(password);
-        AccountDTO account = getAccount(address);
-        account.setName(name);
-        storeAccountName(address, name);
-    }
-
-    @Override
-    public AccountDTO addKeystoreUTCFile(byte[] file, String password, final boolean shouldKeep) throws ValidationException {
-        throw new ValidationException("Unsupported operation");
-    }
-
-    @Override
-    public AccountDTO addPrivateKey(byte[] raw, String password, final boolean shouldKeep) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public AccountDTO getAccount(final String publicAddress) {
-        final String name = getStoredAccountName(publicAddress);
-        return new AccountDTO(name, publicAddress, BalanceUtils.formatBalance(getBalance(publicAddress)), getCurrency());
-    }
-
-    @Override
-    public List<AccountDTO> getAccounts() {
-        final List<AccountDTO> accounts = new ArrayList<>();
-        for (final String publicAddress : (List<String>) API.getAccounts()) {
-            accounts.add(getAccount(publicAddress));
-        }
-        return accounts;
+        EventBusFactory.getBus(AccountEvent.ID).register(this);
+        EventPublisher.fireApplicationSettingsChanged(getLightweightWalletSettings(ApiType.CORE));
     }
 
     @Override
@@ -85,8 +55,8 @@ public class CoreBlockchainConnector extends BlockchainConnector {
     }
 
     @Override
-    protected String sendTransactionInternal(SendRequestDTO dto) throws ValidationException {
-        if (!unlock(dto)) {
+    protected String sendTransactionInternal(SendTransactionDTO dto) throws ValidationException {
+        if (!API.unlockAccount(dto.getFrom(), dto.getPassword(), (int) getSettings().getUnlockTimeout().get(ChronoUnit.SECONDS))) {
             throw new ValidationException("Failed to unlock wallet");
         }
         ArgTxCall transactionParams = new ArgTxCall(Address.wrap(ByteUtil.hexStringToBytes(dto.getFrom()))
@@ -107,11 +77,49 @@ public class CoreBlockchainConnector extends BlockchainConnector {
 
     @Override
     public List<TransactionDTO> getLatestTransactions(String address) {
-        return getTransactions(address, AionConstants.MAX_BLOCKS_FOR_LATEST_TRANSACTIONS_QUERY);
+        long lastBlockToCheck = getAccountManager().getLastTxInfo(address).getLastCheckedBlock();
+        processNewTransactions(lastBlockToCheck, Collections.singleton(address));
+        return new ArrayList<>(getAccountManager().getTransactions(address));
+    }
+
+    private void processNewTransactions(final long lastBlockToCheck, final Set<String> addresses) {
+        if (!addresses.isEmpty()) {
+            final long latest = API.getBestBlock().getNumber();
+            for (long i = latest; i > lastBlockToCheck; i -= 1) {
+                AionBlock blk = API.getBlock(i);
+                if (blk == null || blk.getTransactionsList().size() == 0) {
+                    continue;
+                }
+                for (final String address : addresses) {
+                    Set<TransactionDTO> txs = getAccountManager().getTransactions(address);
+                    txs.addAll(blk.getTransactionsList().stream()
+                            .filter(t -> TypeConverter.toJsonHex(t.getFrom().toString()).equals(address)
+                                    || TypeConverter.toJsonHex(t.getTo().toString()).equals(address))
+                            .map(t -> recordTransaction(address, t, latest))
+                            .collect(Collectors.toList()));
+                }
+            }
+            for (String address : addresses) {
+                final long txCount = getAccountManager().getLastTxInfo(address).getTxCount();
+                getAccountManager().updateTxInfo(address, new TxInfo(latest, txCount));
+            }
+        }
+    }
+
+    private TransactionDTO recordTransaction(final String address, final AionTransaction transaction, final long lastCheckedBlock) {
+        final TransactionDTO transactionDTO = mapTransaction(transaction);
+        final long txCount = getAccountManager().getLastTxInfo(address).getTxCount();
+        if (transactionDTO.getFrom().equals(address)) {
+            final long txNonce = transaction.getNonceBI().longValue();
+            if (txCount < txNonce) {
+                getAccountManager().updateTxInfo(address, new TxInfo(lastCheckedBlock, txNonce));
+            }
+        }
+        return transactionDTO;
     }
 
     @Override
-    public boolean getConnectionStatusByConnectedPeers() {
+    public boolean getConnectionStatus() {
         return API.peerCount() > 0;
     }
 
@@ -130,18 +138,16 @@ public class CoreBlockchainConnector extends BlockchainConnector {
         throw new UnsupportedOperationException();
     }
 
-    private boolean unlock(UnlockableAccount account) {
-        return API.unlockAccount(account.getAddress(), account.getPassword(), AionConstants.DEFAULT_WALLET_UNLOCK_DURATION);
-    }
-
     @Override
     public int getPeerCount() {
         return API.peerCount();
     }
 
     @Subscribe
-    private void handleAccountChanged(final AccountDTO account) {
-        storeAccountName(account.getPublicAddress(), account.getName());
+    private void handleAccountEvent(final AccountEvent event) {
+        if (AccountEvent.Type.CHANGED.equals(event.getType())) {
+            getAccountManager().updateAccount(event.getAccount());
+        }
     }
 
     private SyncInfoDTO mapSyncInfo(SyncInfo sync) {
@@ -149,28 +155,6 @@ public class CoreBlockchainConnector extends BlockchainConnector {
         syncInfoDTO.setChainBestBlkNumber(sync.chainBestBlkNumber);
         syncInfoDTO.setNetworkBestBlkNumber(sync.networkBestBlkNumber);
         return syncInfoDTO;
-    }
-
-    private List<TransactionDTO> getTransactions(final String addr, long nrOfBlocksToCheck) {
-        AionBlock latest = API.getBestBlock();
-        long blockOffset = latest.getNumber() - nrOfBlocksToCheck;
-        if (blockOffset < 0) {
-            blockOffset = 0;
-        }
-        final String parsedAddr = TypeConverter.toJsonHex(addr);
-        List<TransactionDTO> txs = new ArrayList<>();
-        for (long i = latest.getNumber(); i > blockOffset; i--) {
-            AionBlock blk = API.getBlock(i);
-            if (blk == null || blk.getTransactionsList().size() == 0) {
-                continue;
-            }
-            txs.addAll(blk.getTransactionsList().stream()
-                    .filter(t -> TypeConverter.toJsonHex(t.getFrom().toString()).equals(parsedAddr)
-                            || TypeConverter.toJsonHex(t.getTo().toString()).equals(parsedAddr))
-                    .map(this::mapTransaction)
-                    .collect(Collectors.toList()));
-        }
-        return txs;
     }
 
     private TransactionDTO mapTransaction(AionTransaction transaction) {
@@ -185,6 +169,6 @@ public class CoreBlockchainConnector extends BlockchainConnector {
                 transaction.getNrg(),
                 transaction.getNrgPrice(),
                 transaction.getTimeStampBI().longValue(),
-                TxState.FINISHED);
+                0L);
     }
 }

@@ -86,3 +86,13 @@
     -fx-text-fill: BLACK;
     -fx-display-caret: false;
 }
+
+.link-style {
+    -fx-text-fill: blue;
+    -fx-underline: true ;
+    -fx-cursor: hand;
+}
+
+.error-label {
+    -fx-text-fill: RED;
+}

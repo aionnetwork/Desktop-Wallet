@@ -12,12 +12,12 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import org.aion.log.AionLoggerFactory;
 import org.aion.api.log.LogEnum;
 import org.aion.wallet.connector.BlockchainConnector;
-import org.aion.wallet.ui.events.EventBusFactory;
-import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
-import org.aion.wallet.ui.events.WindowControlsEvent;
+import org.aion.wallet.events.EventBusFactory;
+import org.aion.wallet.events.HeaderPaneButtonEvent;
+import org.aion.wallet.events.WindowControlsEvent;
+import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.util.AionConstants;
 import org.aion.wallet.util.DataUpdater;
 import org.slf4j.Logger;
@@ -30,7 +30,7 @@ import java.util.concurrent.Executors;
 
 public class MainWindow extends Application {
 
-    private static final Logger log = AionLoggerFactory.getLogger(LogEnum.WLT.name());
+    private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
 
     private static final String TITLE = "Aion Wallet";
     private static final String MAIN_WINDOW_FXML = "MainWindow.fxml";
@@ -41,7 +41,7 @@ public class MainWindow extends Application {
     private double xOffset;
     private double yOffset;
     private Stage stage;
-    private final Timer timer = new Timer();
+    private final Timer timer = new Timer(true);
 
     @Override
     public void start(final Stage stage) throws IOException {

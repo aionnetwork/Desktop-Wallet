@@ -1,8 +1,8 @@
-package org.aion.wallet.ui.events;
+package org.aion.wallet.events;
 
 import javafx.scene.Node;
 
-public class WindowControlsEvent extends AbstractUIEvent<WindowControlsEvent.Type> {
+public class WindowControlsEvent extends AbstractEvent<WindowControlsEvent.Type> {
 
     public static final String ID = "ui.window_controls";
 

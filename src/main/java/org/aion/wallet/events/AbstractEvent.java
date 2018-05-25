@@ -1,10 +1,10 @@
-package org.aion.wallet.ui.events;
+package org.aion.wallet.events;
 
-public class AbstractUIEvent<T extends Enum> {
+public class AbstractEvent<T extends Enum> {
 
     private final T eventType;
 
-    protected AbstractUIEvent(T eventType) {
+    protected AbstractEvent(final T eventType) {
         this.eventType = eventType;
     }
 
