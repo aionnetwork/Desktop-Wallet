@@ -67,7 +67,7 @@ public class OverviewController extends AbstractController {
             }
             reloadAccounts();
         } else if (AccountEvent.Type.LOCKED.equals(event.getType())) {
-            if (this.account.equals(account)) {
+            if (account.equals(this.account)) {
                 this.account = null;
             }
             reloadAccounts();

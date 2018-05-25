@@ -105,8 +105,8 @@ public class HistoryController extends AbstractController {
         final TableColumn<TxRow, String> typeCol = getTableColumn("Type", "type", 0.09);
         final TableColumn<TxRow, String> nameCol = getTableColumn("Name", "name", 0.15);
         final TableColumn<TxRow, String> hashCol = getTableColumn("Tx Hash", "txHash", 0.5);
-        final TableColumn<TxRow, String> valueCol = getTableColumn("Value", "value", 0.15);
-        final TableColumn<TxRow, String> statusCol = getTableColumn("Status", "status", 0.08);
+        final TableColumn<TxRow, String> valueCol = getTableColumn("Value", "value", 0.12);
+        final TableColumn<TxRow, String> statusCol = getTableColumn("Status", "status", 0.13);
 
         hashCol.setCellFactory(column -> new TransactionHashCell());
 
@@ -242,11 +242,11 @@ public class HistoryController extends AbstractController {
         }
 
         private String getTransactionStatus(TransactionDTO dto) {
-            if(dto.getBlockNumber() <= blockchainConnector.getSyncInfo().getNetworkBestBlkNumber() + AionConstants.VALIDATION_BLOCKS_FOR_TRANSACTIONS) {
+            final long diff = dto.getBlockNumber() + AionConstants.VALIDATION_BLOCKS_FOR_TRANSACTIONS - blockchainConnector.getSyncInfo().getNetworkBestBlkNumber();
+            if (diff <= 0) {
                 return "Finished";
-            }
-            else {
-                return "Pending";
+            } else {
+                return Math.abs(diff) + " blocks left";
             }
         }
 

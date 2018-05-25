@@ -74,7 +74,9 @@ public class SendController extends AbstractController {
         switch (event.getType()) {
             case CONNECTED:
                 connected = true;
-                sendButton.setDisable(false);
+                if (account != null) {
+                    sendButton.setDisable(false);
+                }
                 break;
             case DISCONNECTED:
                 connected = false;

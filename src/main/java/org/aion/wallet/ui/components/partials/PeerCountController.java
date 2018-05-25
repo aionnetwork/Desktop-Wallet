@@ -40,6 +40,6 @@ public class PeerCountController extends AbstractController {
     }
 
     private void setPeerCount(final int numberOfPeers) {
-        peerCount.setText(numberOfPeers + numberOfPeers == 1 ? ONE : MANY);
+        peerCount.setText(numberOfPeers + (numberOfPeers == 1 ? ONE : MANY));
     }
 }

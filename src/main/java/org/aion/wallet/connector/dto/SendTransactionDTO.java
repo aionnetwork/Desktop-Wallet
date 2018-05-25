@@ -9,7 +9,7 @@ import java.math.BigInteger;
 
 public class SendTransactionDTO {
     private String from;
-    private String password;
+    private String password = "";
     private String to;
     private Long nrg;
     private BigInteger nrgPrice;

@@ -66,7 +66,7 @@ public class AccountManager {
         this.balanceProvider = balanceProvider;
         this.currencySupplier = currencySupplier;
         for (String address : Keystore.list()) {
-            addressToAccount.put(address, getAccount(address));
+            addressToAccount.put(address, getNewAccount(address));
             addressToTransactions.put(address, new TreeSet<>(transactionComparator));
             addressToLastTxInfo.put(address, new TxInfo(0, -1));
         }
@@ -189,10 +189,8 @@ public class AccountManager {
         return addressToAccount.keySet();
     }
 
-    public AccountDTO getAccount(final String publicAddress) {
-        final String name = getStoredAccountName(publicAddress);
-        final String balance = BalanceUtils.formatBalance(balanceProvider.apply(publicAddress));
-        return new AccountDTO(name, publicAddress, balance, currencySupplier.get());
+    public AccountDTO getAccount(final String address) {
+        return Optional.ofNullable(addressToAccount.get(address)).orElse(getNewAccount(address));
     }
 
     public void updateAccount(final AccountDTO account) {
@@ -267,6 +265,12 @@ public class AccountManager {
 
     private String getStoredAccountName(final String publicAddress) {
         return walletStorage.getAccountName(publicAddress);
+    }
+
+    private AccountDTO getNewAccount(final String publicAddress) {
+        final String name = getStoredAccountName(publicAddress);
+        final String balance = BalanceUtils.formatBalance(balanceProvider.apply(publicAddress));
+        return new AccountDTO(name, publicAddress, balance, currencySupplier.get());
     }
 
     private void storeAccountName(final String address, final String name) {
