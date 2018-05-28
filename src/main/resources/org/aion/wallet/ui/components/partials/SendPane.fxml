@@ -8,7 +8,7 @@
 
     <VBox alignment="TOP_CENTER" spacing="10" AnchorPane.leftAnchor="10" AnchorPane.rightAnchor="10" AnchorPane.topAnchor="15">
         <Label text="Send" styleClass="tile-label" alignment="CENTER"/>
-        <HBox spacing="10">
+        <HBox spacing="10" alignment="CENTER">
             <VBox prefWidth="415.0" spacing="5">
                 <Label text="Account information" styleClass="header-text" />
                 <Label text="Account address" styleClass="paragraph-text" />
