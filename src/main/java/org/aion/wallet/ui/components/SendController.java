@@ -3,10 +3,7 @@ package org.aion.wallet.ui.components;
 import com.google.common.eventbus.Subscribe;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
-import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import org.aion.api.log.LogEnum;
 import org.aion.base.util.TypeConverter;
 import org.aion.wallet.connector.BlockchainConnector;
@@ -15,10 +12,7 @@ import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.events.*;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
-import org.aion.wallet.util.AionConstants;
-import org.aion.wallet.util.BalanceUtils;
-import org.aion.wallet.util.ConfigUtils;
-import org.aion.wallet.util.UIUtils;
+import org.aion.wallet.util.*;
 import org.slf4j.Logger;
 
 import java.math.BigInteger;
@@ -52,8 +46,48 @@ public class SendController extends AbstractController {
     private TextArea accountAddress;
     @FXML
     private TextField accountBalance;
+    @FXML
+    private Button sendButton;
 
     private AccountDTO account;
+
+    private boolean connected;
+
+    @Override
+    protected void registerEventBusConsumer() {
+        super.registerEventBusConsumer();
+        EventBusFactory.getBus(HeaderPaneButtonEvent.ID).register(this);
+        EventBusFactory.getBus(AccountEvent.ID).register(this);
+    }
+
+    @Override
+    protected void internalInit(final URL location, final ResourceBundle resources) {
+        setDefaults();
+        if (!ConfigUtils.isEmbedded()) {
+            passwordInput.setVisible(false);
+            passwordInput.setManaged(false);
+        }
+    }
+
+    @Override
+    protected void refreshView(final RefreshEvent event) {
+        switch (event.getType()) {
+            case CONNECTED:
+                connected = true;
+                if (account != null) {
+                    sendButton.setDisable(false);
+                }
+                break;
+            case DISCONNECTED:
+                connected = false;
+                sendButton.setDisable(true);
+                break;
+            case TRANSACTION_FINISHED:
+                setDefaults();
+                break;
+            default:
+        }
+    }
 
     public void onSendAionClicked() {
         if (account == null) {
@@ -82,7 +116,7 @@ public class SendController extends AbstractController {
     private void handleTransactionFinished(final String txHash) {
         log.info("%s: %s", SUCCESS_MESSAGE, txHash);
         displayStatus(SUCCESS_MESSAGE, false);
-        EventPublisher.fireOperationFinished();
+        EventPublisher.fireTransactionFinished();
     }
 
     private void displayStatus(final String message, final boolean isError) {
@@ -102,15 +136,6 @@ public class SendController extends AbstractController {
         }
     }
 
-    @Override
-    protected void internalInit(final URL location, final ResourceBundle resources) {
-        setDefaults();
-        if (!ConfigUtils.isEmbedded()) {
-            passwordInput.setVisible(false);
-            passwordInput.setManaged(false);
-        }
-    }
-
     private void setDefaults() {
         nrgInput.setText(AionConstants.DEFAULT_NRG);
         nrgPriceInput.setText(AionConstants.DEFAULT_NRG_PRICE.toString());
@@ -120,27 +145,23 @@ public class SendController extends AbstractController {
         passwordInput.setText("");
     }
 
-    @Override
-    protected void refreshView(final RefreshEvent event) {
-        if (RefreshEvent.Type.OPERATION_FINISHED.equals(event.getType())) {
-            setDefaults();
-        }
-    }
-
     @Subscribe
     private void handleAccountEvent(final AccountEvent event) {
+        final AccountDTO account = event.getAccount();
         if (AccountEvent.Type.CHANGED.equals(event.getType())) {
-            account = event.getAccount();
-
-            accountAddress.setText(account.getPublicAddress());
-
-            accountBalance.setVisible(true);
-            setAccountBalanceText();
+            if (account.isActive()) {
+                this.account = account;
+                sendButton.setDisable(!connected);
+                accountAddress.setText(this.account.getPublicAddress());
+                accountBalance.setVisible(true);
+                setAccountBalanceText();
+            }
         } else if (AccountEvent.Type.LOCKED.equals(event.getType())) {
-            if (event.getAccount().equals(account)) {
+            if (account.equals(this.account)) {
+                sendButton.setDisable(true);
                 accountAddress.setText("");
                 accountBalance.setVisible(false);
-                account = null;
+                this.account = null;
             }
         }
     }
@@ -150,13 +171,6 @@ public class SendController extends AbstractController {
         if (event.getType().equals(HeaderPaneButtonEvent.Type.SEND)) {
             refreshAccountBalance();
         }
-    }
-
-    @Override
-    protected void registerEventBusConsumer() {
-        super.registerEventBusConsumer();
-        EventBusFactory.getBus(HeaderPaneButtonEvent.ID).register(this);
-        EventBusFactory.getBus(AccountEvent.ID).register(this);
     }
 
     private void setAccountBalanceText() {
@@ -176,7 +190,8 @@ public class SendController extends AbstractController {
                     account.setBalance(BalanceUtils.formatBalance(getBalanceTask.getValue()));
                     setAccountBalanceText();
                 },
-                getErrorEvent(throwable -> {}, getBalanceTask),
+                getErrorEvent(throwable -> {
+                }, getBalanceTask),
                 getEmptyEvent()
         );
     }
@@ -184,25 +199,40 @@ public class SendController extends AbstractController {
     private SendTransactionDTO mapFormData() throws ValidationException {
         final SendTransactionDTO dto = new SendTransactionDTO();
         dto.setFrom(account.getPublicAddress());
+
+        if (!AddressUtils.isValid(toInput.getText())) {
+            throw new ValidationException("Address is not a valid AION address!");
+        }
         dto.setTo(toInput.getText());
-        dto.setPassword(passwordInput.getText());
 
         try {
-            dto.setNrg(TypeConverter.StringNumberAsBigInt(nrgInput.getText()).longValue());
+            final long nrg = TypeConverter.StringNumberAsBigInt(nrgInput.getText()).longValue();
+            if (nrg <= 0) {
+                throw new ValidationException("Nrg must be greater than 0!");
+            }
+            dto.setNrg(nrg);
         } catch (NumberFormatException e) {
-            throw new ValidationException("Nrg must be a valid number");
+            throw new ValidationException("Nrg must be a valid number!");
         }
 
         try {
-            dto.setNrgPrice(TypeConverter.StringNumberAsBigInt(nrgPriceInput.getText()));
+            final BigInteger nrgPrice = TypeConverter.StringNumberAsBigInt(nrgPriceInput.getText());
+            dto.setNrgPrice(nrgPrice);
+            if (nrgPrice.compareTo(AionConstants.DEFAULT_NRG_PRICE) < 0) {
+                throw new ValidationException(String.format("Nrg price must be greater than %s!", AionConstants.DEFAULT_NRG_PRICE));
+            }
         } catch (NumberFormatException e) {
-            throw new ValidationException("Nrg price must be a valid number");
+            throw new ValidationException("Nrg price must be a valid number!");
         }
 
         try {
-            dto.setValue(BalanceUtils.extractBalance(valueInput.getText()));
+            final BigInteger value = BalanceUtils.extractBalance(valueInput.getText());
+            if (value.compareTo(BigInteger.ZERO) <= 0) {
+                throw new ValidationException("Amount must be greater than 0");
+            }
+            dto.setValue(value);
         } catch (NumberFormatException e) {
-            throw new ValidationException("Value must be a number");
+            throw new ValidationException("Amount must be a number");
         }
 
         return dto;

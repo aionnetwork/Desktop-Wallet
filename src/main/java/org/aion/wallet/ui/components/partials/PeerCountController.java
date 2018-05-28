@@ -8,6 +8,7 @@ import org.aion.wallet.events.RefreshEvent;
 import org.aion.wallet.ui.components.AbstractController;
 
 import java.net.URL;
+import java.util.EnumSet;
 import java.util.ResourceBundle;
 
 public class PeerCountController extends AbstractController {
@@ -27,7 +28,7 @@ public class PeerCountController extends AbstractController {
 
     @Override
     protected final void refreshView(final RefreshEvent event) {
-        if (RefreshEvent.Type.TIMER.equals(event.getType())) {
+        if (EnumSet.of(RefreshEvent.Type.TIMER, RefreshEvent.Type.CONNECTED).contains(event.getType())) {
             final Task<Integer> getPeerCountTask = getApiTask(o -> blockchainConnector.getPeerCount(), null);
             runApiTask(
                     getPeerCountTask,
@@ -39,6 +40,6 @@ public class PeerCountController extends AbstractController {
     }
 
     private void setPeerCount(final int numberOfPeers) {
-        peerCount.setText(numberOfPeers + numberOfPeers == 1 ? ONE : MANY);
+        peerCount.setText(numberOfPeers + (numberOfPeers == 1 ? ONE : MANY));
     }
 }

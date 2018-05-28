@@ -36,8 +36,16 @@ public class EventPublisher {
         }
     }
 
-    public static void fireOperationFinished() {
-        EventBusFactory.getBus(RefreshEvent.ID).post(new RefreshEvent(RefreshEvent.Type.OPERATION_FINISHED));
+    public static void fireTransactionFinished() {
+        EventBusFactory.getBus(RefreshEvent.ID).post(new RefreshEvent(RefreshEvent.Type.TRANSACTION_FINISHED));
+    }
+
+    public static void fireConnectionEstablished() {
+        EventBusFactory.getBus(RefreshEvent.ID).post(new RefreshEvent(RefreshEvent.Type.CONNECTED));
+    }
+
+    public static void fireConnectionBroken() {
+        EventBusFactory.getBus(RefreshEvent.ID).post(new RefreshEvent(RefreshEvent.Type.DISCONNECTED));
     }
 
     public static void fireApplicationSettingsChanged(final LightAppSettings settings) {

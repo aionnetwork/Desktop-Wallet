@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.*?>
-<?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.*?>
 <AnchorPane xmlns:fx="http://javafx.com/fxml/1" id="sendPane" stylesheets="@../contentPane.css"
             visible="false" xmlns="http://javafx.com/javafx/8.0.121"
             fx:controller="org.aion.wallet.ui.components.SendController" fx:id="parent">
@@ -31,7 +29,9 @@
                 <TextField fx:id="valueInput" promptText="Amount to send" styleClass="input-fields"/>
                 <Label fx:id="txStatusLabel"/>
                 <HBox>
-                    <Button prefWidth="400.0" mnemonicParsing="false" onMouseClicked="#onSendAionClicked" text="Generate transaction" styleClass="button"/>
+                    <Button fx:id="sendButton" prefWidth="400.0" mnemonicParsing="false"
+                            onMouseClicked="#onSendAionClicked" text="Generate transaction" disable="true"
+                            styleClass="button"/>
                 </HBox>
             </VBox>
         </HBox>

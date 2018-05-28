@@ -9,6 +9,7 @@ import org.aion.wallet.ui.components.AbstractController;
 import org.aion.wallet.events.RefreshEvent;
 
 import java.net.URL;
+import java.util.EnumSet;
 import java.util.ResourceBundle;
 
 public class SyncStatusController extends AbstractController {
@@ -24,7 +25,7 @@ public class SyncStatusController extends AbstractController {
 
     @Override
     protected final void refreshView(final RefreshEvent event) {
-        if (RefreshEvent.Type.TIMER.equals(event.getType())) {
+        if (EnumSet.of(RefreshEvent.Type.TIMER, RefreshEvent.Type.CONNECTED).contains(event.getType())) {
             final Task<SyncInfoDTO> getSyncInfoTask = getApiTask(o -> blockchainConnector.getSyncInfo(), null);
             runApiTask(
                     getSyncInfoTask,
