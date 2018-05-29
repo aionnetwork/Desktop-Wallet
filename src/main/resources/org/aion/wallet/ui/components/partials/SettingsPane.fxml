@@ -22,7 +22,10 @@
             </VBox>
             <VBox>
                 <Label text="Account unlock timeout" styleClass="paragraph-text" alignment="CENTER"/>
-                <TextField fx:id="timeout" prefColumnCount="30"/>
+                <HBox spacing="10">
+                    <TextField fx:id="timeout" prefColumnCount="20"/>
+                    <ComboBox fx:id="timeoutMeasurementUnit" />
+                </HBox>
             </VBox>
         </HBox>
 
