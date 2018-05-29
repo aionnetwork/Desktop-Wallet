@@ -18,7 +18,7 @@
     <HBox alignment="CENTER" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
         <HBox onMouseClicked="#openAionWebSite">
             <ImageView id="logo" pickOnBounds="true" preserveRatio="true" fitHeight="95">
-                <Image url="@icons/aion_logo.png"/>
+                <Image url="@icons/aion-icon.png"/>
             </ImageView>
         </HBox>
         <VBox alignment="BOTTOM_CENTER" spacing="25">
