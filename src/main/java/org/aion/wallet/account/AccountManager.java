@@ -62,6 +62,8 @@ public class AccountManager {
 
     private Duration lockTimeOut;
 
+    private String lastUsedSalt = "";
+
     public AccountManager(final Function<String, BigInteger> balanceProvider, final Supplier<String> currencySupplier) {
         this.balanceProvider = balanceProvider;
         this.currencySupplier = currencySupplier;
@@ -83,12 +85,12 @@ public class AccountManager {
         new SecureRandom().nextBytes(entropy);
         new MnemonicGenerator(English.INSTANCE).createMnemonic(entropy, mnemonicBuilder::append);
         final String mnemonic = mnemonicBuilder.toString();
-        final byte[] seed = getNewAccountSeed(mnemonic);
+        final byte[] seed = getNewAccountSeed(mnemonic, DEFAULT_MNEMONIC_SALT);
         final ECKey ecKey = new SeededECKeyEd25519(seed);
         final String address = Keystore.create(password, ecKey);
         if (address.equals("0x")) {
             log.error("An exception occurred while creating the new account");
-            return null;
+            return retryAccountCreation(password, name, DEFAULT_MNEMONIC_SALT);
         } else {
             final byte[] fileContent = keystoreFormat.toKeystore(ecKey, password);
             final AccountDTO account = createAccountWithPrivateKey(address, ecKey.getPrivKeyBytes());
@@ -103,11 +105,44 @@ public class AccountManager {
         }
     }
 
-    private byte[] getNewAccountSeed(String mnemonic) {
-        if(getAccounts().size() > 0) {
-            
+    private String retryAccountCreation(String password, String name, String previousSalt) {
+        if(previousSalt.equals(lastUsedSalt)) {
+            lastUsedSalt = name;
         }
-        return new SeedCalculator().calculateSeed(mnemonic, DEFAULT_MNEMONIC_SALT);
+        final StringBuilder mnemonicBuilder = new StringBuilder();
+        final byte[] entropy = new byte[Words.TWELVE.byteLength()];
+        new SecureRandom().nextBytes(entropy);
+        new MnemonicGenerator(English.INSTANCE).createMnemonic(entropy, mnemonicBuilder::append);
+        final String mnemonic = mnemonicBuilder.toString();
+        final byte[] seed = getNewAccountSeed(mnemonic, lastUsedSalt);
+        final ECKey ecKey = new SeededECKeyEd25519(seed);
+        final String address = Keystore.create(password, ecKey);
+        if (address.equals("0x")) {
+            log.error("An exception occurred while creating the new account");
+            return retryAccountCreation(password, name, lastUsedSalt);
+        } else {
+            final byte[] fileContent = keystoreFormat.toKeystore(ecKey, password);
+            final AccountDTO account = createAccountWithPrivateKey(address, ecKey.getPrivKeyBytes());
+            if (account == null) {
+                return null;
+            } else {
+                account.setName(name);
+                processAccountAdded(account, fileContent, true);
+                storeAccountName(address, name);
+                return mnemonic;
+            }
+        }
+    }
+
+
+    private byte[] getNewAccountSeed(String mnemonic, String salt) {
+        if(getAccounts().size() > 0) {
+            AccountDTO activeAccount = getAccounts().stream().filter(p -> p.isActive()).findAny().get();
+            if(activeAccount != null) {
+                return new SeedCalculator().calculateSeed(activeAccount.getPublicAddress(), salt);
+            }
+        }
+        return new SeedCalculator().calculateSeed(mnemonic, salt);
     }
 
     public AccountDTO importKeystore(final byte[] file, final String password, final boolean shouldKeep) throws ValidationException {
