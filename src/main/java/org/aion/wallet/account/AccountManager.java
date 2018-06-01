@@ -83,7 +83,7 @@ public class AccountManager {
         new SecureRandom().nextBytes(entropy);
         new MnemonicGenerator(English.INSTANCE).createMnemonic(entropy, mnemonicBuilder::append);
         final String mnemonic = mnemonicBuilder.toString();
-        final byte[] seed = new SeedCalculator().calculateSeed(mnemonic, DEFAULT_MNEMONIC_SALT);
+        final byte[] seed = getNewAccountSeed(mnemonic);
         final ECKey ecKey = new SeededECKeyEd25519(seed);
         final String address = Keystore.create(password, ecKey);
         if (address.equals("0x")) {
@@ -101,6 +101,13 @@ public class AccountManager {
                 return mnemonic;
             }
         }
+    }
+
+    private byte[] getNewAccountSeed(String mnemonic) {
+        if(getAccounts().size() > 0) {
+            
+        }
+        return new SeedCalculator().calculateSeed(mnemonic, DEFAULT_MNEMONIC_SALT);
     }
 
     public AccountDTO importKeystore(final byte[] file, final String password, final boolean shouldKeep) throws ValidationException {
