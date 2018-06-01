@@ -29,7 +29,6 @@ import org.slf4j.Logger;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
-import java.security.Key;
 import java.security.SecureRandom;
 import java.time.Duration;
 import java.util.*;
@@ -87,7 +86,7 @@ public class AccountManager {
         final String mnemonic = mnemonicBuilder.toString();
         final byte[] seed = getNewAccountSeed(mnemonic);
         final ECKey ecKey = new SeededECKeyEd25519(seed);
-        if(Keystore.exist(ByteUtil.toHexString(ecKey.getAddress()))) {
+        if (Keystore.exist(ByteUtil.toHexString(ecKey.getAddress()))) {
             throw new ValidationException("Account already exists");
         }
 
@@ -104,23 +103,12 @@ public class AccountManager {
                 account.setName(name);
                 processAccountAdded(account, fileContent, true);
                 storeAccountName(address, name);
-                if(getAccounts().size() > 1 && getAccounts().stream().filter(p -> p.getPublicAddress().equals(account.getPublicAddress())).findAny().isPresent()) {
+                if (getAccounts().size() > 1 && getAccounts().stream().filter(p -> p.getPublicAddress().equals(account.getPublicAddress())).findAny().isPresent()) {
                     return null;
                 }
                 return mnemonic;
             }
         }
-    }
-
-
-    private byte[] getNewAccountSeed(String mnemonic) {
-        if(getAccounts().size() > 0 && getAccounts().stream().filter(p -> p.isActive()).findAny().isPresent()) {
-            AccountDTO activeAccount = getAccounts().stream().filter(p -> p.isActive()).findAny().get();
-            if(activeAccount != null) {
-                return new SeedCalculator().calculateSeed(activeAccount.getPublicAddress(), DEFAULT_MNEMONIC_SALT);
-            }
-        }
-        return new SeedCalculator().calculateSeed(mnemonic, DEFAULT_MNEMONIC_SALT);
     }
 
     public AccountDTO importKeystore(final byte[] file, final String password, final boolean shouldKeep) throws ValidationException {
@@ -306,6 +294,15 @@ public class AccountManager {
                 EventPublisher.fireAccountLocked(accountDTO);
             }
         };
+    }
+
+    private byte[] getNewAccountSeed(String mnemonic) {
+        if (Keystore.list().length > 0) {
+            List<String> accountsSorted = Keystore.accountsSorted();
+            return new SeedCalculator().calculateSeed(accountsSorted.get(accountsSorted.size() - 1), DEFAULT_MNEMONIC_SALT);
+
+        }
+        return new SeedCalculator().calculateSeed(mnemonic, DEFAULT_MNEMONIC_SALT);
     }
 
     private class TransactionComparator implements Comparator<TransactionDTO> {
