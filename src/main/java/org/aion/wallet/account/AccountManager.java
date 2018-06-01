@@ -6,6 +6,7 @@ import io.github.novacrypto.bip39.SeedCalculator;
 import io.github.novacrypto.bip39.Words;
 import io.github.novacrypto.bip39.wordlists.English;
 import org.aion.api.log.LogEnum;
+import org.aion.base.util.ByteUtil;
 import org.aion.base.util.TypeConverter;
 import org.aion.crypto.ECKey;
 import org.aion.crypto.ECKeyFac;
@@ -28,6 +29,7 @@ import org.slf4j.Logger;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.security.Key;
 import java.security.SecureRandom;
 import java.time.Duration;
 import java.util.*;
@@ -62,8 +64,6 @@ public class AccountManager {
 
     private Duration lockTimeOut;
 
-    private String lastUsedSalt = DEFAULT_MNEMONIC_SALT;
-
     public AccountManager(final Function<String, BigInteger> balanceProvider, final Supplier<String> currencySupplier) {
         this.balanceProvider = balanceProvider;
         this.currencySupplier = currencySupplier;
@@ -79,18 +79,22 @@ public class AccountManager {
         EventBusFactory.getBus(SettingsEvent.ID).register(this);
     }
 
-    public String  createAccount(final String password, final String name) {
+    public String createAccount(final String password, final String name) throws ValidationException {
         final StringBuilder mnemonicBuilder = new StringBuilder();
         final byte[] entropy = new byte[Words.TWELVE.byteLength()];
         new SecureRandom().nextBytes(entropy);
         new MnemonicGenerator(English.INSTANCE).createMnemonic(entropy, mnemonicBuilder::append);
         final String mnemonic = mnemonicBuilder.toString();
-        final byte[] seed = getNewAccountSeed(mnemonic, DEFAULT_MNEMONIC_SALT);
+        final byte[] seed = getNewAccountSeed(mnemonic);
         final ECKey ecKey = new SeededECKeyEd25519(seed);
+        if(Keystore.exist(ByteUtil.toHexString(ecKey.getAddress()))) {
+            throw new ValidationException("Account already exists");
+        }
+
         final String address = Keystore.create(password, ecKey);
         if (address.equals("0x")) {
             log.error("An exception occurred while creating the new account");
-            return retryAccountCreation(password, name);
+            return null;
         } else {
             final byte[] fileContent = keystoreFormat.toKeystore(ecKey, password);
             final AccountDTO account = createAccountWithPrivateKey(address, ecKey.getPrivKeyBytes());
@@ -100,61 +104,23 @@ public class AccountManager {
                 account.setName(name);
                 processAccountAdded(account, fileContent, true);
                 storeAccountName(address, name);
-                return mnemonic;
-            }
-        }
-    }
-
-    private String retryAccountCreation(String password, String name) {
-        String salt = null;
-        if(getAccounts().size() > 0 && getAccounts().stream().filter(p -> p.isActive()).findAny().isPresent()) {
-            AccountDTO activeAccount = getAccounts().stream().filter(p -> p.isActive()).findAny().get();
-            if(lastUsedSalt.equals(DEFAULT_MNEMONIC_SALT)) {
-                salt = activeAccount.getPublicAddress();
-                lastUsedSalt = salt;
-            }
-            else if(lastUsedSalt.equals(activeAccount.getPublicAddress())) {
-                salt = new StringBuilder(activeAccount.getPublicAddress()).reverse().toString();
-                lastUsedSalt = salt;
-            }
-            else {
-                return null;
-            }
-        }
-        final StringBuilder mnemonicBuilder = new StringBuilder();
-        final byte[] entropy = new byte[Words.TWELVE.byteLength()];
-        new SecureRandom().nextBytes(entropy);
-        new MnemonicGenerator(English.INSTANCE).createMnemonic(entropy, mnemonicBuilder::append);
-        final String mnemonic = mnemonicBuilder.toString();
-        final byte[] seed = getNewAccountSeed(mnemonic, salt);
-        final ECKey ecKey = new SeededECKeyEd25519(seed);
-        final String address = Keystore.create(password, ecKey);
-        if (address.equals("0x")) {
-            log.error("An exception occurred while creating the new account");
-            return retryAccountCreation(password, name);
-        } else {
-            final byte[] fileContent = keystoreFormat.toKeystore(ecKey, password);
-            final AccountDTO account = createAccountWithPrivateKey(address, ecKey.getPrivKeyBytes());
-            if (account == null) {
-                return null;
-            } else {
-                account.setName(name);
-                processAccountAdded(account, fileContent, true);
-                storeAccountName(address, name);
+                if(getAccounts().size() > 1 && getAccounts().stream().filter(p -> p.getPublicAddress().equals(account.getPublicAddress())).findAny().isPresent()) {
+                    return null;
+                }
                 return mnemonic;
             }
         }
     }
 
 
-    private byte[] getNewAccountSeed(String mnemonic, String salt) {
+    private byte[] getNewAccountSeed(String mnemonic) {
         if(getAccounts().size() > 0 && getAccounts().stream().filter(p -> p.isActive()).findAny().isPresent()) {
             AccountDTO activeAccount = getAccounts().stream().filter(p -> p.isActive()).findAny().get();
             if(activeAccount != null) {
-                return new SeedCalculator().calculateSeed(activeAccount.getPublicAddress(), salt);
+                return new SeedCalculator().calculateSeed(activeAccount.getPublicAddress(), DEFAULT_MNEMONIC_SALT);
             }
         }
-        return new SeedCalculator().calculateSeed(mnemonic, salt);
+        return new SeedCalculator().calculateSeed(mnemonic, DEFAULT_MNEMONIC_SALT);
     }
 
     public AccountDTO importKeystore(final byte[] file, final String password, final boolean shouldKeep) throws ValidationException {

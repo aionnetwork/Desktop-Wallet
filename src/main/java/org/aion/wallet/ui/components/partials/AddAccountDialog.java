@@ -15,6 +15,7 @@ import javafx.stage.Popup;
 import org.aion.api.log.LogEnum;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.events.EventPublisher;
+import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
 import org.slf4j.Logger;
 
@@ -48,11 +49,20 @@ public class AddAccountDialog {
         resetValidation();
 
         if (validateFields()) {
-            String mnemonic = blockchainConnector.createAccount(newPassword.getText(), newAccountName.getText());
-            if(mnemonic != null) {
-                mnemonicDialog.open(mouseEvent);
-                EventPublisher.fireMnemonicCreated(mnemonic);
+            String mnemonic = null;
+            try {
+                mnemonic = blockchainConnector.createAccount(newPassword.getText(), newAccountName.getText());
+                if(mnemonic != null) {
+                    mnemonicDialog.open(mouseEvent);
+                    EventPublisher.fireMnemonicCreated(mnemonic);
+                }
+                else {
+                    this.close(mouseEvent);
+                }
+            } catch (ValidationException e) {
+                showInvalidFieldsError(e.getMessage());
             }
+
         } else {
             String error = "";
             if (newPassword.getText().isEmpty() || retypedPassword.getText().isEmpty()) {
@@ -110,6 +120,10 @@ public class AddAccountDialog {
 
     public void close() {
         popup.hide();
+    }
+
+    public void close(InputEvent eventSource) {
+        ((Node) eventSource.getSource()).getScene().getWindow().hide();
     }
 
     @FXML

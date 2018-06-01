@@ -85,7 +85,7 @@ public class SettingsController extends AbstractController {
         protocol.setText(settings.getProtocol());
         address.setText(settings.getAddress());
         port.setText(settings.getPort());
-        timeout.setText(settings.getUnlockTimeout().toString().substring(2).toLowerCase());
+//        timeout.setText(settings.getUnlockTimeout().toString().substring(2).toLowerCase());
         displayNotification("", false);
     }
 
