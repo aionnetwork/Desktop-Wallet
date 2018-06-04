@@ -13,8 +13,9 @@ public class TransactionDTO {
     private final long nrgPrice;
     private final long timeStamp;
     private final long blockNumber;
+    private final BigInteger nonce;
 
-    public TransactionDTO(final String from, final String to, final String hash, final BigInteger value, final long nrg, final long nrgPrice, final long timeStamp, final long blockNumber) {
+    public TransactionDTO(final String from, final String to, final String hash, final BigInteger value, final long nrg, final long nrgPrice, final long timeStamp, final long blockNumber, BigInteger nonce) {
         this.from = TypeConverter.toJsonHex(from);
         this.to = TypeConverter.toJsonHex(to);
         this.hash = hash;
@@ -23,6 +24,7 @@ public class TransactionDTO {
         this.nrgPrice = nrgPrice;
         this.timeStamp = timeStamp;
         this.blockNumber = blockNumber;
+        this.nonce = nonce;
     }
 
     public String getFrom() {
@@ -55,5 +57,9 @@ public class TransactionDTO {
 
     public long getBlockNumber() {
         return blockNumber;
+    }
+
+    public BigInteger getNonce() {
+        return nonce;
     }
 }
