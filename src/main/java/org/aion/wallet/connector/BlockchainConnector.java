@@ -50,7 +50,7 @@ public abstract class BlockchainConnector {
         this.accountManager = new AccountManager(this::getBalance, this::getCurrency);
     }
 
-    public final String createAccount(final String password, final String name) throws ValidationException {
+    public final String createAccount(final String password, final String name) {
         return accountManager.createAccount(password, name);
     }
 

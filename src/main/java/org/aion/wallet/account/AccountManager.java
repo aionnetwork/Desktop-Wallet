@@ -6,7 +6,6 @@ import io.github.novacrypto.bip39.SeedCalculator;
 import io.github.novacrypto.bip39.Words;
 import io.github.novacrypto.bip39.wordlists.English;
 import org.aion.api.log.LogEnum;
-import org.aion.base.util.ByteUtil;
 import org.aion.base.util.TypeConverter;
 import org.aion.crypto.ECKey;
 import org.aion.crypto.ECKeyFac;
@@ -78,7 +77,7 @@ public class AccountManager {
         EventBusFactory.getBus(SettingsEvent.ID).register(this);
     }
 
-    public String createAccount(final String password, final String name) throws ValidationException {
+    public String createAccount(final String password, final String name) {
         final StringBuilder mnemonicBuilder = new StringBuilder();
         final byte[] entropy = new byte[Words.TWELVE.byteLength()];
         new SecureRandom().nextBytes(entropy);
@@ -86,9 +85,6 @@ public class AccountManager {
         final String mnemonic = mnemonicBuilder.toString();
         final byte[] seed = getNewAccountSeed(mnemonic);
         final ECKey ecKey = new SeededECKeyEd25519(seed);
-        if (Keystore.exist(ByteUtil.toHexString(ecKey.getAddress()))) {
-            throw new ValidationException("Account already exists");
-        }
 
         final String address = Keystore.create(password, ecKey);
         if (address.equals("0x")) {
@@ -103,12 +99,17 @@ public class AccountManager {
                 account.setName(name);
                 processAccountAdded(account, fileContent, true);
                 storeAccountName(address, name);
-                if (getAccounts().size() > 1 && getAccounts().stream().filter(p -> p.getPublicAddress().equals(account.getPublicAddress())).findAny().isPresent()) {
+                if (isAccountAlreadyImported(account)) {
                     return null;
                 }
                 return mnemonic;
             }
         }
+    }
+
+    private boolean isAccountAlreadyImported(AccountDTO account) {
+        return getAccounts().size() > 1
+                && getAccounts().stream().filter(p -> p.getPublicAddress().equals(account.getPublicAddress())).findAny().isPresent();
     }
 
     public AccountDTO importKeystore(final byte[] file, final String password, final boolean shouldKeep) throws ValidationException {
@@ -296,7 +297,7 @@ public class AccountManager {
         };
     }
 
-    private byte[] getNewAccountSeed(String mnemonic) {
+    private byte[] getNewAccountSeed(final String mnemonic) {
         if (Keystore.list().length > 0) {
             List<String> accountsSorted = Keystore.accountsSorted();
             return new SeedCalculator().calculateSeed(accountsSorted.get(accountsSorted.size() - 1), DEFAULT_MNEMONIC_SALT);
