@@ -29,7 +29,6 @@ import org.slf4j.Logger;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.SecureRandom;
-import java.time.Duration;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -60,7 +59,9 @@ public class AccountManager {
 
     private final Supplier<String> currencySupplier;
 
-    private Duration lockTimeOut;
+    private int lockTimeOut;
+
+    private String lockTimeOutMeasurementUnit;
 
     public AccountManager(final Function<String, BigInteger> balanceProvider, final Supplier<String> currencySupplier) {
         this.balanceProvider = balanceProvider;
@@ -225,6 +226,7 @@ public class AccountManager {
             final LightAppSettings settings = event.getSettings();
             if (settings != null) {
                 lockTimeOut = settings.getUnlockTimeout();
+                lockTimeOutMeasurementUnit = settings.getLockTimeoutMeasurementUnit();
             }
         }
     }
@@ -260,7 +262,19 @@ public class AccountManager {
     }
 
     private void scheduleAccountLock(final AccountDTO account) {
-        lockTimer.schedule(getAccountLockTask(account), lockTimeOut.toMillis());
+        lockTimer.schedule(getAccountLockTask(account), computeDelay(lockTimeOut, lockTimeOutMeasurementUnit));
+    }
+
+    private long computeDelay(int lockTimeOut, String lockTimeOutMeasurementUnit) {
+        switch (lockTimeOutMeasurementUnit) {
+            case "seconds" :
+                return lockTimeOut * 1000;
+            case "minutes" :
+                return lockTimeOut * 60 * 1000;
+            case "hours" :
+                return lockTimeOut * 3600 * 1000;
+        }
+        return 0;
     }
 
     private String getStoredAccountName(final String publicAddress) {

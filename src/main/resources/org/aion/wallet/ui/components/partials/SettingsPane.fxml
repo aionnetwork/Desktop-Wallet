@@ -21,8 +21,11 @@
                 <TextField fx:id="port" prefColumnCount="30"/>
             </VBox>
             <VBox>
-                <Label text="Account unlock timeout" styleClass="paragraph-text" alignment="CENTER"/>
-                <TextField fx:id="timeout" prefColumnCount="30"/>
+                <Label text="Account lock timeout" styleClass="paragraph-text" alignment="CENTER"/>
+                <HBox spacing="10">
+                    <TextField fx:id="timeout" prefColumnCount="20"/>
+                    <ComboBox fx:id="timeoutMeasurementUnit" />
+                </HBox>
             </VBox>
         </HBox>
 
