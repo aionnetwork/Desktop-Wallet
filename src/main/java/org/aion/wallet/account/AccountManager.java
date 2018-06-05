@@ -226,7 +226,7 @@ public class AccountManager {
             final LightAppSettings settings = event.getSettings();
             if (settings != null) {
                 lockTimeOut = settings.getUnlockTimeout();
-                lockTimeOutMeasurementUnit = settings.getUnlockTimeoutMeasurementUnit();
+                lockTimeOutMeasurementUnit = settings.getLockTimeoutMeasurementUnit();
             }
         }
     }

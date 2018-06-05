@@ -110,7 +110,7 @@ public class SettingsController extends AbstractController {
         port.setText(settings.getPort());
         timeout.setText(settings.getUnlockTimeout().toString());
         timeoutMeasurementUnit.setItems(getTimeoutMeasurementUnits());
-        setInitialMeasurementUnit(settings.getUnlockTimeoutMeasurementUnit());
+        setInitialMeasurementUnit(settings.getLockTimeoutMeasurementUnit());
         displayNotification("", false);
     }
 
