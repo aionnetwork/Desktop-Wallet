@@ -307,7 +307,7 @@ public class AccountManager {
         public int compare(final TransactionDTO tx1, final TransactionDTO tx2) {
             return tx1 == null ?
                     (tx2 == null ? 0 : -1) :
-                    (tx2 == null ? 1 : Long.compare(tx2.getTimeStamp(), tx1.getTimeStamp()));
+                    (tx2 == null ? 1 : tx2.getNonce().compareTo(tx1.getNonce()));
         }
     }
 }
