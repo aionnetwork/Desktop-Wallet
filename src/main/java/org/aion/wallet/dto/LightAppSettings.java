@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 
 public class LightAppSettings {
     private static final Integer DEFAULT_UNLOCK_TIMEOUT = 3;
-    private static final String DEFAULT_UNLOCK_TIMEOUT_MEASUREMENT_UNIT = "M";
+    private static final String DEFAULT_UNLOCK_TIMEOUT_MEASUREMENT_UNIT = "minutes";
 
     private static final String ADDRESS = ".address";
     private static final String PORT = ".port";
