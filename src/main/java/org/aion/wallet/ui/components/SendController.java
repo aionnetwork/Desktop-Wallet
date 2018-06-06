@@ -8,6 +8,7 @@ import org.aion.api.log.LogEnum;
 import org.aion.base.util.TypeConverter;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.connector.dto.SendTransactionDTO;
+import org.aion.wallet.connector.dto.TransactionResponseDTO;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.events.*;
 import org.aion.wallet.exception.ValidationException;
@@ -109,11 +110,11 @@ public class SendController extends AbstractController {
         }
         displayStatus(PENDING_MESSAGE, false);
 
-        final Task<String> sendTransactionTask = getApiTask(this::sendTransaction, dto);
+        final Task<TransactionResponseDTO> sendTransactionTask = getApiTask(this::sendTransaction, dto);
 
         runApiTask(
                 sendTransactionTask,
-                evt -> handleTransactionFinished(sendTransactionTask.getValue()),
+                evt -> handleTransactionFinished(sendTransactionTask.getValue().getTxHash().toString()),
                 getErrorEvent(t -> Optional.ofNullable(t.getCause()).ifPresent(cause -> displayStatus(cause.getMessage(), true)), sendTransactionTask),
                 getEmptyEvent()
         );
@@ -134,7 +135,7 @@ public class SendController extends AbstractController {
         txStatusLabel.setText(message);
     }
 
-    private String sendTransaction(final SendTransactionDTO sendTransactionDTO) {
+    private TransactionResponseDTO sendTransaction(final SendTransactionDTO sendTransactionDTO) {
         try {
             return blockchainConnector.sendTransaction(sendTransactionDTO);
         } catch (ValidationException e) {
