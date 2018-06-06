@@ -6,19 +6,21 @@
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.*?>
 <?import org.aion.wallet.ui.components.account.AccountCellFactory?>
-<AnchorPane id="overviewPane"
+<AnchorPane id="overviewPane" stylesheets="@../contentPane.css"
             xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
             fx:controller="org.aion.wallet.ui.components.OverviewController" fx:id="parent">
 
     <VBox alignment="TOP_CENTER" spacing="10" AnchorPane.leftAnchor="10" AnchorPane.rightAnchor="10" AnchorPane.topAnchor="15">
         <Label text="Accounts overview" styleClass="tile-label" alignment="CENTER"/>
-        <ScrollPane VBox.vgrow="NEVER" hbarPolicy="NEVER" vbarPolicy="NEVER" prefViewportHeight="240">
-            <ListView fx:id="accountListView" styleClass="accounts-list">
-                <cellFactory>
-                    <AccountCellFactory/>
-                </cellFactory>
-            </ListView>
-        </ScrollPane>
+        <HBox alignment="CENTER">
+            <ScrollPane AnchorPane.topAnchor="10" hbarPolicy="NEVER" vbarPolicy="NEVER" prefViewportWidth="800" prefViewportHeight="240">
+                <ListView fx:id="accountListView" styleClass="accounts-list">
+                    <cellFactory>
+                        <AccountCellFactory/>
+                    </cellFactory>
+                </ListView>
+            </ScrollPane>
+        </HBox>
     </VBox>
     <Button AnchorPane.topAnchor="320" AnchorPane.leftAnchor="10" mnemonicParsing="false" text="Add account" onMouseClicked="#openAddAccountDialog"/>
 </AnchorPane>

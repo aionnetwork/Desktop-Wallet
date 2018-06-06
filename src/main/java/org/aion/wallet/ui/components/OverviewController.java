@@ -8,13 +8,14 @@ import javafx.scene.control.ListView;
 import javafx.scene.input.MouseEvent;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.dto.AccountDTO;
+import org.aion.wallet.events.AccountEvent;
+import org.aion.wallet.events.EventBusFactory;
+import org.aion.wallet.events.HeaderPaneButtonEvent;
+import org.aion.wallet.events.RefreshEvent;
 import org.aion.wallet.ui.components.partials.AddAccountDialog;
-import org.aion.wallet.ui.events.EventBusFactory;
-import org.aion.wallet.ui.events.EventPublisher;
-import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
-import org.aion.wallet.ui.events.RefreshEvent;
 
 import java.net.URL;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -37,7 +38,7 @@ public class OverviewController extends AbstractController {
     protected void registerEventBusConsumer() {
         super.registerEventBusConsumer();
         EventBusFactory.getBus(HeaderPaneButtonEvent.ID).register(this);
-        EventBusFactory.getBus(EventPublisher.ACCOUNT_CHANGE_EVENT_ID).register(this);
+        EventBusFactory.getBus(AccountEvent.ID).register(this);
     }
 
     private void reloadAccounts() {
@@ -58,10 +59,19 @@ public class OverviewController extends AbstractController {
     }
 
     @Subscribe
-    private void handleAccountChanged(final AccountDTO account) {
-        this.account = account;
-        // todo: don't reload the account list from blockchain connector
-        reloadAccounts();
+    private void handleAccountEvent(final AccountEvent event) {
+        final AccountDTO account = event.getAccount();
+        if (EnumSet.of(AccountEvent.Type.CHANGED, AccountEvent.Type.ADDED).contains(event.getType())) {
+            if (account.isActive()) {
+                this.account = account;
+            }
+            reloadAccounts();
+        } else if (AccountEvent.Type.LOCKED.equals(event.getType())) {
+            if (account.equals(this.account)) {
+                this.account = null;
+            }
+            reloadAccounts();
+        }
     }
 
     @Subscribe
@@ -74,7 +84,7 @@ public class OverviewController extends AbstractController {
 
     @Subscribe
     private void handleRefreshEvent(final RefreshEvent event){
-        if (RefreshEvent.Type.OPERATION_FINISHED.equals(event.getType())){
+        if (RefreshEvent.Type.TRANSACTION_FINISHED.equals(event.getType())){
             reloadAccounts();
         }
     }

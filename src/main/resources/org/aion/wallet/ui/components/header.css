@@ -3,12 +3,12 @@
 }
 
 .pressed{
-    -fx-border-color: #40bded;
+    -fx-border-color: #4221CC;
     -fx-border-width: 0 0 5 0;
 }
 
 .header-button-label-pressed {
-    -fx-text-fill: #40bded;
+    -fx-text-fill: #4221CC;
     -fx-text-alignment: CENTER;
     -fx-font-family: 'Open Sans Regular';
     -fx-font-size: 18px;
@@ -60,6 +60,6 @@
     -fx-font-family: 'Open Sans Regular';
     -fx-font-size: 18px;
     -fx-display-caret: false;
-    -fx-border-color: #40bded;
+    -fx-border-color: #4221CC;
     -fx-border-width: 0 0 1 0;
 }

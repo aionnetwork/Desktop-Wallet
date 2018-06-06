@@ -22,3 +22,10 @@
     -fx-text-box-border: red ;
     -fx-focus-color: red ;
 }
+
+.mnemonic-textarea {
+    -fx-control-inner-background: #ececec;
+    -fx-background-insets: 0px;
+    -fx-text-fill: BLACK;
+    -fx-display-caret: false;
+}
