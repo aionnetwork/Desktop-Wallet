@@ -2,6 +2,7 @@ package org.aion.wallet.dto;
 
 import org.aion.base.util.TypeConverter;
 
+import java.awt.image.BufferedImage;
 import java.util.Objects;
 
 public class AccountDTO {
@@ -11,6 +12,7 @@ public class AccountDTO {
     private String balance;  //TODO this has to be BigInteger
     private String name;
     private boolean active;
+    private BufferedImage qrCode;
 
     public AccountDTO(final String name, final String publicAddress, final String balance, final String currency) {
         this.name = name;
@@ -57,6 +59,14 @@ public class AccountDTO {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public BufferedImage getQrCode() {
+        return qrCode;
+    }
+
+    public void setQrCode(BufferedImage qrCode) {
+        this.qrCode = qrCode;
     }
 
     @Override

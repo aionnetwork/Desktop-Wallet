@@ -24,6 +24,7 @@ import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.storage.WalletStorage;
 import org.aion.wallet.util.BalanceUtils;
+import org.aion.wallet.util.QRCodeUtils;
 import org.slf4j.Logger;
 
 import java.io.UnsupportedEncodingException;
@@ -97,6 +98,7 @@ public class AccountManager {
                 return null;
             } else {
                 account.setName(name);
+                account.setQrCode(QRCodeUtils.writeQRCode(address, 100, 100));
                 processAccountAdded(account, fileContent, true);
                 storeAccountName(address, name);
                 return mnemonic;
@@ -181,6 +183,7 @@ public class AccountManager {
         for (Map.Entry<String, AccountDTO> entry : addressToAccount.entrySet()) {
             AccountDTO account = entry.getValue();
             account.setBalance(BalanceUtils.formatBalance(balanceProvider.apply(account.getPublicAddress())));
+            account.setQrCode(QRCodeUtils.writeQRCode(account.getPublicAddress(), 100, 100));
             entry.setValue(account);
         }
         return new ArrayList<>(addressToAccount.values());
@@ -245,6 +248,7 @@ public class AccountManager {
         AccountDTO account = new AccountDTO(name, address, balance, currencySupplier.get());
         account.setPrivateKey(privateKeyBytes);
         account.setActive(true);
+        account.setQrCode(QRCodeUtils.writeQRCode(account.getPublicAddress(), 100, 100));
         addressToAccount.put(account.getPublicAddress(), account);
         return account;
     }
