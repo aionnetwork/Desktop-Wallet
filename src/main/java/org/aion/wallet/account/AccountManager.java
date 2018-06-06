@@ -102,7 +102,6 @@ public class AccountManager {
 
     public void importMasterAccount(final String mnemonic, final String password) throws ValidationException {
         try {
-            walletStorage.setMasterAccountMnemonic(mnemonic, password);
             processMasterAccount(mnemonic, password);
         } catch (final Exception e) {
             throw new ValidationException(e);
