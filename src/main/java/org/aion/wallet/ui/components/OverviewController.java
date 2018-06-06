@@ -16,6 +16,7 @@ import org.aion.wallet.events.RefreshEvent;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.ui.components.partials.AddAccountDialog;
 import org.aion.wallet.ui.components.partials.ImportAccountDialog;
+import org.aion.wallet.ui.components.partials.UnlockMasterAccountDialog;
 
 import java.net.URL;
 import java.util.EnumSet;
@@ -33,6 +34,7 @@ public class OverviewController extends AbstractController {
     private ListView<AccountDTO> accountListView;
     private AddAccountDialog addAccountDialog;
     private ImportAccountDialog importAccountDialog;
+    private UnlockMasterAccountDialog unlockMasterAccountDialog;
 
     private AccountDTO account;
 
@@ -41,6 +43,7 @@ public class OverviewController extends AbstractController {
     public void internalInit(final URL location, final ResourceBundle resources) {
         addAccountDialog = new AddAccountDialog();
         importAccountDialog = new ImportAccountDialog();
+        unlockMasterAccountDialog = new UnlockMasterAccountDialog();
         reloadAccounts();
     }
 
@@ -112,7 +115,7 @@ public class OverviewController extends AbstractController {
     }
 
     public void unlockMasterAccount(MouseEvent mouseEvent) throws ValidationException {
-        blockchainConnector.unlockMasterAccount("1234");
+        unlockMasterAccountDialog.open(mouseEvent);
     }
 
     public void openImportAccountDialog(MouseEvent mouseEvent) {
