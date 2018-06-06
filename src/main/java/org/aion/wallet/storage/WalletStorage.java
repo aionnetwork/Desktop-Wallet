@@ -2,9 +2,12 @@ package org.aion.wallet.storage;
 
 import org.aion.api.log.LogEnum;
 import org.aion.wallet.dto.LightAppSettings;
+import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
 import org.slf4j.Logger;
 
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,9 +39,13 @@ public class WalletStorage {
 
     private static final String ACCOUNT_NAME_PROP = ".name";
 
-    private static final String MASTER_ACCOUNT_PROP = "accounts.master.address";
-
     private static final String MASTER_DERIVATIONS_PROP = "accounts.master.derivations";
+
+    private static final String MASTER_MNEMONIC_PROP = "accounts.master.mnemonic";
+
+    private static final String MNEMONIC_ENCRYPTION_ALGORITHM = "Blowfish";
+
+    private static final String MNEMONIC_STRING_CONVERSION_CHARSET_NAME = "ISO-8859-1";
 
     private static final WalletStorage INST;
 
@@ -116,19 +123,36 @@ public class WalletStorage {
         }
     }
 
-    public String getMasterAccount() {
-        return Optional.ofNullable(accountsProperties.getProperty(MASTER_ACCOUNT_PROP)).orElse(BLANK);
+    public String getMasterAccountMnemonic(String password) throws ValidationException {
+        if (password == null || password.equalsIgnoreCase("")) {
+            throw new ValidationException("Password is not valid");
+        }
+        String encodedMnemonic = accountsProperties.getProperty(MASTER_MNEMONIC_PROP);
+        if (encodedMnemonic == null) {
+            throw new ValidationException("No master account present");
+        }
+
+        try {
+            return decryptMnemonic(encodedMnemonic, password);
+        } catch (Exception e) {
+            throw new ValidationException("Cannot decrypt your seed");
+        }
     }
 
-    public void setMasterAccount(final String address) {
-        if (address != null) {
-            accountsProperties.setProperty(MASTER_ACCOUNT_PROP, address);
-            saveSettings();
+    public void setMasterAccountMnemonic(final String mnemonic, String password) throws ValidationException {
+        try {
+            if (mnemonic != null) {
+                accountsProperties.setProperty(MASTER_MNEMONIC_PROP, encryptMnemonic(mnemonic, password));
+                saveSettings();
+            }
+        } catch (Exception e) {
+            throw new ValidationException("Cannot encode master account key");
         }
     }
 
     public boolean hasMasterAccount() {
-        return !getMasterAccount().equalsIgnoreCase(BLANK);
+        String mnemonic = accountsProperties.getProperty(MASTER_MNEMONIC_PROP);
+        return mnemonic != null && !mnemonic.equalsIgnoreCase("");
     }
 
     public int getMasterAccountDerivations() {
@@ -149,5 +173,21 @@ public class WalletStorage {
             lightAppProperties.putAll(lightAppSettings.getSettingsProperties());
             saveSettings();
         }
+    }
+
+    private String encryptMnemonic(String mnemonic, String password) throws Exception {
+        SecretKeySpec key = new SecretKeySpec(password.getBytes(), MNEMONIC_ENCRYPTION_ALGORITHM);
+        Cipher cipher = Cipher.getInstance(MNEMONIC_ENCRYPTION_ALGORITHM);
+        cipher.init(Cipher.ENCRYPT_MODE, key);
+        byte[] encrypted = cipher.doFinal(mnemonic.getBytes());
+        return new String(encrypted, MNEMONIC_STRING_CONVERSION_CHARSET_NAME);
+    }
+
+    private String decryptMnemonic(String encryptedMnemonic, String password) throws Exception {
+        SecretKeySpec skeyspec = new SecretKeySpec(password.getBytes(), MNEMONIC_ENCRYPTION_ALGORITHM);
+        Cipher cipher = Cipher.getInstance(MNEMONIC_ENCRYPTION_ALGORITHM);
+        cipher.init(Cipher.DECRYPT_MODE, skeyspec);
+        byte[] decrypted = cipher.doFinal(encryptedMnemonic.getBytes(MNEMONIC_STRING_CONVERSION_CHARSET_NAME));
+        return new String(decrypted);
     }
 }

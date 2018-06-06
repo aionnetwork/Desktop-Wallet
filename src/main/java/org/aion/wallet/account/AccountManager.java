@@ -72,12 +72,7 @@ public class AccountManager {
     public AccountManager(final Function<String, BigInteger> balanceProvider, final Supplier<String> currencySupplier) {
         this.balanceProvider = balanceProvider;
         this.currencySupplier = currencySupplier;
-        // todo(valan): rm this after saving master keystore somewhere else
-        final String masterAccount = walletStorage.getMasterAccount();
         for (String address : Keystore.list()) {
-            if (address.equalsIgnoreCase(masterAccount)) {
-                continue;
-            }
             addressToAccount.put(address, getNewAccount(address));
             addressToTransactions.put(address, new TreeSet<>(transactionComparator));
             addressToLastTxInfo.put(address, new TxInfo(0, -1));
@@ -89,59 +84,47 @@ public class AccountManager {
         EventBusFactory.getBus(SettingsEvent.ID).register(this);
     }
 
-    public String createMasterAccount(final String password, final String name) throws ValidationException{
+    public String createMasterAccount(final String password, final String name) throws ValidationException {
         final StringBuilder mnemonicBuilder = new StringBuilder();
         final byte[] entropy = new byte[Words.TWELVE.byteLength()];
         new SecureRandom().nextBytes(entropy);
         new MnemonicGenerator(English.INSTANCE).createMnemonic(entropy, mnemonicBuilder::append);
         final String mnemonic = mnemonicBuilder.toString();
-        final byte[] seed = new SeedCalculator().calculateSeed(mnemonic, DEFAULT_MNEMONIC_SALT);
-        final ECKey ecKey = new SeededECKeyEd25519(seed);
-        final String address = Keystore.create(password, ecKey);
-        if (address.equals("0x")) {
-            log.error("An exception occurred while creating the new account");
+
+        final AccountDTO account = processMasterAccount(mnemonic, password);
+        if (account == null) {
             return null;
-        } else {
-            final AccountDTO account = processMasterAccount(ecKey, password);
-            if (account == null) {
-                return null;
-            } else {
-                account.setName(name);
-                storeAccountName(address, name);
-                return mnemonic;
-            }
         }
+        account.setName(name);
+        storeAccountName(account.getPublicAddress(), name);
+        return mnemonic;
     }
 
     public void importMasterAccount(final String mnemonic, final String password) throws ValidationException {
         try {
-            byte[] seed = new SeedCalculator().calculateSeed(mnemonic, DEFAULT_MNEMONIC_SALT);
-            processMasterAccount(new SeededECKeyEd25519(seed), password);
+            walletStorage.setMasterAccountMnemonic(mnemonic, password);
+            processMasterAccount(mnemonic, password);
         } catch (final Exception e) {
             throw new ValidationException(e);
         }
     }
 
-    private AccountDTO processMasterAccount(final ECKey rootEcKey, String password) throws ValidationException{
-        walletStorage.setMasterAccount(TypeConverter.toJsonHex(rootEcKey.computeAddress(rootEcKey.getPubKey())));
+    private AccountDTO processMasterAccount(String mnemonic, String password) throws ValidationException {
+        final byte[] seed = new SeedCalculator().calculateSeed(mnemonic, DEFAULT_MNEMONIC_SALT);
+        final ECKey rootEcKey = new SeededECKeyEd25519(seed);
 
-        // todo(vbalan): secure persist root key
-        final byte[] fileContent = keystoreFormat.toKeystore(rootEcKey, password);
-
-        walletStorage.setMasterAccount(TypeConverter.toJsonHex(rootEcKey.computeAddress(rootEcKey.getPubKey())));
         root = new ExtendedKey(rootEcKey);
+        walletStorage.setMasterAccountMnemonic(mnemonic, password);
         return addInternalAccount();
     }
 
-    public void unlockMasterAccount(String password) throws ValidationException{
+    public void unlockMasterAccount(String password) throws ValidationException {
         if (!walletStorage.hasMasterAccount()) {
             return;
         }
 
-        ECKey rootEcKey = Keystore.getKey(walletStorage.getMasterAccount(), password);
-        if (rootEcKey == null) {
-            return;
-        }
+        final byte[] seed = new SeedCalculator().calculateSeed(walletStorage.getMasterAccountMnemonic(password), DEFAULT_MNEMONIC_SALT);
+        ECKey rootEcKey = new SeededECKeyEd25519(seed);
         root = new ExtendedKey(rootEcKey);
 
         for (int i = 0; i < walletStorage.getMasterAccountDerivations(); i++) {
@@ -153,7 +136,7 @@ public class AccountManager {
         return root != null;
     }
 
-    public void createAccount() throws ValidationException{
+    public void createAccount() throws ValidationException {
         addInternalAccount();
     }
 
@@ -190,7 +173,7 @@ public class AccountManager {
         return account;
     }
 
-    private AccountDTO addInternalAccount() throws ValidationException{
+    private AccountDTO addInternalAccount() throws ValidationException {
         AccountDTO dto = addInternalAccount(walletStorage.getMasterAccountDerivations());
         walletStorage.incrementMasterAccountDerivations();
         return dto;
