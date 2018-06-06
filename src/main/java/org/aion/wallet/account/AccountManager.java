@@ -30,6 +30,9 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -53,7 +56,7 @@ public class AccountManager {
 
     private final KeystoreFormat keystoreFormat = new KeystoreFormat();
 
-    private final Timer lockTimer = new Timer(true);
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     private final Function<String, BigInteger> balanceProvider;
 
@@ -110,7 +113,7 @@ public class AccountManager {
 
     private boolean isAccountAlreadyImported(AccountDTO account) {
         return getAccounts().size() > 1
-                && getAccounts().stream().filter(p -> p.getPublicAddress().equals(account.getPublicAddress())).findAny().isPresent();
+                && getAccounts().stream().anyMatch(p -> p.getPublicAddress().equals(account.getPublicAddress()));
     }
 
     public AccountDTO importKeystore(final byte[] file, final String password, final boolean shouldKeep) throws ValidationException {
@@ -271,7 +274,7 @@ public class AccountManager {
     }
 
     private void scheduleAccountLock(final AccountDTO account) {
-        lockTimer.schedule(getAccountLockTask(account), computeDelay(lockTimeOut, lockTimeOutMeasurementUnit));
+        scheduler.schedule(getAccountLockTask(account), computeDelay(lockTimeOut, lockTimeOutMeasurementUnit), TimeUnit.MILLISECONDS);
     }
 
     private long computeDelay(int lockTimeOut, String lockTimeOutMeasurementUnit) {
