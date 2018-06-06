@@ -27,32 +27,30 @@ public class AddAccountDialog {
     private final ImportAccountDialog importAccountDialog = new ImportAccountDialog();
 
     private final MnemonicDialog mnemonicDialog = new MnemonicDialog();
-
+    private final Popup popup = new Popup();
+    private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
     @FXML
     private TextField newAccountName;
-
     @FXML
     private PasswordField newPassword;
-
     @FXML
     private PasswordField retypedPassword;
-
     @FXML
     private Label validationError;
-
-    private final Popup popup = new Popup();
-
-    private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
 
     public void createAccount(final InputEvent mouseEvent) {
         resetValidation();
 
         if (validateFields()) {
-            String mnemonic = blockchainConnector.createAccount(newPassword.getText(), newAccountName.getText());
-            if(mnemonic != null) {
+            String mnemonic = null;
+            mnemonic = blockchainConnector.createAccount(newPassword.getText(), newAccountName.getText());
+            if (mnemonic != null) {
                 mnemonicDialog.open(mouseEvent);
                 EventPublisher.fireMnemonicCreated(mnemonic);
+            } else {
+                this.close(mouseEvent);
             }
+
         } else {
             String error = "";
             if (newPassword.getText().isEmpty() || retypedPassword.getText().isEmpty()) {
@@ -82,12 +80,12 @@ public class AddAccountDialog {
         validationError.setVisible(false);
     }
 
-    private void showInvalidFieldsError(String message) {
+    private void showInvalidFieldsError(final String message) {
         validationError.setVisible(true);
         validationError.setText(message);
     }
 
-    public void open(MouseEvent mouseEvent) {
+    public void open(final MouseEvent mouseEvent) {
         popup.setAutoHide(true);
         popup.setAutoFix(true);
 
@@ -110,6 +108,10 @@ public class AddAccountDialog {
 
     public void close() {
         popup.hide();
+    }
+
+    public void close(final InputEvent eventSource) {
+        ((Node) eventSource.getSource()).getScene().getWindow().hide();
     }
 
     @FXML

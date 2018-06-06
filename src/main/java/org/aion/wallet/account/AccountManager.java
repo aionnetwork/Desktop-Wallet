@@ -78,14 +78,15 @@ public class AccountManager {
         EventBusFactory.getBus(SettingsEvent.ID).register(this);
     }
 
-    public String  createAccount(final String password, final String name) {
+    public String createAccount(final String password, final String name) {
         final StringBuilder mnemonicBuilder = new StringBuilder();
         final byte[] entropy = new byte[Words.TWELVE.byteLength()];
         new SecureRandom().nextBytes(entropy);
         new MnemonicGenerator(English.INSTANCE).createMnemonic(entropy, mnemonicBuilder::append);
         final String mnemonic = mnemonicBuilder.toString();
-        final byte[] seed = new SeedCalculator().calculateSeed(mnemonic, DEFAULT_MNEMONIC_SALT);
+        final byte[] seed = getNewAccountSeed(mnemonic);
         final ECKey ecKey = new SeededECKeyEd25519(seed);
+
         final String address = Keystore.create(password, ecKey);
         if (address.equals("0x")) {
             log.error("An exception occurred while creating the new account");
@@ -99,9 +100,17 @@ public class AccountManager {
                 account.setName(name);
                 processAccountAdded(account, fileContent, true);
                 storeAccountName(address, name);
+                if (isAccountAlreadyImported(account)) {
+                    return null;
+                }
                 return mnemonic;
             }
         }
+    }
+
+    private boolean isAccountAlreadyImported(AccountDTO account) {
+        return getAccounts().size() > 1
+                && getAccounts().stream().filter(p -> p.getPublicAddress().equals(account.getPublicAddress())).findAny().isPresent();
     }
 
     public AccountDTO importKeystore(final byte[] file, final String password, final boolean shouldKeep) throws ValidationException {
@@ -300,6 +309,15 @@ public class AccountManager {
                 EventPublisher.fireAccountLocked(accountDTO);
             }
         };
+    }
+
+    private byte[] getNewAccountSeed(final String mnemonic) {
+        if (Keystore.list().length > 0) {
+            List<String> accountsSorted = Keystore.accountsSorted();
+            return new SeedCalculator().calculateSeed(accountsSorted.get(accountsSorted.size() - 1), DEFAULT_MNEMONIC_SALT);
+
+        }
+        return new SeedCalculator().calculateSeed(mnemonic, DEFAULT_MNEMONIC_SALT);
     }
 
     private class TransactionComparator implements Comparator<TransactionDTO> {
