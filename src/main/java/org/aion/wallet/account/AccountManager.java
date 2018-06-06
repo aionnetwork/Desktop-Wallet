@@ -24,10 +24,8 @@ import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.storage.WalletStorage;
 import org.aion.wallet.util.BalanceUtils;
-import org.aion.wallet.util.QRCodeUtils;
 import org.slf4j.Logger;
 
-import java.awt.image.BufferedImage;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.SecureRandom;
@@ -245,9 +243,7 @@ public class AccountManager {
         final String name = getStoredAccountName(address);
         final String balance = BalanceUtils.formatBalance(balanceProvider.apply(address));
 
-        BufferedImage qrCode = QRCodeUtils.writeQRCode(address);
-
-        AccountDTO account = new AccountDTO(name, address, balance, currencySupplier.get(), qrCode);
+        AccountDTO account = new AccountDTO(name, address, balance, currencySupplier.get());
         account.setPrivateKey(privateKeyBytes);
         account.setActive(true);
         addressToAccount.put(account.getPublicAddress(), account);
@@ -289,9 +285,7 @@ public class AccountManager {
     private AccountDTO getNewAccount(final String publicAddress) {
         final String name = getStoredAccountName(publicAddress);
         final String balance = BalanceUtils.formatBalance(balanceProvider.apply(publicAddress));
-        BufferedImage qrCode = QRCodeUtils.writeQRCode(publicAddress);
-
-        return new AccountDTO(name, publicAddress, balance, currencySupplier.get(), qrCode);
+        return new AccountDTO(name, publicAddress, balance, currencySupplier.get());
     }
 
     private void storeAccountName(final String address, final String name) {

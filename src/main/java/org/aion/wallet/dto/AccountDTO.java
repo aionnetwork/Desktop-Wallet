@@ -1,9 +1,9 @@
 package org.aion.wallet.dto;
 
 import org.aion.base.util.TypeConverter;
+import org.aion.wallet.util.QRCodeUtils;
 
 import java.awt.image.BufferedImage;
-import java.nio.Buffer;
 import java.util.Objects;
 
 public class AccountDTO {
@@ -15,12 +15,12 @@ public class AccountDTO {
     private boolean active;
     private final BufferedImage qrCode;
 
-    public AccountDTO(final String name, final String publicAddress, final String balance, final String currency, final BufferedImage qrCode) {
+    public AccountDTO(final String name, final String publicAddress, final String balance, final String currency) {
         this.name = name;
         this.publicAddress = TypeConverter.toJsonHex(publicAddress);
         this.balance = balance;
         this.currency = currency;
-        this.qrCode = qrCode;
+        this.qrCode = QRCodeUtils.writeQRCode(publicAddress);
     }
 
     public String getName() {
