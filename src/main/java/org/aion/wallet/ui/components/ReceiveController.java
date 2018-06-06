@@ -14,8 +14,8 @@ import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.events.AccountEvent;
 import org.aion.wallet.events.EventBusFactory;
 
-import javax.imageio.ImageIO;
 import java.net.URL;
+import java.util.EnumSet;
 import java.util.ResourceBundle;
 
 public class ReceiveController implements Initializable{
@@ -44,16 +44,12 @@ public class ReceiveController implements Initializable{
 
     @Subscribe
     private void handleAccountChanged(final AccountEvent event) {
-        if (AccountEvent.Type.CHANGED.equals(event.getType())) {
+        if (EnumSet.of(AccountEvent.Type.CHANGED, AccountEvent.Type.ADDED).contains(event.getType())) {
             account = event.getAccount();
             accountAddress.setText(account.getPublicAddress());
 
             Image image = SwingFXUtils.toFXImage(account.getQrCode(), null);
             qrCode.setImage(image);
-            qrCode.setFitHeight(0);
-            qrCode.setFitWidth(0);
-            qrCode.setSmooth(true);
-
         } else if (AccountEvent.Type.LOCKED.equals(event.getType())) {
             if (event.getAccount().equals(account)) {
                 account = null;

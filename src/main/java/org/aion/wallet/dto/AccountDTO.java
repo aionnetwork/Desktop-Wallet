@@ -3,6 +3,7 @@ package org.aion.wallet.dto;
 import org.aion.base.util.TypeConverter;
 
 import java.awt.image.BufferedImage;
+import java.nio.Buffer;
 import java.util.Objects;
 
 public class AccountDTO {
@@ -12,13 +13,14 @@ public class AccountDTO {
     private String balance;  //TODO this has to be BigInteger
     private String name;
     private boolean active;
-    private BufferedImage qrCode;
+    private final BufferedImage qrCode;
 
-    public AccountDTO(final String name, final String publicAddress, final String balance, final String currency) {
+    public AccountDTO(final String name, final String publicAddress, final String balance, final String currency, final BufferedImage qrCode) {
         this.name = name;
         this.publicAddress = TypeConverter.toJsonHex(publicAddress);
         this.balance = balance;
         this.currency = currency;
+        this.qrCode = qrCode;
     }
 
     public String getName() {
@@ -63,10 +65,6 @@ public class AccountDTO {
 
     public BufferedImage getQrCode() {
         return qrCode;
-    }
-
-    public void setQrCode(BufferedImage qrCode) {
-        this.qrCode = qrCode;
     }
 
     @Override
