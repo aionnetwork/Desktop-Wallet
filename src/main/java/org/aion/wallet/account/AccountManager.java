@@ -98,7 +98,7 @@ public class AccountManager {
                 return null;
             } else {
                 account.setName(name);
-                account.setQrCode(QRCodeUtils.writeQRCode(address, 100, 100));
+                account.setQrCode(QRCodeUtils.writeQRCode(address, 150, 150));
                 processAccountAdded(account, fileContent, true);
                 storeAccountName(address, name);
                 return mnemonic;
@@ -183,7 +183,7 @@ public class AccountManager {
         for (Map.Entry<String, AccountDTO> entry : addressToAccount.entrySet()) {
             AccountDTO account = entry.getValue();
             account.setBalance(BalanceUtils.formatBalance(balanceProvider.apply(account.getPublicAddress())));
-            account.setQrCode(QRCodeUtils.writeQRCode(account.getPublicAddress(), 100, 100));
+            account.setQrCode(QRCodeUtils.writeQRCode(account.getPublicAddress(), 150, 150));
             entry.setValue(account);
         }
         return new ArrayList<>(addressToAccount.values());
@@ -248,7 +248,7 @@ public class AccountManager {
         AccountDTO account = new AccountDTO(name, address, balance, currencySupplier.get());
         account.setPrivateKey(privateKeyBytes);
         account.setActive(true);
-        account.setQrCode(QRCodeUtils.writeQRCode(account.getPublicAddress(), 100, 100));
+        account.setQrCode(QRCodeUtils.writeQRCode(account.getPublicAddress(), 150, 150));
         addressToAccount.put(account.getPublicAddress(), account);
         return account;
     }
