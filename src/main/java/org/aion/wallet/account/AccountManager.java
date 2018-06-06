@@ -251,6 +251,7 @@ public class AccountManager {
         }
         final String name = getStoredAccountName(address);
         final String balance = BalanceUtils.formatBalance(balanceProvider.apply(address));
+
         AccountDTO account = new AccountDTO(name, address, balance, currencySupplier.get());
         account.setPrivateKey(privateKeyBytes);
         account.setActive(true);

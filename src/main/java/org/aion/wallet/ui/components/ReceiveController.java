@@ -1,10 +1,13 @@
 package org.aion.wallet.ui.components;
 
 import com.google.common.eventbus.Subscribe;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.Tooltip;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import org.aion.wallet.dto.AccountDTO;
@@ -12,9 +15,12 @@ import org.aion.wallet.events.AccountEvent;
 import org.aion.wallet.events.EventBusFactory;
 
 import java.net.URL;
+import java.util.EnumSet;
 import java.util.ResourceBundle;
 
 public class ReceiveController implements Initializable{
+    @FXML
+    public ImageView qrCode;
 
     @FXML
     private TextArea accountAddress;
@@ -38,9 +44,12 @@ public class ReceiveController implements Initializable{
 
     @Subscribe
     private void handleAccountChanged(final AccountEvent event) {
-        if (AccountEvent.Type.CHANGED.equals(event.getType())) {
+        if (EnumSet.of(AccountEvent.Type.CHANGED, AccountEvent.Type.ADDED).contains(event.getType())) {
             account = event.getAccount();
             accountAddress.setText(account.getPublicAddress());
+
+            Image image = SwingFXUtils.toFXImage(account.getQrCode(), null);
+            qrCode.setImage(image);
         } else if (AccountEvent.Type.LOCKED.equals(event.getType())) {
             if (event.getAccount().equals(account)) {
                 account = null;
