@@ -24,6 +24,8 @@ public class WalletStorage {
 
     public static final Path KEYSTORE_PATH = Paths.get(System.getProperty(USER_DIR) + File.separator + "keystore");
 
+    private static final String BLANK = "";
+
     private static final String HOME_DIR = System.getProperty("user.home");
 
     private static final String STORAGE_DIR = HOME_DIR + File.separator + ".aion";
@@ -33,6 +35,10 @@ public class WalletStorage {
     private static final String WALLET_FILE = STORAGE_DIR + File.separator + "wallet.properties";
 
     private static final String ACCOUNT_NAME_PROP = ".name";
+
+    private static final String MASTER_ACCOUNT_PROP = "accounts.master.address";
+
+    private static final String MASTER_DERIVATIONS_PROP = "accounts.master.derivations";
 
     private static final WalletStorage INST;
 
@@ -100,7 +106,7 @@ public class WalletStorage {
     }
 
     public String getAccountName(final String address) {
-        return Optional.ofNullable(accountsProperties.get(address + ACCOUNT_NAME_PROP)).map(Object::toString).orElse("");
+        return Optional.ofNullable(accountsProperties.get(address + ACCOUNT_NAME_PROP)).map(Object::toString).orElse(BLANK);
     }
 
     public void setAccountName(final String address, final String accountName) {
@@ -108,6 +114,30 @@ public class WalletStorage {
             accountsProperties.setProperty(address + ACCOUNT_NAME_PROP, accountName);
             saveAccounts();
         }
+    }
+
+    public String getMasterAccount() {
+        return Optional.ofNullable(accountsProperties.getProperty(MASTER_ACCOUNT_PROP)).orElse(BLANK);
+    }
+
+    public void setMasterAccount(final String address) {
+        if (address != null) {
+            accountsProperties.setProperty(MASTER_ACCOUNT_PROP, address);
+            saveSettings();
+        }
+    }
+
+    public boolean hasMasterAccount() {
+        return !getMasterAccount().equalsIgnoreCase(BLANK);
+    }
+
+    public int getMasterAccountDerivations() {
+        return Optional.ofNullable(accountsProperties.getProperty(MASTER_DERIVATIONS_PROP)).map(Integer::parseInt).orElse(0);
+    }
+
+    public void incrementMasterAccountDerivations() {
+        accountsProperties.setProperty(MASTER_DERIVATIONS_PROP, getMasterAccountDerivations() + 1 + "");
+        saveSettings();
     }
 
     public final LightAppSettings getLightAppSettings(final ApiType type) {
