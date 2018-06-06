@@ -1,6 +1,6 @@
 #contentPane {
     -fx-background-color: WHITE;
-    -fx-border-color:#40bded;
+    -fx-border-color:#4221CC;
     -fx-border-width: 1 0 1 0;
 }
 
@@ -31,7 +31,7 @@
 }
 
 .button {
-    -fx-background-color: #40bded;
+    -fx-background-color: #5AF0BD;
     -fx-background-radius: 0,0,0,0;
     -fx-text-fill: white;
     -fx-font-family: 'Open Sans Bold';
@@ -55,7 +55,7 @@
 }
 
 .line{
-    -fx-stroke: #40bded;
+    -fx-stroke: #4221CC;
 }
 
 .header-text {
@@ -76,7 +76,7 @@
     -fx-font-family: 'Open Sans Regular';
     -fx-font-size: 16px;
     -fx-display-caret: false;
-    -fx-border-color: #40bded;
+    -fx-border-color: #4221CC;
     -fx-border-width: 0 0 1 0;
 }
 
