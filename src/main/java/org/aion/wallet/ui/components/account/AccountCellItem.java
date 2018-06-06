@@ -89,6 +89,7 @@ public class AccountCellItem extends ListCell<AccountDTO> {
             name.setText(item.getName());
             UIUtils.setWidth(name);
 
+            // todo: display icon on ui
             String prefix = item.isImported() ? "IMPORTED - " : "";
             publicAddress.setText(prefix + item.getPublicAddress());
             balance.setText(item.getBalance() + BalanceUtils.CCY_SEPARATOR + item.getCurrency());

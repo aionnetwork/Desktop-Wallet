@@ -114,7 +114,7 @@ public class OverviewController extends AbstractController {
         }
     }
 
-    public void unlockMasterAccount(MouseEvent mouseEvent) throws ValidationException {
+    public void unlockMasterAccount(MouseEvent mouseEvent) {
         unlockMasterAccountDialog.open(mouseEvent);
     }
 
@@ -127,7 +127,8 @@ public class OverviewController extends AbstractController {
             try {
                 blockchainConnector.createAccount();
             } catch (ValidationException e) {
-                e.printStackTrace();
+                // todo: log
+                // todo: display on yui
             }
             return;
         }

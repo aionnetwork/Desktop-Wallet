@@ -28,7 +28,7 @@ public class ExtendedKey {
 
     public ExtendedKey deriveHardened(int[] derivationPath) throws ValidationException {
         if (derivationPath.length == 0) {
-            throw new ValidationException("");
+            throw new ValidationException("Derivation path is incorrect");
         }
         try {
             ExtendedKey key = this.getChild(derivationPath[0]);
@@ -56,7 +56,6 @@ public class ExtendedKey {
         ByteBuffer byteBuffer = ByteBuffer.allocate(32);
         byteBuffer.order(ByteOrder.BIG_ENDIAN);
         byteBuffer.putInt(i);
-
 
         byte[] parentPaddedKey = org.spongycastle.util.Arrays.concatenate(new byte[]{0}, l, byteBuffer.array());
 
