@@ -3,7 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
-<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.*?>
 <?import java.net.URL?>
 <AnchorPane prefHeight="450.0" prefWidth="350.0" styleClass="anchor-pane" xmlns="http://javafx.com/javafx/8.0.121"
             xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.aion.wallet.ui.components.partials.AddAccountDialog">
@@ -16,22 +16,34 @@
         <Image url="@../icons/aion_logo.png"/>
     </ImageView>
 
-    <Button layoutX="80.0" layoutY="100.0" prefHeight="50.0" prefWidth="200.0" styleClass="add-account-buttons"
-            text="Import" onMouseClicked="#uploadKeystoreFile"/>
 
-    <Label layoutX="170.0" layoutY="160.0" text="or"/>
+    <Label layoutX="70.0" layoutY="70.0" styleClass="create-account-text" text="Recover from seed"/>
 
-    <Label layoutX="90.0" layoutY="185.0" styleClass="create-account-text" text="Create account"/>
-    <TextField fx:id="newAccountName" layoutX="40.0" layoutY="235.0" prefWidth="275.0"
-                styleClass="add-account-input-fields" promptText="Account name"/>
-    <PasswordField fx:id="newPassword" layoutX="40.0" layoutY="285.0" onMouseClicked="#resetValidation"
-                   prefWidth="275.0" promptText="New password" styleClass="add-account-input-fields"/>
-    <PasswordField fx:id="retypedPassword" layoutX="40.0" layoutY="335.0" onMouseClicked="#resetValidation"
-                   prefWidth="275.0" promptText="Retype your password" styleClass="add-account-input-fields"
-                   onKeyPressed="#submitOnEnterPressed"/>
-    <Label fx:id="validationError" layoutX="40.0" layoutY="380.0" prefWidth="275.0" text="ERROR" textFill="orangered"
-           visible="false"/>
-    <Button layoutX="40.0" layoutY="400.0" mnemonicParsing="false" onMouseClicked="#createAccount" prefWidth="275.0"
-            styleClass="add-account-buttons" text="Submit"/>
+    <VBox layoutX="40.0" alignment="CENTER" spacing="6.0" AnchorPane.topAnchor="105.0">
+        <TextField fx:id="mnemonicTextField" promptText="Mnemonic" styleClass="add-account-input-fields"
+                   onMouseClicked="#resetValidation"/>
+        <PasswordField fx:id="mnemonicPasswordField"
+                       prefWidth="275.0" promptText="Password" styleClass="add-account-input-fields"
+                       onKeyPressed="#submitOnEnterPressed" onMouseClicked="#resetValidation"/>
+        <Button mnemonicParsing="false" onMouseClicked="#importMnemonic" prefWidth="275.0"
+                styleClass="add-account-buttons" text="Recover"/>
+    </VBox>
+    <VBox layoutX="40.0" alignment="CENTER" spacing="6.0" AnchorPane.topAnchor="220.0">
+        <Label layoutX="170.0" text="or"/>
+
+        <Label layoutX="90.0" styleClass="create-account-text" text="Create account"/>
+        <TextField fx:id="newAccountName" layoutX="40.0" prefWidth="275.0"
+                   styleClass="add-account-input-fields" promptText="Account name"/>
+        <PasswordField fx:id="newPassword" layoutX="40.0" onMouseClicked="#resetValidation"
+                       prefWidth="275.0" promptText="New password" styleClass="add-account-input-fields"/>
+        <PasswordField fx:id="retypedPassword" layoutX="40.0" onMouseClicked="#resetValidation"
+                       prefWidth="275.0" promptText="Retype your password" styleClass="add-account-input-fields"
+                       onKeyPressed="#submitOnEnterPressed"/>
+        <Label fx:id="validationError" layoutX="40.0" prefWidth="275.0" text="ERROR"
+               textFill="orangered"
+               visible="false"/>
+        <Button layoutX="40.0" layoutY="400.0" mnemonicParsing="false" onMouseClicked="#createAccount" prefWidth="275.0"
+                styleClass="add-account-buttons" text="Create"/>
+    </VBox>
 
 </AnchorPane>

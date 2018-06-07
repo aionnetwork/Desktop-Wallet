@@ -1,5 +1,11 @@
 package org.aion.wallet.ui.components.partials;
 
+import io.github.novacrypto.bip39.MnemonicValidator;
+import io.github.novacrypto.bip39.Validation.InvalidChecksumException;
+import io.github.novacrypto.bip39.Validation.InvalidWordCountException;
+import io.github.novacrypto.bip39.Validation.UnexpectedWhiteSpaceException;
+import io.github.novacrypto.bip39.Validation.WordNotFoundException;
+import io.github.novacrypto.bip39.wordlists.English;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -15,6 +21,7 @@ import javafx.stage.Popup;
 import org.aion.api.log.LogEnum;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.events.EventPublisher;
+import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
 import org.slf4j.Logger;
 
@@ -24,11 +31,13 @@ public class AddAccountDialog {
 
     private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
 
-    private final ImportAccountDialog importAccountDialog = new ImportAccountDialog();
-
     private final MnemonicDialog mnemonicDialog = new MnemonicDialog();
     private final Popup popup = new Popup();
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
+    @FXML
+    public TextField mnemonicTextField;
+    @FXML
+    public PasswordField mnemonicPasswordField;
     @FXML
     private TextField newAccountName;
     @FXML
@@ -41,17 +50,7 @@ public class AddAccountDialog {
     public void createAccount(final InputEvent mouseEvent) {
         resetValidation();
 
-        if (validateFields()) {
-            String mnemonic = null;
-            mnemonic = blockchainConnector.createAccount(newPassword.getText(), newAccountName.getText());
-            if (mnemonic != null) {
-                mnemonicDialog.open(mouseEvent);
-                EventPublisher.fireMnemonicCreated(mnemonic);
-            } else {
-                this.close(mouseEvent);
-            }
-
-        } else {
+        if (!validateFields()) {
             String error = "";
             if (newPassword.getText().isEmpty() || retypedPassword.getText().isEmpty()) {
                 error = "Please complete the fields!";
@@ -59,11 +58,48 @@ public class AddAccountDialog {
                 error = "Passwords don't match!";
             }
             showInvalidFieldsError(error);
+            return;
+        }
+
+        try {
+            String mnemonic = blockchainConnector.createMasterAccount(newPassword.getText(), newAccountName.getText());
+            if (mnemonic != null) {
+                mnemonicDialog.open(mouseEvent);
+                EventPublisher.fireMnemonicCreated(mnemonic);
+            }
+        } catch (ValidationException e) {
+            showInvalidFieldsError(e.getMessage());
         }
     }
 
-    public void uploadKeystoreFile(final MouseEvent e) {
-        importAccountDialog.open(e);
+    public void importMnemonic(final InputEvent mouseEvent) {
+        final String mnemonic = mnemonicTextField.getText();
+        final String mnemonicPassword = mnemonicPasswordField.getText();
+        if (mnemonic != null && !mnemonic.isEmpty() && mnemonicPassword != null && !mnemonicPassword.isEmpty()) {
+            try {
+                MnemonicValidator
+                        .ofWordList(English.INSTANCE)
+                        .validate(mnemonic);
+                blockchainConnector.importMasterAccount(mnemonic, mnemonicPassword);
+            } catch (UnexpectedWhiteSpaceException | InvalidWordCountException | InvalidChecksumException | WordNotFoundException | ValidationException e) {
+                showInvalidFieldsError(getMnemonicValidationErrorMessage(e));
+                log.error(e.getMessage(), e);
+            }
+        } else {
+            showInvalidFieldsError("Please complete the fields!");
+        }
+    }
+
+    private String getMnemonicValidationErrorMessage(Exception e) {
+        if (e instanceof UnexpectedWhiteSpaceException) {
+            return "There are spaces in the mnemonic!";
+        } else if (e instanceof InvalidWordCountException) {
+            return "Mnemonic word length is invalid!";
+        } else if (e instanceof InvalidChecksumException) {
+            return "Invalid mnemonic!";
+        } else if (e instanceof WordNotFoundException) {
+            return "Word in mnemonic was not found!";
+        } else return e.getMessage();
     }
 
     private boolean validateFields() {
@@ -80,12 +116,12 @@ public class AddAccountDialog {
         validationError.setVisible(false);
     }
 
-    private void showInvalidFieldsError(final String message) {
+    private void showInvalidFieldsError(String message) {
         validationError.setVisible(true);
         validationError.setText(message);
     }
 
-    public void open(final MouseEvent mouseEvent) {
+    public void open(MouseEvent mouseEvent) {
         popup.setAutoHide(true);
         popup.setAutoFix(true);
 
@@ -108,10 +144,6 @@ public class AddAccountDialog {
 
     public void close() {
         popup.hide();
-    }
-
-    public void close(final InputEvent eventSource) {
-        ((Node) eventSource.getSource()).getScene().getWindow().hide();
     }
 
     @FXML

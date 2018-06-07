@@ -50,8 +50,28 @@ public abstract class BlockchainConnector {
         this.accountManager = new AccountManager(this::getBalance, this::getCurrency);
     }
 
-    public final String createAccount(final String password, final String name) {
-        return accountManager.createAccount(password, name);
+    public final boolean hasMasterAccount() {
+        return walletStorage.hasMasterAccount();
+    }
+
+    public final boolean isMasterAccountUnlocked() {
+        return accountManager.isMasterAccountUnlocked();
+    }
+
+    public final String createMasterAccount(final String password, final String name) throws ValidationException{
+        return accountManager.createMasterAccount(password, name);
+    }
+
+    public final void importMasterAccount(final String mnemonic, final String password) throws ValidationException {
+        accountManager.importMasterAccount(mnemonic, password);
+    }
+
+    public final void unlockMasterAccount(final String password) throws ValidationException{
+        accountManager.unlockMasterAccount(password);
+    }
+
+    public final void createAccount() throws ValidationException{
+        accountManager.createAccount();
     }
 
     public final AccountDTO importKeystoreFile(final byte[] file, final String password, final boolean shouldKeep) throws ValidationException {
@@ -60,10 +80,6 @@ public abstract class BlockchainConnector {
 
     public final AccountDTO importPrivateKey(final byte[] raw, final String password, final boolean shouldKeep) throws ValidationException {
         return accountManager.importPrivateKey(raw, password, shouldKeep);
-    }
-
-    public final AccountDTO importMnemonic(final String mnemonic, final String password, boolean shouldKeep) throws ValidationException {
-        return accountManager.importMnemonic(mnemonic, password, shouldKeep);
     }
 
     public final void unlockAccount(final AccountDTO account, final String password) throws ValidationException {
