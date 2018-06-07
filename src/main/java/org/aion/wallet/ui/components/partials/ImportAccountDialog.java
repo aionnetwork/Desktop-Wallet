@@ -1,11 +1,5 @@
 package org.aion.wallet.ui.components.partials;
 
-import io.github.novacrypto.bip39.MnemonicValidator;
-import io.github.novacrypto.bip39.Validation.InvalidChecksumException;
-import io.github.novacrypto.bip39.Validation.InvalidWordCountException;
-import io.github.novacrypto.bip39.Validation.UnexpectedWhiteSpaceException;
-import io.github.novacrypto.bip39.Validation.WordNotFoundException;
-import io.github.novacrypto.bip39.wordlists.English;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;

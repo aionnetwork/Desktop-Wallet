@@ -39,9 +39,9 @@ public class WalletStorage {
 
     private static final String ACCOUNT_NAME_PROP = ".name";
 
-    private static final String MASTER_DERIVATIONS_PROP = "accounts.master.derivations";
+    private static final String MASTER_DERIVATIONS_PROP = "master.derivations";
 
-    private static final String MASTER_MNEMONIC_PROP = "accounts.master.mnemonic";
+    private static final String MASTER_MNEMONIC_PROP = "master.mnemonic";
 
     private static final String MNEMONIC_ENCRYPTION_ALGORITHM = "Blowfish";
 

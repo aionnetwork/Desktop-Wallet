@@ -16,6 +16,7 @@ public class ExtendedKey {
     private static final int HARDENED_KEY_MULTIPLIER = 0x80000000;
 
     private final ECKey ecKey;
+    private final ECKeyEd25519 ed25519KeyFactory = new ECKeyEd25519();
 
 
     public ExtendedKey(ECKey ecKey) {
@@ -45,24 +46,22 @@ public class ExtendedKey {
     private ExtendedKey getChild(int i) throws Exception {
         byte[] keyHash = ecKey.getPrivKeyBytes();
 
-        // parent private key
-        byte[] l = Arrays.copyOfRange(keyHash, 0, 32);
-        // chain code
-        byte[] r = Arrays.copyOfRange(keyHash, 32, 64);
+        byte[] parentPrivateKey = Arrays.copyOfRange(keyHash, 0, 32);
+        byte[] parentChainCode = Arrays.copyOfRange(keyHash, 32, 64);
 
         // ed25519 supports ONLY hardened keys
-        i = i | HARDENED_KEY_MULTIPLIER;
+        i |= HARDENED_KEY_MULTIPLIER;
 
         ByteBuffer byteBuffer = ByteBuffer.allocate(32);
         byteBuffer.order(ByteOrder.BIG_ENDIAN);
         byteBuffer.putInt(i);
 
-        byte[] parentPaddedKey = org.spongycastle.util.Arrays.concatenate(new byte[]{0}, l, byteBuffer.array());
+        byte[] parentPaddedKey = org.spongycastle.util.Arrays.concatenate(new byte[]{0}, parentPrivateKey, byteBuffer.array());
 
         Mac mac = Mac.getInstance(HmacSHA512_ALGORITHM);
-        SecretKey key = new SecretKeySpec(r, HmacSHA512_ALGORITHM);
+        SecretKey key = new SecretKeySpec(parentChainCode, HmacSHA512_ALGORITHM);
         mac.init(key);
-        return new ExtendedKey(new ECKeyEd25519().fromPrivate(mac.doFinal(parentPaddedKey)));
+        return new ExtendedKey(ed25519KeyFactory.fromPrivate(mac.doFinal(parentPaddedKey)));
     }
 
 }

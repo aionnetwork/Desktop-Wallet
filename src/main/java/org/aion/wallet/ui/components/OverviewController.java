@@ -7,6 +7,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.input.MouseEvent;
+import org.aion.api.log.LogEnum;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.events.AccountEvent;
@@ -14,9 +15,11 @@ import org.aion.wallet.events.EventBusFactory;
 import org.aion.wallet.events.HeaderPaneButtonEvent;
 import org.aion.wallet.events.RefreshEvent;
 import org.aion.wallet.exception.ValidationException;
+import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.ui.components.partials.AddAccountDialog;
 import org.aion.wallet.ui.components.partials.ImportAccountDialog;
 import org.aion.wallet.ui.components.partials.UnlockMasterAccountDialog;
+import org.slf4j.Logger;
 
 import java.net.URL;
 import java.util.EnumSet;
@@ -24,6 +27,8 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 public class OverviewController extends AbstractController {
+
+    private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
 
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
     @FXML
@@ -127,7 +132,7 @@ public class OverviewController extends AbstractController {
             try {
                 blockchainConnector.createAccount();
             } catch (ValidationException e) {
-                // todo: log
+                log.error(e.getMessage(), e);
                 // todo: display on yui
             }
             return;

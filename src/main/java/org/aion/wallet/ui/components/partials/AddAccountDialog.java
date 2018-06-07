@@ -116,12 +116,12 @@ public class AddAccountDialog {
         validationError.setVisible(false);
     }
 
-    private void showInvalidFieldsError(String message) {
+    private void showInvalidFieldsError(final String message) {
         validationError.setVisible(true);
         validationError.setText(message);
     }
 
-    public void open(MouseEvent mouseEvent) {
+    public void open(final MouseEvent mouseEvent) {
         popup.setAutoHide(true);
         popup.setAutoFix(true);
 
