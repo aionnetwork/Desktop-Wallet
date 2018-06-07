@@ -43,7 +43,7 @@ public class MainWindow extends Application {
     private double yOffset;
     private Stage stage;
 
-    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
     @Override
     public void start(final Stage stage) throws IOException {

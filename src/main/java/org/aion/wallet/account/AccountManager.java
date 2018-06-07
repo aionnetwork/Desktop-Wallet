@@ -56,7 +56,7 @@ public class AccountManager {
 
     private final KeystoreFormat keystoreFormat = new KeystoreFormat();
 
-    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
     private final Function<String, BigInteger> balanceProvider;
 
