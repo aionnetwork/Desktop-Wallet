@@ -25,8 +25,9 @@ import org.slf4j.Logger;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Timer;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class MainWindow extends Application {
 
@@ -41,7 +42,8 @@ public class MainWindow extends Application {
     private double xOffset;
     private double yOffset;
     private Stage stage;
-    private final Timer timer = new Timer(true);
+
+    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
     @Override
     public void start(final Stage stage) throws IOException {
@@ -71,10 +73,11 @@ public class MainWindow extends Application {
         panes.put(HeaderPaneButtonEvent.Type.HISTORY, scene.lookup("#historyPane"));
         panes.put(HeaderPaneButtonEvent.Type.SETTINGS, scene.lookup("#settingsPane"));
 
-        timer.schedule(
+        scheduler.scheduleAtFixedRate(
                 new DataUpdater(),
                 AionConstants.BLOCK_MINING_TIME_MILLIS,
-                3 * AionConstants.BLOCK_MINING_TIME_MILLIS
+                3 * AionConstants.BLOCK_MINING_TIME_MILLIS,
+                TimeUnit.MILLISECONDS
         );
     }
 
@@ -119,8 +122,7 @@ public class MainWindow extends Application {
         Platform.exit();
         BlockchainConnector.getInstance().close();
         Executors.newSingleThreadExecutor().submit(() -> System.exit(0));
-        timer.cancel();
-        timer.purge();
+        scheduler.shutdown();
     }
 
     private void handleMousePressed(final MouseEvent event) {
