@@ -26,8 +26,6 @@
                          onMouseClicked="#resetValidation"/>
             <RadioButton fx:id="privateKeyRadioButton" text="Private key" toggleGroup="$accountTypeToggleGroup"
                          onMouseClicked="#resetValidation"/>
-            <RadioButton fx:id="mnemonicRadioButton" text="Mnemonic" toggleGroup="$accountTypeToggleGroup"
-                         onMouseClicked="#resetValidation"/>
         </VBox>
         <AnchorPane prefHeight="280.0">
             <VBox fx:id="importKeystoreView" alignment="CENTER" spacing="6.0" AnchorPane.topAnchor="0">
@@ -47,16 +45,6 @@
                            onMouseClicked="#resetValidation"/>
                 <PasswordField fx:id="privateKeyPassword"
                                prefWidth="275.0" promptText="Password" styleClass="add-account-input-fields"
-                               onKeyPressed="#submitOnEnterPressed" onMouseClicked="#resetValidation"/>
-            </VBox>
-            <VBox fx:id="importMnemonicView" alignment="CENTER" spacing="6.0" AnchorPane.topAnchor="0"
-                  visible="false">
-                <Label styleClass="create-account-text" text="Mnemonic"/>
-
-                <TextField fx:id="mnemonicTextField" promptText="Mnemonic" styleClass="add-account-input-fields"
-                           onMouseClicked="#resetValidation"/>
-                <PasswordField fx:id="mnemonicPasswordField"
-                               prefWidth="275.0" promptText="New password" styleClass="add-account-input-fields"
                                onKeyPressed="#submitOnEnterPressed" onMouseClicked="#resetValidation"/>
             </VBox>
             <AnchorPane AnchorPane.bottomAnchor="160">

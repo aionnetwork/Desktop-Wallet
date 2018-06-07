@@ -14,6 +14,7 @@ import org.aion.mcf.account.KeystoreFormat;
 import org.aion.mcf.account.KeystoreItem;
 import org.aion.wallet.connector.api.TxInfo;
 import org.aion.wallet.connector.dto.TransactionDTO;
+import org.aion.wallet.crypto.ExtendedKey;
 import org.aion.wallet.crypto.SeededECKeyEd25519;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.dto.LightAppSettings;
@@ -66,6 +67,8 @@ public class AccountManager {
 
     private String lockTimeOutMeasurementUnit;
 
+    private ExtendedKey root;
+
     public AccountManager(final Function<String, BigInteger> balanceProvider, final Supplier<String> currencySupplier) {
         this.balanceProvider = balanceProvider;
         this.currencySupplier = currencySupplier;
@@ -81,39 +84,59 @@ public class AccountManager {
         EventBusFactory.getBus(SettingsEvent.ID).register(this);
     }
 
-    public String createAccount(final String password, final String name) {
+    public String createMasterAccount(final String password, final String name) throws ValidationException {
         final StringBuilder mnemonicBuilder = new StringBuilder();
         final byte[] entropy = new byte[Words.TWELVE.byteLength()];
         new SecureRandom().nextBytes(entropy);
         new MnemonicGenerator(English.INSTANCE).createMnemonic(entropy, mnemonicBuilder::append);
         final String mnemonic = mnemonicBuilder.toString();
-        final byte[] seed = getNewAccountSeed(mnemonic);
-        final ECKey ecKey = new SeededECKeyEd25519(seed);
 
-        final String address = Keystore.create(password, ecKey);
-        if (address.equals("0x")) {
-            log.error("An exception occurred while creating the new account");
+        final AccountDTO account = processMasterAccount(mnemonic, password);
+        if (account == null) {
             return null;
-        } else {
-            final byte[] fileContent = keystoreFormat.toKeystore(ecKey, password);
-            final AccountDTO account = createAccountWithPrivateKey(address, ecKey.getPrivKeyBytes());
-            if (account == null) {
-                return null;
-            } else {
-                account.setName(name);
-                processAccountAdded(account, fileContent, true);
-                storeAccountName(address, name);
-                if (isAccountAlreadyImported(account)) {
-                    return null;
-                }
-                return mnemonic;
-            }
+        }
+        account.setName(name);
+        storeAccountName(account.getPublicAddress(), name);
+        return mnemonic;
+    }
+
+    public void importMasterAccount(final String mnemonic, final String password) throws ValidationException {
+        try {
+            processMasterAccount(mnemonic, password);
+        } catch (final Exception e) {
+            throw new ValidationException(e);
         }
     }
 
-    private boolean isAccountAlreadyImported(AccountDTO account) {
-        return getAccounts().size() > 1
-                && getAccounts().stream().anyMatch(p -> p.getPublicAddress().equals(account.getPublicAddress()));
+    private AccountDTO processMasterAccount(String mnemonic, String password) throws ValidationException {
+        final byte[] seed = new SeedCalculator().calculateSeed(mnemonic, DEFAULT_MNEMONIC_SALT);
+        final ECKey rootEcKey = new SeededECKeyEd25519(seed);
+
+        root = new ExtendedKey(rootEcKey);
+        walletStorage.setMasterAccountMnemonic(mnemonic, password);
+        return addInternalAccount();
+    }
+
+    public void unlockMasterAccount(String password) throws ValidationException {
+        if (!walletStorage.hasMasterAccount()) {
+            return;
+        }
+
+        final byte[] seed = new SeedCalculator().calculateSeed(walletStorage.getMasterAccountMnemonic(password), DEFAULT_MNEMONIC_SALT);
+        ECKey rootEcKey = new SeededECKeyEd25519(seed);
+        root = new ExtendedKey(rootEcKey);
+
+        for (int i = 0; i < walletStorage.getMasterAccountDerivations(); i++) {
+            addInternalAccount(i);
+        }
+    }
+
+    public boolean isMasterAccountUnlocked() {
+        return root != null;
+    }
+
+    public void createAccount() throws ValidationException {
+        addInternalAccount();
     }
 
     public AccountDTO importKeystore(final byte[] file, final String password, final boolean shouldKeep) throws ValidationException {
@@ -122,7 +145,7 @@ public class AccountManager {
             if (key == null) {
                 throw new ValidationException("Could Not extract ECKey from keystore file");
             }
-            return getUnlockedAccountFromKey(key, file, password, shouldKeep);
+            return addExternalAccount(key, file, password, shouldKeep);
         } catch (final Exception e) {
             throw new ValidationException(e);
         }
@@ -132,31 +155,37 @@ public class AccountManager {
         try {
             ECKey key = ECKeyFac.inst().fromPrivate(raw);
             final byte[] keystoreContent = keystoreFormat.toKeystore(key, password);
-            return getUnlockedAccountFromKey(key, keystoreContent, password, shouldKeep);
+            return addExternalAccount(key, keystoreContent, password, shouldKeep);
         } catch (final Exception e) {
             throw new ValidationException(e);
         }
     }
 
-    public AccountDTO importMnemonic(final String mnemonic, final String password, boolean shouldKeep) throws ValidationException {
-        try {
-            byte[] seed = new SeedCalculator().calculateSeed(mnemonic, DEFAULT_MNEMONIC_SALT);
-            final ECKey key = new SeededECKeyEd25519(seed);
-            final byte[] fileContent = keystoreFormat.toKeystore(key, password);
-            return getUnlockedAccountFromKey(key, fileContent, password, shouldKeep);
-        } catch (final Exception e) {
-            throw new ValidationException(e);
+
+    private AccountDTO addInternalAccount(int derivation) throws ValidationException {
+        if (root == null) {
+            return null;
         }
+        final ECKey firstDerivation = root.deriveHardened(new int[]{44, 60, 0, 0, derivation}).getEcKey();
+        AccountDTO account = createAccountWithPrivateKey(TypeConverter.toJsonHex(firstDerivation.computeAddress(firstDerivation.getPubKey())), firstDerivation.getPrivKeyBytes(), false);
+        EventPublisher.fireTransactionFinished();
+        return account;
     }
 
-    private AccountDTO getUnlockedAccountFromKey(final ECKey key, final byte[] fileContent, final String password, final boolean shouldKeep) throws UnsupportedEncodingException, ValidationException {
+    private AccountDTO addInternalAccount() throws ValidationException {
+        AccountDTO dto = addInternalAccount(walletStorage.getMasterAccountDerivations());
+        walletStorage.incrementMasterAccountDerivations();
+        return dto;
+    }
+
+    private AccountDTO addExternalAccount(final ECKey key, final byte[] fileContent, final String password, final boolean shouldKeep) throws UnsupportedEncodingException, ValidationException {
         String address = TypeConverter.toJsonHex(KeystoreItem.parse(fileContent).getAddress());
         final AccountDTO accountDTO;
         if (shouldKeep) {
             if (!Keystore.exist(address)) {
                 address = Keystore.create(password, key);
                 if (!address.equals("0x")) {
-                    accountDTO = createAccountWithPrivateKey(address, key.getPrivKeyBytes());
+                    accountDTO = createAccountWithPrivateKey(address, key.getPrivKeyBytes(), true);
                 } else {
                     throw new ValidationException("Failed to save keystore file");
                 }
@@ -165,7 +194,7 @@ public class AccountManager {
             }
         } else {
             if (!addressToAccount.keySet().contains(address)) {
-                accountDTO = createAccountWithPrivateKey(address, key.getPrivKeyBytes());
+                accountDTO = createAccountWithPrivateKey(address, key.getPrivKeyBytes(), true);
             } else {
                 throw new ValidationException("Account already exists!");
             }
@@ -195,7 +224,14 @@ public class AccountManager {
             account.setBalance(BalanceUtils.formatBalance(balanceProvider.apply(account.getPublicAddress())));
             entry.setValue(account);
         }
-        return new ArrayList<>(addressToAccount.values());
+        List<AccountDTO> accounts = new ArrayList<>(addressToAccount.values());
+        accounts.sort((AccountDTO o1, AccountDTO o2) -> {
+            if (!o1.isImported() && !o2.isImported()) {
+                return o1.getDerivationIndex() - o2.getDerivationIndex();
+            }
+            return o1.isImported() ? 1 : -1;
+        });
+        return accounts;
     }
 
     public Set<String> getAddresses() {
@@ -243,7 +279,7 @@ public class AccountManager {
         }
     }
 
-    private AccountDTO createAccountWithPrivateKey(final String address, final byte[] privateKeyBytes) {
+    private AccountDTO createAccountWithPrivateKey(final String address, final byte[] privateKeyBytes, boolean isImported) {
         if (address == null) {
             log.error("Can't create account with null address");
             return null;
@@ -258,6 +294,10 @@ public class AccountManager {
         AccountDTO account = new AccountDTO(name, address, balance, currencySupplier.get());
         account.setPrivateKey(privateKeyBytes);
         account.setActive(true);
+        account.setImported(isImported);
+        if (!isImported) {
+            account.setDerivationIndex(walletStorage.getMasterAccountDerivations());
+        }
         addressToAccount.put(account.getPublicAddress(), account);
         return account;
     }
@@ -280,11 +320,11 @@ public class AccountManager {
 
     private long computeDelay(int lockTimeOut, String lockTimeOutMeasurementUnit) {
         switch (lockTimeOutMeasurementUnit) {
-            case "seconds" :
+            case "seconds":
                 return lockTimeOut * 1000;
-            case "minutes" :
+            case "minutes":
                 return lockTimeOut * 60 * 1000;
-            case "hours" :
+            case "hours":
                 return lockTimeOut * 3600 * 1000;
         }
         return 0;
@@ -313,15 +353,6 @@ public class AccountManager {
                 EventPublisher.fireAccountLocked(accountDTO);
             }
         };
-    }
-
-    private byte[] getNewAccountSeed(final String mnemonic) {
-        if (Keystore.list().length > 0) {
-            List<String> accountsSorted = Keystore.accountsSorted();
-            return new SeedCalculator().calculateSeed(accountsSorted.get(accountsSorted.size() - 1), DEFAULT_MNEMONIC_SALT);
-
-        }
-        return new SeedCalculator().calculateSeed(mnemonic, DEFAULT_MNEMONIC_SALT);
     }
 
     private class TransactionComparator implements Comparator<TransactionDTO> {

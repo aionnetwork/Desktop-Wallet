@@ -11,8 +11,8 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import org.aion.wallet.dto.AccountDTO;
-import org.aion.wallet.ui.components.partials.UnlockAccountDialog;
 import org.aion.wallet.events.EventPublisher;
+import org.aion.wallet.ui.components.partials.UnlockAccountDialog;
 import org.aion.wallet.util.BalanceUtils;
 import org.aion.wallet.util.UIUtils;
 
@@ -89,7 +89,9 @@ public class AccountCellItem extends ListCell<AccountDTO> {
             name.setText(item.getName());
             UIUtils.setWidth(name);
 
-            publicAddress.setText(item.getPublicAddress());
+            // todo: display icon on ui
+            String prefix = item.isImported() ? "IMPORTED - " : "";
+            publicAddress.setText(prefix + item.getPublicAddress());
             balance.setText(item.getBalance() + BalanceUtils.CCY_SEPARATOR + item.getCurrency());
             UIUtils.setWidth(balance);
 

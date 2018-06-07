@@ -1,11 +1,5 @@
 package org.aion.wallet.ui.components.partials;
 
-import io.github.novacrypto.bip39.MnemonicValidator;
-import io.github.novacrypto.bip39.Validation.InvalidChecksumException;
-import io.github.novacrypto.bip39.Validation.InvalidWordCountException;
-import io.github.novacrypto.bip39.Validation.UnexpectedWhiteSpaceException;
-import io.github.novacrypto.bip39.Validation.WordNotFoundException;
-import io.github.novacrypto.bip39.wordlists.English;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -48,7 +42,6 @@ public class ImportAccountDialog implements Initializable {
 
     private static final String KEYSTORE_RADIO_BUTTON_ID = "KEYSTORE_RB";
 
-    private static final String MNEMONIC_RADIO_BUTTON_ID = "MNEMONIC_RB";
 
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
 
@@ -71,9 +64,6 @@ public class ImportAccountDialog implements Initializable {
     private RadioButton keystoreRadioButton;
 
     @FXML
-    private RadioButton mnemonicRadioButton;
-
-    @FXML
     private ToggleGroup accountTypeToggleGroup;
 
     @FXML
@@ -81,15 +71,6 @@ public class ImportAccountDialog implements Initializable {
 
     @FXML
     private VBox importPrivateKeyView;
-
-    @FXML
-    private VBox importMnemonicView;
-
-    @FXML
-    public TextField mnemonicTextField;
-
-    @FXML
-    public PasswordField mnemonicPasswordField;
 
     @FXML
     private CheckBox rememberAccount;
@@ -119,8 +100,6 @@ public class ImportAccountDialog implements Initializable {
             account = getAccountFromKeyStore(shouldKeep);
         } else if (importPrivateKeyView.isVisible()) {
             account = getAccountFromPrivateKey(shouldKeep);
-        } else if (importMnemonicView.isVisible()) {
-            account = getAccountFromMnemonic(shouldKeep);
         }
 
         if (account != null) {
@@ -169,38 +148,6 @@ public class ImportAccountDialog implements Initializable {
         }
     }
 
-    private AccountDTO getAccountFromMnemonic(final boolean shouldKeep) {
-        final String mnemonic = mnemonicTextField.getText();
-        final String mnemonicPassword = mnemonicPasswordField.getText();
-        if (mnemonic != null && !mnemonic.isEmpty() && mnemonicPassword != null && !mnemonicPassword.isEmpty()) {
-            try {
-                MnemonicValidator
-                        .ofWordList(English.INSTANCE)
-                        .validate(mnemonic);
-                return blockchainConnector.importMnemonic(mnemonic, mnemonicPassword, shouldKeep);
-            } catch (UnexpectedWhiteSpaceException | InvalidWordCountException | InvalidChecksumException | WordNotFoundException | ValidationException e) {
-                displayError(getMnemonicValidationErrorMessage(e));
-                log.error(e.getMessage(), e);
-                return null;
-            }
-        } else {
-            displayError("Please complete the fields!");
-            return null;
-        }
-    }
-
-    private String getMnemonicValidationErrorMessage(Exception e) {
-        if (e instanceof UnexpectedWhiteSpaceException) {
-            return "There are spaces in the mnemonic!";
-        } else if (e instanceof InvalidWordCountException) {
-            return "Mnemonic word length is invalid!";
-        } else if (e instanceof InvalidChecksumException) {
-            return "Invalid mnemonic!";
-        } else if (e instanceof WordNotFoundException) {
-            return "Word in mnemonic was not found!";
-        } else return e.getMessage();
-    }
-
     private void displayError(final String message) {
         validationError.setText(message);
         validationError.setVisible(true);
@@ -240,7 +187,6 @@ public class ImportAccountDialog implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         privateKeyRadioButton.setUserData(PK_RADIO_BUTTON_ID);
         keystoreRadioButton.setUserData(KEYSTORE_RADIO_BUTTON_ID);
-        mnemonicRadioButton.setUserData(MNEMONIC_RADIO_BUTTON_ID);
         accountTypeToggleGroup.selectedToggleProperty().addListener(this::radioButtonChanged);
     }
 
@@ -262,17 +208,10 @@ public class ImportAccountDialog implements Initializable {
                 case PK_RADIO_BUTTON_ID:
                     importPrivateKeyView.setVisible(true);
                     importKeystoreView.setVisible(false);
-                    importMnemonicView.setVisible(false);
                     break;
                 case KEYSTORE_RADIO_BUTTON_ID:
                     importPrivateKeyView.setVisible(false);
                     importKeystoreView.setVisible(true);
-                    importMnemonicView.setVisible(false);
-                    break;
-                case MNEMONIC_RADIO_BUTTON_ID:
-                    importPrivateKeyView.setVisible(false);
-                    importKeystoreView.setVisible(false);
-                    importMnemonicView.setVisible(true);
                     break;
             }
         }

@@ -4,15 +4,22 @@ import com.google.common.eventbus.Subscribe;
 import javafx.collections.FXCollections;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.input.MouseEvent;
+import org.aion.api.log.LogEnum;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.events.AccountEvent;
 import org.aion.wallet.events.EventBusFactory;
 import org.aion.wallet.events.HeaderPaneButtonEvent;
 import org.aion.wallet.events.RefreshEvent;
+import org.aion.wallet.exception.ValidationException;
+import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.ui.components.partials.AddAccountDialog;
+import org.aion.wallet.ui.components.partials.ImportAccountDialog;
+import org.aion.wallet.ui.components.partials.UnlockMasterAccountDialog;
+import org.slf4j.Logger;
 
 import java.net.URL;
 import java.util.EnumSet;
@@ -21,16 +28,27 @@ import java.util.ResourceBundle;
 
 public class OverviewController extends AbstractController {
 
+    private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
+
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
+    @FXML
+    private Button addMasterAccountButton;
+    @FXML
+    private Button unlockMasterAccountButton;
     @FXML
     private ListView<AccountDTO> accountListView;
     private AddAccountDialog addAccountDialog;
+    private ImportAccountDialog importAccountDialog;
+    private UnlockMasterAccountDialog unlockMasterAccountDialog;
+
     private AccountDTO account;
 
 
     @Override
     public void internalInit(final URL location, final ResourceBundle resources) {
         addAccountDialog = new AddAccountDialog();
+        importAccountDialog = new ImportAccountDialog();
+        unlockMasterAccountDialog = new UnlockMasterAccountDialog();
         reloadAccounts();
     }
 
@@ -41,14 +59,26 @@ public class OverviewController extends AbstractController {
         EventBusFactory.getBus(AccountEvent.ID).register(this);
     }
 
+    private void displayFooterActions() {
+        if (blockchainConnector.hasMasterAccount() && !blockchainConnector.isMasterAccountUnlocked()) {
+            unlockMasterAccountButton.setVisible(true);
+            addMasterAccountButton.setVisible(false);
+        } else {
+            unlockMasterAccountButton.setVisible(false);
+            addMasterAccountButton.setVisible(true);
+        }
+    }
+
     private void reloadAccounts() {
         final Task<List<AccountDTO>> getAccountsTask = getApiTask(o -> blockchainConnector.getAccounts(), null);
         runApiTask(
                 getAccountsTask,
                 evt -> reloadAccountObservableList(getAccountsTask.getValue()),
-                getErrorEvent(throwable -> {}, getAccountsTask),
+                getErrorEvent(throwable -> {
+                }, getAccountsTask),
                 getEmptyEvent()
         );
+        displayFooterActions();
     }
 
     private void reloadAccountObservableList(List<AccountDTO> accounts) {
@@ -83,13 +113,30 @@ public class OverviewController extends AbstractController {
     }
 
     @Subscribe
-    private void handleRefreshEvent(final RefreshEvent event){
-        if (RefreshEvent.Type.TRANSACTION_FINISHED.equals(event.getType())){
+    private void handleRefreshEvent(final RefreshEvent event) {
+        if (RefreshEvent.Type.TRANSACTION_FINISHED.equals(event.getType())) {
             reloadAccounts();
         }
     }
 
+    public void unlockMasterAccount(MouseEvent mouseEvent) {
+        unlockMasterAccountDialog.open(mouseEvent);
+    }
+
+    public void openImportAccountDialog(MouseEvent mouseEvent) {
+        importAccountDialog.open(mouseEvent);
+    }
+
     public void openAddAccountDialog(MouseEvent mouseEvent) {
+        if (this.blockchainConnector.hasMasterAccount()) {
+            try {
+                blockchainConnector.createAccount();
+            } catch (ValidationException e) {
+                log.error(e.getMessage(), e);
+                // todo: display on yui
+            }
+            return;
+        }
         addAccountDialog.open(mouseEvent);
     }
 }

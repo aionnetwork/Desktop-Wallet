@@ -13,6 +13,8 @@ public class AccountDTO {
     private String balance;  //TODO this has to be BigInteger
     private String name;
     private boolean active;
+    private boolean isImported;
+    private int derivationIndex = -1;
     private final BufferedImage qrCode;
 
     public AccountDTO(final String name, final String publicAddress, final String balance, final String currency) {
@@ -61,6 +63,22 @@ public class AccountDTO {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public boolean isImported() {
+        return isImported;
+    }
+
+    public void setImported(boolean imported) {
+        isImported = imported;
+    }
+
+    public int getDerivationIndex() {
+        return derivationIndex;
+    }
+
+    public void setDerivationIndex(int derivationIndex) {
+        this.derivationIndex = derivationIndex;
     }
 
     public BufferedImage getQrCode() {
