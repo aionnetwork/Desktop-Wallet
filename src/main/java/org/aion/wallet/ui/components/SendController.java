@@ -4,6 +4,7 @@ import com.google.common.eventbus.Subscribe;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseEvent;
 import org.aion.api.log.LogEnum;
 import org.aion.base.util.TypeConverter;
 import org.aion.wallet.connector.BlockchainConnector;
@@ -13,11 +14,13 @@ import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.events.*;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
+import org.aion.wallet.ui.components.partials.TransactionResubmissionDialog;
 import org.aion.wallet.util.*;
 import org.slf4j.Logger;
 
 import java.math.BigInteger;
 import java.net.URL;
+import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
@@ -53,10 +56,14 @@ public class SendController extends AbstractController {
     private TextField accountBalance;
     @FXML
     private Button sendButton;
+    @FXML
+    private Label timedoutTransactionsLabel;
 
     private AccountDTO account;
 
     private boolean connected;
+
+    private TransactionResubmissionDialog transactionResubmissionDialog = new TransactionResubmissionDialog();
 
     @Override
     protected void registerEventBusConsumer() {
@@ -94,6 +101,7 @@ public class SendController extends AbstractController {
                 break;
             default:
         }
+        setTimedoutTransactionsLabelText();
     }
 
     public void onSendAionClicked() {
@@ -120,7 +128,12 @@ public class SendController extends AbstractController {
         );
     }
 
+    public void onTimedoutTransactionsClick(MouseEvent mouseEvent) {
+        transactionResubmissionDialog.open(mouseEvent);
+    }
+
     private void handleTransactionFinished(final String txHash) {
+        setTimedoutTransactionsLabelText();
         log.info("%s: %s", SUCCESS_MESSAGE, txHash);
         displayStatus(SUCCESS_MESSAGE, false);
         EventPublisher.fireTransactionFinished();
@@ -150,6 +163,19 @@ public class SendController extends AbstractController {
         toInput.setText("");
         valueInput.setText("");
         passwordInput.setText("");
+
+        setTimedoutTransactionsLabelText();
+    }
+
+    private void setTimedoutTransactionsLabelText() {
+        if(account != null) {
+            final List<SendTransactionDTO> timedoutTransactions = blockchainConnector.getAccountManager().getTimedoutTransactions(account.getPublicAddress());
+            if(!timedoutTransactions.isEmpty()) {
+                timedoutTransactionsLabel.setVisible(true);
+                timedoutTransactionsLabel.getStyleClass().add("warning-link-style");
+                timedoutTransactionsLabel.setText("You have transactions that require your attention!");
+            }
+        }
     }
 
     @Subscribe
@@ -243,5 +269,4 @@ public class SendController extends AbstractController {
 
         return dto;
     }
-
 }

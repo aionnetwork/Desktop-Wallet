@@ -136,7 +136,7 @@ public abstract class BlockchainConnector {
         accountManager.lockAll();
     }
 
-    protected final AccountManager getAccountManager() {
+    public final AccountManager getAccountManager() {
         return accountManager;
     }
 

@@ -12,8 +12,10 @@ import org.aion.mcf.account.Keystore;
 import org.aion.mcf.account.KeystoreFormat;
 import org.aion.mcf.account.KeystoreItem;
 import org.aion.wallet.connector.dto.BlockDTO;
+import org.aion.wallet.connector.dto.SendTransactionDTO;
 import org.aion.wallet.connector.dto.TransactionDTO;
 import org.aion.wallet.crypto.ExtendedKey;
+import org.aion.wallet.connector.dto.TransactionResponseDTO;
 import org.aion.wallet.crypto.SeededECKeyEd25519;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.events.EventPublisher;
@@ -48,6 +50,9 @@ public class AccountManager {
     private final Map<String, SortedSet<TransactionDTO>> addressToTransactions = Collections.synchronizedMap(new HashMap<>());
 
     private final Map<String, BlockDTO> addressToLastCheckedBlock = Collections.synchronizedMap(new HashMap<>());
+    
+    private final Map<String, SendTransactionDTO> addressToTimedoutTransactions = new HashMap<>();
+
 
     private final Map<String, byte[]> addressToKeystoreContent = Collections.synchronizedMap(new HashMap<>());
 
@@ -263,6 +268,16 @@ public class AccountManager {
             throw new ValidationException("The password is incorrect!");
         }
 
+    }
+
+    public List<SendTransactionDTO> getTimedoutTransactions(final String accountAddress) {
+        return new ArrayList<>(addressToTimedoutTransactions.values());
+    }
+
+    public void addTimedoutTransaction(final String accountAddress, final SendTransactionDTO transaction) {
+        if(accountAddress != null && !accountAddress.isEmpty() && transaction != null) {
+            addressToTimedoutTransactions.put(accountAddress, transaction);
+        }
     }
 
     public void lockAll() {

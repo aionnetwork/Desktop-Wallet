@@ -97,6 +97,12 @@
     -fx-text-fill: RED;
 }
 
+.warning-link-style {
+    -fx-text-fill: #FF9900;
+    -fx-underline: true ;
+    -fx-cursor: hand;
+}
+
 /* Scrollbar */
 
 /* Scroll bar policy below */
