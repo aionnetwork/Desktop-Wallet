@@ -24,6 +24,7 @@ import org.aion.wallet.events.SettingsEvent;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.storage.WalletStorage;
+import org.aion.wallet.util.AddressUtils;
 import org.aion.wallet.util.BalanceUtils;
 import org.slf4j.Logger;
 
@@ -184,7 +185,7 @@ public class AccountManager {
         if (shouldKeep) {
             if (!Keystore.exist(address)) {
                 address = Keystore.create(password, key);
-                if (!address.equals("0x")) {
+                if (AddressUtils.isValid(address)) {
                     accountDTO = createAccountWithPrivateKey(address, key.getPrivKeyBytes(), true);
                 } else {
                     throw new ValidationException("Failed to save keystore file");
