@@ -4,12 +4,15 @@
 <?import javafx.scene.layout.*?>
 <AnchorPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.121"
             stylesheets="@footer-pane.css" styleClass="anchor-pane"
-            AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" prefWidth="500">
+            AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0.0">
 
+    <HBox alignment="CENTER" AnchorPane.leftAnchor="10" AnchorPane.rightAnchor="10" prefHeight="60.0">
         <fx:include source="partials/ConnectivityStatus.fxml"/>
         <fx:include source="partials/PeerCount.fxml"/>
         <fx:include source="partials/SyncStatus.fxml"/>
-        <Label AnchorPane.topAnchor="10" AnchorPane.leftAnchor="655" styleClass="footer-pane-text" text="AION Desktop Wallet v1.0"/>
-
+        <VBox prefWidth="200.0" alignment="CENTER">
+            <Label styleClass="footer-pane-text" text="AION Desktop Wallet v1.0"/>
+        </VBox>
+    </HBox>
 
 </AnchorPane>

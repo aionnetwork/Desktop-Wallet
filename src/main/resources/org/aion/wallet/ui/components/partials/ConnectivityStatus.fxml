@@ -2,14 +2,19 @@
 
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
 <?import java.net.URL?>
-<AnchorPane prefHeight="46.0" xmlns="http://javafx.com/javafx/8.0.121"
-            xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="org.aion.wallet.ui.components.partials.ConnectivityStatusController" fx:id="parent">
+
+<?import javafx.scene.layout.HBox?>
+<VBox xmlns="http://javafx.com/javafx/8.0.121"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="org.aion.wallet.ui.components.partials.ConnectivityStatusController"
+      fx:id="parent"
+      prefWidth="150.0" alignment="CENTER_LEFT">
     <stylesheets>
         <URL value="@../footer-pane.css" />
     </stylesheets>
-    <Label fx:id="connectivityLabel" styleClass="connected-label" text="Connection status..."
-           AnchorPane.bottomAnchor="10" AnchorPane.topAnchor="10" AnchorPane.leftAnchor="10"/>
-
-</AnchorPane>
+    <HBox spacing="10">
+        <Label fx:id="connectivityLabel" styleClass="connected-label" text="Connecting.."/>
+    </HBox>
+</VBox>
