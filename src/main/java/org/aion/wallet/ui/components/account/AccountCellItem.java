@@ -89,7 +89,8 @@ public class AccountCellItem extends ListCell<AccountDTO> {
             name.setText(item.getName());
             UIUtils.setWidth(name);
 
-            publicAddress.setText(item.getPublicAddress());
+            String prefix = item.isImported() ? "" : "IMPORTED - ";
+            publicAddress.setText(prefix + item.getPublicAddress());
             balance.setText(item.getBalance() + BalanceUtils.CCY_SEPARATOR + item.getCurrency());
             UIUtils.setWidth(balance);
 
