@@ -34,6 +34,10 @@ public class AccountCellItem extends ListCell<AccountDTO> {
 
     private static final String NAME_INPUT_FIELDS_STYLE = "name-input-fields";
 
+    private static final Tooltip CONNECT_ACCOUNT_TOOLTIP = new Tooltip("Connect with this account");
+
+    private static final Tooltip CONNECTED_ACCOUNT_TOOLTIP = new Tooltip("Connected account");
+
     private final UnlockAccountDialog accountUnlockDialog = new UnlockAccountDialog();
 
     @FXML
@@ -48,8 +52,6 @@ public class AccountCellItem extends ListCell<AccountDTO> {
     private ImageView editNameButton;
 
     private boolean nameInEditMode;
-    private final Tooltip connectAccountTooltip = new Tooltip("Connect with this account");
-    private final Tooltip connectedAccountTooltip = new Tooltip("Connected account");
 
     public AccountCellItem() {
         loadFXML();
@@ -102,13 +104,13 @@ public class AccountCellItem extends ListCell<AccountDTO> {
             if (item.isActive()) {
                 final InputStream resource = getClass().getResourceAsStream(ICON_CONNECTED);
                 accountSelectButton.setImage(new Image(resource));
-                Tooltip.uninstall(accountSelectButton, connectAccountTooltip);
-                Tooltip.install(accountSelectButton, connectedAccountTooltip);
+                Tooltip.uninstall(accountSelectButton, CONNECT_ACCOUNT_TOOLTIP);
+                Tooltip.install(accountSelectButton, CONNECTED_ACCOUNT_TOOLTIP);
             } else {
                 final InputStream resource = getClass().getResourceAsStream(ICON_DISCONNECTED);
                 accountSelectButton.setImage(new Image(resource));
-                Tooltip.uninstall(accountSelectButton, connectedAccountTooltip);
-                Tooltip.install(accountSelectButton, connectAccountTooltip);
+                Tooltip.uninstall(accountSelectButton, CONNECTED_ACCOUNT_TOOLTIP);
+                Tooltip.install(accountSelectButton, CONNECT_ACCOUNT_TOOLTIP);
             }
 
             setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
