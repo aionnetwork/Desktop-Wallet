@@ -14,7 +14,7 @@
         <Label text="Accounts overview" styleClass="tile-label" alignment="CENTER"/>
         <HBox alignment="CENTER">
             <ScrollPane AnchorPane.topAnchor="10" hbarPolicy="NEVER" vbarPolicy="NEVER" prefViewportWidth="800" prefViewportHeight="240">
-                <ListView fx:id="accountListView" styleClass="accounts-list">
+                <ListView fx:id="accountListView" styleClass="accounts-list, custom-scrollbar"  prefHeight="240">
                     <cellFactory>
                         <AccountCellFactory/>
                     </cellFactory>
