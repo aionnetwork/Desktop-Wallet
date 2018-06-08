@@ -8,7 +8,6 @@ import org.aion.base.type.Address;
 import org.aion.base.util.ByteUtil;
 import org.aion.base.util.TypeConverter;
 import org.aion.wallet.connector.BlockchainConnector;
-import org.aion.wallet.connector.api.TxInfo;
 import org.aion.wallet.connector.dto.SendTransactionDTO;
 import org.aion.wallet.connector.dto.SyncInfoDTO;
 import org.aion.wallet.connector.dto.TransactionDTO;
@@ -26,7 +25,6 @@ import org.aion.zero.types.AionTransaction;
 import org.slf4j.Logger;
 
 import java.math.BigInteger;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -77,7 +75,7 @@ public class CoreBlockchainConnector extends BlockchainConnector {
 
     @Override
     public List<TransactionDTO> getLatestTransactions(String address) {
-        long lastBlockToCheck = getAccountManager().getLastTxInfo(address).getLastCheckedBlock();
+        long lastBlockToCheck = getAccountManager().getLastCheckedBlock(address);
         processNewTransactions(lastBlockToCheck, Collections.singleton(address));
         return new ArrayList<>(getAccountManager().getTransactions(address));
     }
@@ -95,27 +93,14 @@ public class CoreBlockchainConnector extends BlockchainConnector {
                     txs.addAll(blk.getTransactionsList().stream()
                             .filter(t -> TypeConverter.toJsonHex(t.getFrom().toString()).equals(address)
                                     || TypeConverter.toJsonHex(t.getTo().toString()).equals(address))
-                            .map(t -> recordTransaction(address, t, latest))
+                            .map(this::mapTransaction)
                             .collect(Collectors.toList()));
                 }
             }
             for (String address : addresses) {
-                final long txCount = getAccountManager().getLastTxInfo(address).getTxCount();
-                getAccountManager().updateTxInfo(address, new TxInfo(latest, txCount));
+                getAccountManager().updateTxInfo(address, latest);
             }
         }
-    }
-
-    private TransactionDTO recordTransaction(final String address, final AionTransaction transaction, final long lastCheckedBlock) {
-        final TransactionDTO transactionDTO = mapTransaction(transaction);
-        final long txCount = getAccountManager().getLastTxInfo(address).getTxCount();
-        if (transactionDTO.getFrom().equals(address)) {
-            final long txNonce = transaction.getNonceBI().longValue();
-            if (txCount < txNonce) {
-                getAccountManager().updateTxInfo(address, new TxInfo(lastCheckedBlock, txNonce));
-            }
-        }
-        return transactionDTO;
     }
 
     @Override
