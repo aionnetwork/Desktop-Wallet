@@ -12,7 +12,6 @@ import org.aion.crypto.ECKeyFac;
 import org.aion.mcf.account.Keystore;
 import org.aion.mcf.account.KeystoreFormat;
 import org.aion.mcf.account.KeystoreItem;
-import org.aion.wallet.connector.api.TxInfo;
 import org.aion.wallet.connector.dto.TransactionDTO;
 import org.aion.wallet.crypto.ExtendedKey;
 import org.aion.wallet.crypto.SeededECKeyEd25519;
@@ -52,7 +51,7 @@ public class AccountManager {
 
     private final Map<String, SortedSet<TransactionDTO>> addressToTransactions = Collections.synchronizedMap(new HashMap<>());
 
-    private final Map<String, TxInfo> addressToLastTxInfo = Collections.synchronizedMap(new HashMap<>());
+    private final Map<String, Long> addressToLastTxInfo = Collections.synchronizedMap(new HashMap<>());
 
     private final Map<String, byte[]> addressToKeystoreContent = Collections.synchronizedMap(new HashMap<>());
 
@@ -76,7 +75,7 @@ public class AccountManager {
         for (String address : Keystore.list()) {
             addressToAccount.put(address, getNewAccount(address));
             addressToTransactions.put(address, new TreeSet<>(transactionComparator));
-            addressToLastTxInfo.put(address, new TxInfo(0, -1));
+            addressToLastTxInfo.put(address, 0L);
         }
         registerEventBusConsumer();
     }
@@ -203,7 +202,7 @@ public class AccountManager {
         if (accountDTO == null) {
             throw new ValidationException("Failed to create account");
         }
-        processAccountAdded(accountDTO, fileContent, false);
+        processAccountAdded(accountDTO, fileContent);
         return accountDTO;
     }
 
@@ -211,12 +210,12 @@ public class AccountManager {
         return addressToTransactions.getOrDefault(address, Collections.emptySortedSet());
     }
 
-    public TxInfo getLastTxInfo(final String address) {
+    public Long getLastCheckedBlock(final String address) {
         return addressToLastTxInfo.get(address);
     }
 
-    public void updateTxInfo(final String address, final TxInfo txInfo) {
-        addressToLastTxInfo.put(address, txInfo);
+    public void updateTxInfo(final String address, final long lastCheckedBlock) {
+        addressToLastTxInfo.put(address, lastCheckedBlock);
     }
 
     public List<AccountDTO> getAccounts() {
@@ -303,12 +302,12 @@ public class AccountManager {
         return account;
     }
 
-    private void processAccountAdded(final AccountDTO account, final byte[] keystoreContent, final boolean isCreated) {
+    private void processAccountAdded(final AccountDTO account, final byte[] keystoreContent) {
         if (account == null || keystoreContent == null) {
             throw new IllegalArgumentException(String.format("account %s ; keystoreContent: %s", account, Arrays.toString(keystoreContent)));
         }
         final String address = account.getPublicAddress();
-        addressToLastTxInfo.put(address, new TxInfo(isCreated ? -1 : 0, -1));
+        addressToLastTxInfo.put(address, 0L);
         addressToTransactions.put(address, new TreeSet<>(transactionComparator));
         addressToKeystoreContent.put(address, keystoreContent);
         scheduleAccountLock(account);

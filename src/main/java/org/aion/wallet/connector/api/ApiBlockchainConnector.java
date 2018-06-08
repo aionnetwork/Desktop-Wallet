@@ -150,7 +150,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     @Override
     public List<TransactionDTO> getLatestTransactions(final String address) {
-        long lastBlockToCheck = getAccountManager().getLastTxInfo(address).getLastCheckedBlock();
+        long lastBlockToCheck = getAccountManager().getLastCheckedBlock(address);
         processNewTransactions(lastBlockToCheck, Collections.singleton(address));
         return new ArrayList<>(getAccountManager().getTransactions(address));
     }
@@ -263,13 +263,18 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     }
 
     private BigInteger getLatestTransactionNonce(final String address) {
-        final TxInfo transactionInfo = getAccountManager().getLastTxInfo(address);
-        final long lastCheckedBlock = transactionInfo.getLastCheckedBlock();
-        long lastKnownTxCount = transactionInfo.getTxCount();
-        if (lastCheckedBlock >= 0) {
-            processNewTransactions(lastCheckedBlock, Collections.singleton(address));
+        final BigInteger txCount;
+        lock();
+        try {
+            if (API.isConnected()) {
+                txCount = API.getChain().getNonce(Address.wrap(address)).getObject();
+            } else {
+                txCount = BigInteger.ZERO;
+            }
+        } finally {
+            unLock();
         }
-        return BigInteger.valueOf(lastKnownTxCount + 1);
+        return txCount;
     }
 
     private void processNewTransactions(final long lastBlockToCheck, final Set<String> addresses) {
@@ -278,16 +283,15 @@ public class ApiBlockchainConnector extends BlockchainConnector {
             for (long i = latest; i > lastBlockToCheck; i -= BLOCK_BATCH_SIZE) {
                 List<Long> blockBatch = LongStream.iterate(i, j -> j - 1).limit(BLOCK_BATCH_SIZE).boxed().collect(Collectors.toList());
                 List<BlockDetails> blk = getBlockDetailsByNumbers(blockBatch);
-                blk.forEach(getBlockDetailsConsumer(latest, addresses));
+                blk.forEach(getBlockDetailsConsumer(addresses));
             }
             for (String address : addresses) {
-                final long txCount = getAccountManager().getLastTxInfo(address).getTxCount();
-                getAccountManager().updateTxInfo(address, new TxInfo(latest, txCount));
+                getAccountManager().updateTxInfo(address, latest);
             }
         }
     }
 
-    private Consumer<BlockDetails> getBlockDetailsConsumer(final long latest, final Set<String> addresses) {
+    private Consumer<BlockDetails> getBlockDetailsConsumer(final Set<String> addresses) {
         return blockDetails -> {
             if (blockDetails != null) {
                 final long timestamp = blockDetails.getTimestamp();
@@ -297,7 +301,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
                     txs.addAll(blockDetails.getTxDetails().stream()
                             .filter(t -> TypeConverter.toJsonHex(t.getFrom().toString()).equals(address)
                                     || TypeConverter.toJsonHex(t.getTo().toString()).equals(address))
-                            .map(t -> recordTransaction(address, t, timestamp, latest, blockNumber))
+                            .map(t -> mapTransaction(t, timestamp, blockNumber))
                             .collect(Collectors.toList()));
                 }
             }
@@ -360,18 +364,6 @@ public class ApiBlockchainConnector extends BlockchainConnector {
                 timeStamp,
                 blockNumber,
                 transaction.getNonce());
-    }
-
-    private TransactionDTO recordTransaction(final String address, final TxDetails transaction, final long timeStamp, final long lastCheckedBlock, final long blockNumber) {
-        final TransactionDTO transactionDTO = mapTransaction(transaction, timeStamp, blockNumber);
-        final long txCount = getAccountManager().getLastTxInfo(address).getTxCount();
-        if (transactionDTO.getFrom().equals(address)) {
-            final long txNonce = transaction.getNonce().longValue();
-            if (txCount < txNonce) {
-                getAccountManager().updateTxInfo(address, new TxInfo(lastCheckedBlock, txNonce));
-            }
-        }
-        return transactionDTO;
     }
 
     private String getConnectionString() {
