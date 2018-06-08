@@ -4,7 +4,7 @@
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.layout.*?>
-<AnchorPane id="historyPane" stylesheets="../contentPane.css" visible="false"
+<AnchorPane id="historyPane" visible="false"
             xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="org.aion.wallet.ui.components.HistoryController" fx:id="parent">
 
