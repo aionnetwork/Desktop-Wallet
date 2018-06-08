@@ -5,6 +5,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
@@ -33,6 +34,10 @@ public class AccountCellItem extends ListCell<AccountDTO> {
 
     private static final String NAME_INPUT_FIELDS_STYLE = "name-input-fields";
 
+    private static final Tooltip CONNECT_ACCOUNT_TOOLTIP = new Tooltip("Connect with this account");
+
+    private static final Tooltip CONNECTED_ACCOUNT_TOOLTIP = new Tooltip("Connected account");
+
     private final UnlockAccountDialog accountUnlockDialog = new UnlockAccountDialog();
 
     @FXML
@@ -60,6 +65,7 @@ public class AccountCellItem extends ListCell<AccountDTO> {
             loader.setRoot(this);
             loader.load();
             name.setOnKeyPressed(this::submitNameOnEnterPressed);
+            Tooltip.install(editNameButton, new Tooltip("Edit account name"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -98,9 +104,13 @@ public class AccountCellItem extends ListCell<AccountDTO> {
             if (item.isActive()) {
                 final InputStream resource = getClass().getResourceAsStream(ICON_CONNECTED);
                 accountSelectButton.setImage(new Image(resource));
+                Tooltip.uninstall(accountSelectButton, CONNECT_ACCOUNT_TOOLTIP);
+                Tooltip.install(accountSelectButton, CONNECTED_ACCOUNT_TOOLTIP);
             } else {
                 final InputStream resource = getClass().getResourceAsStream(ICON_DISCONNECTED);
                 accountSelectButton.setImage(new Image(resource));
+                Tooltip.uninstall(accountSelectButton, CONNECTED_ACCOUNT_TOOLTIP);
+                Tooltip.install(accountSelectButton, CONNECT_ACCOUNT_TOOLTIP);
             }
 
             setContentDisplay(ContentDisplay.GRAPHIC_ONLY);

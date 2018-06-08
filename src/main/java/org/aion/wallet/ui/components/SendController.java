@@ -28,6 +28,10 @@ public class SendController extends AbstractController {
 
     private static final String SUCCESS_MESSAGE = "Transaction finished";
 
+    private static final Tooltip NRG_LIMIT_TOOLTIP = new Tooltip("NRG limit");
+
+    private static final Tooltip NRG_PRICE_TOOLTIP = new Tooltip("NRG price");
+
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
 
     @FXML
@@ -62,6 +66,8 @@ public class SendController extends AbstractController {
 
     @Override
     protected void internalInit(final URL location, final ResourceBundle resources) {
+        nrgInput.setTooltip(NRG_LIMIT_TOOLTIP);
+        nrgPriceInput.setTooltip(NRG_PRICE_TOOLTIP);
         setDefaults();
         if (!ConfigUtils.isEmbedded()) {
             passwordInput.setVisible(false);

@@ -31,6 +31,7 @@ public class UnlockMasterAccountDialog {
     public void unlockMasterAccount(final InputEvent mouseEvent) {
         try {
             blockchainConnector.unlockMasterAccount(passwordField.getText());
+            close(mouseEvent);
         } catch (Exception e) {
             showInvalidFieldsError(e.getMessage());
         }
@@ -66,8 +67,8 @@ public class UnlockMasterAccountDialog {
         popup.show(eventSource.getScene().getWindow());
     }
 
-    public void close() {
-        popup.hide();
+    public void close(InputEvent eventSource) {
+        ((Node) eventSource.getSource()).getScene().getWindow().hide();
     }
 
     @FXML

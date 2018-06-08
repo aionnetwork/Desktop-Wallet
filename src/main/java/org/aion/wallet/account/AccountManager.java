@@ -168,7 +168,7 @@ public class AccountManager {
             return null;
         }
         final ECKey firstDerivation = root.deriveHardened(new int[]{44, 60, 0, 0, derivation}).getEcKey();
-        AccountDTO account = createAccountWithPrivateKey(TypeConverter.toJsonHex(firstDerivation.computeAddress(firstDerivation.getPubKey())), firstDerivation.getPrivKeyBytes(), false);
+        AccountDTO account = createAccountWithPrivateKey(TypeConverter.toJsonHex(firstDerivation.computeAddress(firstDerivation.getPubKey())), firstDerivation.getPrivKeyBytes(), false, derivation);
         EventPublisher.fireTransactionFinished();
         return account;
     }
@@ -186,7 +186,7 @@ public class AccountManager {
             if (!Keystore.exist(address)) {
                 address = Keystore.create(password, key);
                 if (AddressUtils.isValid(address)) {
-                    accountDTO = createAccountWithPrivateKey(address, key.getPrivKeyBytes(), true);
+                    accountDTO = createImportedAccountFromPrivateKey(address, key.getPrivKeyBytes());
                 } else {
                     throw new ValidationException("Failed to save keystore file");
                 }
@@ -195,7 +195,7 @@ public class AccountManager {
             }
         } else {
             if (!addressToAccount.keySet().contains(address)) {
-                accountDTO = createAccountWithPrivateKey(address, key.getPrivKeyBytes(), true);
+                accountDTO = createImportedAccountFromPrivateKey(address, key.getPrivKeyBytes());
             } else {
                 throw new ValidationException("Account already exists!");
             }
@@ -280,7 +280,11 @@ public class AccountManager {
         }
     }
 
-    private AccountDTO createAccountWithPrivateKey(final String address, final byte[] privateKeyBytes, boolean isImported) {
+    private AccountDTO createImportedAccountFromPrivateKey(final String address, final byte[] privateKeyBytes) {
+        return createAccountWithPrivateKey(address, privateKeyBytes, true, -1);
+    }
+
+    private AccountDTO createAccountWithPrivateKey(final String address, final byte[] privateKeyBytes, boolean isImported, int derivation) {
         if (address == null) {
             log.error("Can't create account with null address");
             return null;
@@ -292,13 +296,9 @@ public class AccountManager {
         final String name = getStoredAccountName(address);
         final String balance = BalanceUtils.formatBalance(balanceProvider.apply(address));
 
-        AccountDTO account = new AccountDTO(name, address, balance, currencySupplier.get());
+        AccountDTO account = new AccountDTO(name, address, balance, currencySupplier.get(), isImported, derivation);
         account.setPrivateKey(privateKeyBytes);
         account.setActive(true);
-        account.setImported(isImported);
-        if (!isImported) {
-            account.setDerivationIndex(walletStorage.getMasterAccountDerivations());
-        }
         addressToAccount.put(account.getPublicAddress(), account);
         return account;
     }
@@ -338,7 +338,7 @@ public class AccountManager {
     private AccountDTO getNewAccount(final String publicAddress) {
         final String name = getStoredAccountName(publicAddress);
         final String balance = BalanceUtils.formatBalance(balanceProvider.apply(publicAddress));
-        return new AccountDTO(name, publicAddress, balance, currencySupplier.get());
+        return new AccountDTO(name, publicAddress, balance, currencySupplier.get(), true, -1);
     }
 
     private void storeAccountName(final String address, final String name) {
