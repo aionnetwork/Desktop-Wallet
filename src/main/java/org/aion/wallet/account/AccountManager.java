@@ -361,7 +361,7 @@ public class AccountManager {
         public int compare(final TransactionDTO tx1, final TransactionDTO tx2) {
             return tx1 == null ?
                     (tx2 == null ? 0 : -1) :
-                    (tx2 == null ? 1 : tx2.getNonce().compareTo(tx1.getNonce()));
+                    (tx2 == null ? 1 : tx2.getBlockNumber().compareTo(tx1.getBlockNumber()));
         }
     }
 }

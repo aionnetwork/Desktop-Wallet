@@ -12,7 +12,7 @@ public class TransactionDTO {
     private final long nrg;
     private final long nrgPrice;
     private final long timeStamp;
-    private final long blockNumber;
+    private final Long blockNumber;
     private final BigInteger nonce;
 
     public TransactionDTO(final String from, final String to, final String hash, final BigInteger value, final long nrg, final long nrgPrice, final long timeStamp, final long blockNumber, BigInteger nonce) {
@@ -55,7 +55,7 @@ public class TransactionDTO {
         return timeStamp;
     }
 
-    public long getBlockNumber() {
+    public Long getBlockNumber() {
         return blockNumber;
     }
 
