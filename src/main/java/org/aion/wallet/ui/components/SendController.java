@@ -62,6 +62,8 @@ public class SendController extends AbstractController {
 
     @Override
     protected void internalInit(final URL location, final ResourceBundle resources) {
+        nrgInput.setTooltip(new Tooltip("NRG limit"));
+        nrgPriceInput.setTooltip(new Tooltip("NRG price"));
         setDefaults();
         if (!ConfigUtils.isEmbedded()) {
             passwordInput.setVisible(false);

@@ -13,16 +13,18 @@ public class AccountDTO {
     private String balance;  //TODO this has to be BigInteger
     private String name;
     private boolean active;
-    private boolean isImported;
-    private int derivationIndex = -1;
+    private final boolean isImported;
+    private final int derivationIndex;
     private final BufferedImage qrCode;
 
-    public AccountDTO(final String name, final String publicAddress, final String balance, final String currency) {
+    public AccountDTO(final String name, final String publicAddress, final String balance, final String currency, boolean isImported, int derivationIndex) {
         this.name = name;
         this.publicAddress = TypeConverter.toJsonHex(publicAddress);
         this.balance = balance;
         this.currency = currency;
         this.qrCode = QRCodeUtils.writeQRCode(publicAddress);
+        this.isImported = isImported;
+        this.derivationIndex = derivationIndex;
     }
 
     public String getName() {
@@ -69,16 +71,8 @@ public class AccountDTO {
         return isImported;
     }
 
-    public void setImported(boolean imported) {
-        isImported = imported;
-    }
-
     public int getDerivationIndex() {
         return derivationIndex;
-    }
-
-    public void setDerivationIndex(int derivationIndex) {
-        this.derivationIndex = derivationIndex;
     }
 
     public BufferedImage getQrCode() {
