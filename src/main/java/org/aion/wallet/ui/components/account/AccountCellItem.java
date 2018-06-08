@@ -103,6 +103,9 @@ public class AccountCellItem extends ListCell<AccountDTO> {
             if (item.isImported()) {
                 importedIcon.setVisible(true);
                 publicAddress.setPadding(new Insets(5, 0, 0, 20));
+            } else {
+                importedIcon.setVisible(false);
+                publicAddress.setPadding(new Insets(5, 0, 0, 0));
             }
 
             balance.setText(item.getBalance() + BalanceUtils.CCY_SEPARATOR + item.getCurrency());
