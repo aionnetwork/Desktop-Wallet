@@ -2,6 +2,7 @@ package org.aion.wallet.ui.components.account;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.TextField;
@@ -44,6 +45,8 @@ public class AccountCellItem extends ListCell<AccountDTO> {
     private TextField name;
     @FXML
     private TextField publicAddress;
+    @FXML
+    private ImageView importedIcon;
     @FXML
     private TextField balance;
     @FXML
@@ -95,9 +98,13 @@ public class AccountCellItem extends ListCell<AccountDTO> {
             name.setText(item.getName());
             UIUtils.setWidth(name);
 
-            // todo: display icon on ui
-            String prefix = item.isImported() ? "IMPORTED - " : "";
-            publicAddress.setText(prefix + item.getPublicAddress());
+            publicAddress.setText(item.getPublicAddress());
+
+            if (item.isImported()) {
+                importedIcon.setVisible(true);
+                publicAddress.setPadding(new Insets(5, 0, 0, 20));
+            }
+
             balance.setText(item.getBalance() + BalanceUtils.CCY_SEPARATOR + item.getCurrency());
             UIUtils.setWidth(balance);
 
