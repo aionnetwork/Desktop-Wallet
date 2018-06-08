@@ -29,14 +29,6 @@ public class WalletStorage {
 
     private static final String BLANK = "";
 
-    private static final String HOME_DIR = System.getProperty("user.home");
-
-    private static final String STORAGE_DIR = HOME_DIR + File.separator + ".aion";
-
-    private static final String ACCOUNTS_FILE = STORAGE_DIR + File.separator + "accounts.properties";
-
-    private static final String WALLET_FILE = STORAGE_DIR + File.separator + "wallet.properties";
-
     private static final String ACCOUNT_NAME_PROP = ".name";
 
     private static final String MASTER_DERIVATIONS_PROP = "master.derivations";
@@ -48,6 +40,24 @@ public class WalletStorage {
     private static final String MNEMONIC_STRING_CONVERSION_CHARSET_NAME = "ISO-8859-1";
 
     private static final WalletStorage INST;
+
+    private static final String STORAGE_DIR;
+
+    private static final String ACCOUNTS_FILE;
+
+    private static final String WALLET_FILE;
+
+    static {
+        String storageDir = System.getProperty("local.storage.dir");
+        if (storageDir == null || storageDir.equalsIgnoreCase("")) {
+            storageDir = System.getProperty("user.home") + File.separator + ".aion";
+        }
+        STORAGE_DIR = storageDir;
+
+        ACCOUNTS_FILE = STORAGE_DIR + File.separator + "accounts.properties";
+
+        WALLET_FILE = STORAGE_DIR + File.separator + "wallet.properties";
+    }
 
     static {
         try {
