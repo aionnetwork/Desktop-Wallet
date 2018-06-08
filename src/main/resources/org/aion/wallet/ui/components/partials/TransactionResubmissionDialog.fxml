@@ -11,5 +11,5 @@
     <stylesheets>
         <URL value="@dialog.css"/>
     </stylesheets>
-    <VBox fx:id="transactions" />
+    <VBox fx:id="transactions" spacing="10" AnchorPane.leftAnchor="10" AnchorPane.topAnchor="10" AnchorPane.rightAnchor="10"/>
 </AnchorPane>

@@ -1,13 +1,17 @@
 package org.aion.wallet.ui.components.partials;
 
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.input.InputEvent;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -15,15 +19,16 @@ import javafx.stage.Popup;
 import org.aion.api.log.LogEnum;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.connector.dto.SendTransactionDTO;
+import org.aion.wallet.events.EventPublisher;
 import org.aion.wallet.log.WalletLoggerFactory;
+import org.aion.wallet.util.BalanceUtils;
 import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.ResourceBundle;
 
-public class TransactionResubmissionDialog implements Initializable{
+public class TransactionResubmissionDialog implements Initializable {
 
     private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
     private final Popup popup = new Popup();
@@ -63,16 +68,66 @@ public class TransactionResubmissionDialog implements Initializable{
     }
 
     private void displayTransactions() {
-        for(SendTransactionDTO unsentTransaction : blockchainConnector.getAccountManager().getTimedoutTransactions(blockchainConnector.getAccounts().stream().filter(p -> p.isActive()).findAny().get().getPublicAddress())) {
+        addHeaderForTable();
+        for (SendTransactionDTO unsentTransaction : blockchainConnector.getAccountManager().getTimedoutTransactions(blockchainConnector.getAccounts().stream().filter(p -> p.isActive()).findAny().get().getPublicAddress())) {
             HBox row = new HBox();
             row.setSpacing(10);
-            AnchorPane.setLeftAnchor(row, 10.0);
-            AnchorPane.setTopAnchor(row, 10.0);
+            row.setAlignment(Pos.CENTER);
+            row.setPrefWidth(600);
+
             Label to = new Label(unsentTransaction.getTo());
-            Label value = new Label(unsentTransaction.getValue().toString());
+            to.setPrefWidth(350);
+            to.getStyleClass().add("transaction-row-text");
+            row.getChildren().add(to);
+
+            Label value = new Label(BalanceUtils.formatBalance(unsentTransaction.getValue()));
+            value.setPrefWidth(100);
+            value.setPadding(new Insets(0.0, 0.0, 0.0, 10.0));
+            value.getStyleClass().add("transaction-row-text");
+            row.getChildren().add(value);
+
             Label nonce = new Label(unsentTransaction.getNonce().toString());
-            row.getChildren().addAll(Arrays.asList(to, value, nonce));
+            nonce.setPrefWidth(50);
+            nonce.setPadding(new Insets(0.0, 0.0, 0.0, 5.0));
+            nonce.getStyleClass().add("transaction-row-text");
+            row.getChildren().add(nonce);
+
+            Button resubmitTransaction = new Button();
+            resubmitTransaction.setText("Resubmit");
+            resubmitTransaction.setPrefWidth(100);
+            resubmitTransaction.getStyleClass().add("submit-button-small");
+            resubmitTransaction.setOnMouseClicked(event -> {
+                close(event);
+                EventPublisher.fireTransactionResubmited(unsentTransaction);
+            });
+            row.getChildren().add(resubmitTransaction);
+
             transactions.getChildren().add(row);
         }
+    }
+
+    private void addHeaderForTable() {
+        HBox header = new HBox();
+        header.setSpacing(10);
+        header.setPrefWidth(400);
+        header.setAlignment(Pos.CENTER);
+        header.getStyleClass().add("transaction-row");
+
+        Label to = new Label("To address");
+        to.setPrefWidth(250);
+        to.getStyleClass().add("transaction-table-header-text");
+        header.getChildren().add(to);
+
+        Label value = new Label("Value");
+        value.setPrefWidth(75);
+        value.getStyleClass().add("transaction-table-header-text");
+        header.getChildren().add(value);
+
+        Label nonce = new Label("Nonce");
+        nonce.setPrefWidth(75);
+        nonce.getStyleClass().add("transaction-table-header-text");
+        header.getChildren().add(nonce);
+
+        transactions.getChildren().add(header);
     }
 }

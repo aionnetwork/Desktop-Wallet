@@ -140,8 +140,8 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         final TransactionResponseDTO transactionResponseDTO = mapTransactionResponse(response);
         List acceptedTransactionResponseStatuses = Arrays.asList(Message.Retcode.r_tx_Init_VALUE, Message.Retcode.r_tx_Recved_VALUE, Message.Retcode.r_tx_NewPending_VALUE, Message.Retcode.r_tx_Pending_VALUE, Message.Retcode.r_tx_Included_VALUE);
         if(!acceptedTransactionResponseStatuses.contains(transactionResponseDTO.getStatus())) {
-            getAccountManager().addTimedoutTransaction(dto.getFrom(), dto);
-            throw new ValidationException("Transaction failed!");
+            getAccountManager().addTimedoutTransaction(dto);
+//            throw new ValidationException("Transaction failed!");
         }
         return transactionResponseDTO;
     }

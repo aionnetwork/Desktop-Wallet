@@ -1,5 +1,6 @@
 package org.aion.wallet.events;
 
+import org.aion.wallet.connector.dto.SendTransactionDTO;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.dto.LightAppSettings;
 
@@ -54,5 +55,9 @@ public class EventPublisher {
 
     public static void fireApplicationSettingsApplied(final LightAppSettings settings) {
         EventBusFactory.getBus(SettingsEvent.ID).post(new SettingsEvent(SettingsEvent.Type.APPLIED, settings));
+    }
+
+    public static void fireTransactionResubmited(final SendTransactionDTO transaction) {
+        EventBusFactory.getBus(TransactionEvent.ID).post(new TransactionEvent(TransactionEvent.Type.RESUBMIT, transaction));
     }
 }

@@ -70,6 +70,7 @@ public class SendController extends AbstractController {
         super.registerEventBusConsumer();
         EventBusFactory.getBus(HeaderPaneButtonEvent.ID).register(this);
         EventBusFactory.getBus(AccountEvent.ID).register(this);
+        EventBusFactory.getBus(TransactionEvent.ID).register(this);
     }
 
     @Override
@@ -204,6 +205,15 @@ public class SendController extends AbstractController {
         if (event.getType().equals(HeaderPaneButtonEvent.Type.SEND)) {
             refreshAccountBalance();
         }
+    }
+
+    @Subscribe
+    private void handleTransactionResubmitEvent(final TransactionEvent event) {
+        SendTransactionDTO sendTransaction = event.getTransaction();
+        toInput.setText(sendTransaction.getTo());
+        nrgInput.setText(sendTransaction.getNrg().toString());
+        nrgPriceInput.setText(String.valueOf(sendTransaction.getNrgPrice()*2));
+        valueInput.setText(BalanceUtils.formatBalance(sendTransaction.getValue()));
     }
 
     private void setAccountBalanceText() {
