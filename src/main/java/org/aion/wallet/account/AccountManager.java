@@ -12,6 +12,7 @@ import org.aion.crypto.ECKeyFac;
 import org.aion.mcf.account.Keystore;
 import org.aion.mcf.account.KeystoreFormat;
 import org.aion.mcf.account.KeystoreItem;
+import org.aion.wallet.connector.dto.BlockDTO;
 import org.aion.wallet.connector.dto.TransactionDTO;
 import org.aion.wallet.crypto.ExtendedKey;
 import org.aion.wallet.crypto.SeededECKeyEd25519;
@@ -51,7 +52,7 @@ public class AccountManager {
 
     private final Map<String, SortedSet<TransactionDTO>> addressToTransactions = Collections.synchronizedMap(new HashMap<>());
 
-    private final Map<String, Long> addressToLastTxInfo = Collections.synchronizedMap(new HashMap<>());
+    private final Map<String, BlockDTO> addressToLastCheckedBlock = Collections.synchronizedMap(new HashMap<>());
 
     private final Map<String, byte[]> addressToKeystoreContent = Collections.synchronizedMap(new HashMap<>());
 
@@ -75,7 +76,7 @@ public class AccountManager {
         for (String address : Keystore.list()) {
             addressToAccount.put(address, getNewAccount(address));
             addressToTransactions.put(address, new TreeSet<>(transactionComparator));
-            addressToLastTxInfo.put(address, 0L);
+            addressToLastCheckedBlock.put(address, null);
         }
         registerEventBusConsumer();
     }
@@ -210,12 +211,12 @@ public class AccountManager {
         return addressToTransactions.getOrDefault(address, Collections.emptySortedSet());
     }
 
-    public Long getLastCheckedBlock(final String address) {
-        return addressToLastTxInfo.get(address);
+    public BlockDTO getLastCheckedBlock(final String address) {
+        return addressToLastCheckedBlock.get(address);
     }
 
-    public void updateTxInfo(final String address, final long lastCheckedBlock) {
-        addressToLastTxInfo.put(address, lastCheckedBlock);
+    public void updateLastCheckedBlock(final String address, final BlockDTO lastCheckedBlock) {
+        addressToLastCheckedBlock.put(address, lastCheckedBlock);
     }
 
     public List<AccountDTO> getAccounts() {
@@ -307,7 +308,7 @@ public class AccountManager {
             throw new IllegalArgumentException(String.format("account %s ; keystoreContent: %s", account, Arrays.toString(keystoreContent)));
         }
         final String address = account.getPublicAddress();
-        addressToLastTxInfo.put(address, 0L);
+        addressToLastCheckedBlock.put(address, null);
         addressToTransactions.put(address, new TreeSet<>(transactionComparator));
         addressToKeystoreContent.put(address, keystoreContent);
         scheduleAccountLock(account);

@@ -20,6 +20,7 @@ import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.events.AccountEvent;
 import org.aion.wallet.events.EventBusFactory;
 import org.aion.wallet.events.HeaderPaneButtonEvent;
+import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.util.AddressUtils;
 import org.aion.wallet.util.AionConstants;
 import org.aion.wallet.util.BalanceUtils;
@@ -87,9 +88,15 @@ public class HistoryController extends AbstractController {
             return;
         }
         final Task<List<TxRow>> getTransactionsTask = getApiTask(
-                address -> blockchainConnector.getLatestTransactions(address).stream()
-                        .map(t -> new TxRow(address, t))
-                        .collect(Collectors.toList()),
+                address -> {
+                    try {
+                        return blockchainConnector.getLatestTransactions(address).stream()
+                                .map(t -> new TxRow(address, t)).collect(Collectors.toList());
+                    } catch (ValidationException e) {
+                        log.error(e.getMessage(), e);
+                        return Collections.emptyList();
+                    }
+                },
                 account.getPublicAddress()
         );
 

@@ -8,6 +8,7 @@ import org.aion.base.type.Address;
 import org.aion.base.util.ByteUtil;
 import org.aion.base.util.TypeConverter;
 import org.aion.wallet.connector.BlockchainConnector;
+import org.aion.wallet.connector.dto.BlockDTO;
 import org.aion.wallet.connector.dto.SendTransactionDTO;
 import org.aion.wallet.connector.dto.SyncInfoDTO;
 import org.aion.wallet.connector.dto.TransactionDTO;
@@ -74,16 +75,17 @@ public class CoreBlockchainConnector extends BlockchainConnector {
     }
 
     @Override
-    public List<TransactionDTO> getLatestTransactions(String address) {
-        long lastBlockToCheck = getAccountManager().getLastCheckedBlock(address);
-        processNewTransactions(lastBlockToCheck, Collections.singleton(address));
+    public List<TransactionDTO> getLatestTransactions(final String address) {
+        final BlockDTO lastCheckedBlock = getAccountManager().getLastCheckedBlock(address);
+        processNewTransactions(lastCheckedBlock, Collections.singleton(address));
         return new ArrayList<>(getAccountManager().getTransactions(address));
     }
 
-    private void processNewTransactions(final long lastBlockToCheck, final Set<String> addresses) {
+    private void processNewTransactions(final BlockDTO lastCheckedBlock, final Set<String> addresses) {
         if (!addresses.isEmpty()) {
-            final long latest = API.getBestBlock().getNumber();
-            for (long i = latest; i > lastBlockToCheck; i -= 1) {
+            final AionBlock latest = API.getBestBlock();
+            long lastBlockToCheck = lastCheckedBlock != null ? lastCheckedBlock.getNumber() : 0;
+            for (long i = latest.getNumber(); i > lastBlockToCheck; i -= 1) {
                 AionBlock blk = API.getBlock(i);
                 if (blk == null || blk.getTransactionsList().size() == 0) {
                     continue;
@@ -98,7 +100,8 @@ public class CoreBlockchainConnector extends BlockchainConnector {
                 }
             }
             for (String address : addresses) {
-                getAccountManager().updateTxInfo(address, latest);
+                //todo: fix block updating for core
+                getAccountManager().updateLastCheckedBlock(address, new BlockDTO(latest.getNumber(), latest.getHash()));
             }
         }
     }

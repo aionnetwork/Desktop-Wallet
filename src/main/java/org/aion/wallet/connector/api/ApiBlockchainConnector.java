@@ -10,6 +10,7 @@ import org.aion.base.type.Hash256;
 import org.aion.base.util.ByteArrayWrapper;
 import org.aion.base.util.TypeConverter;
 import org.aion.wallet.connector.BlockchainConnector;
+import org.aion.wallet.connector.dto.BlockDTO;
 import org.aion.wallet.connector.dto.SendTransactionDTO;
 import org.aion.wallet.connector.dto.SyncInfoDTO;
 import org.aion.wallet.connector.dto.TransactionDTO;
@@ -20,16 +21,14 @@ import org.aion.wallet.events.EventBusFactory;
 import org.aion.wallet.events.EventPublisher;
 import org.aion.wallet.events.SettingsEvent;
 import org.aion.wallet.exception.NotFoundException;
+import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.storage.ApiType;
 import org.aion.wallet.util.AionConstants;
 import org.slf4j.Logger;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -57,7 +56,13 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     public ApiBlockchainConnector() {
         connect(getConnectionString());
-        backgroundExecutor.submit(() -> processNewTransactions(0, getAccountManager().getAddresses()));
+        backgroundExecutor.submit(() -> {
+            try {
+                processNewTransactions(null, getAccountManager().getAddresses());
+            } catch (ValidationException e) {
+                log.error(e.getMessage(), e);
+            }
+        });
         EventPublisher.fireApplicationSettingsChanged(lightAppSettings);
         registerEventBusConsumer();
     }
@@ -149,9 +154,9 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     }
 
     @Override
-    public List<TransactionDTO> getLatestTransactions(final String address) {
-        long lastBlockToCheck = getAccountManager().getLastCheckedBlock(address);
-        processNewTransactions(lastBlockToCheck, Collections.singleton(address));
+    public List<TransactionDTO> getLatestTransactions(final String address) throws ValidationException {
+        final BlockDTO lastCheckedBlock = getAccountManager().getLastCheckedBlock(address);
+        processNewTransactions(lastCheckedBlock, Collections.singleton(address));
         return new ArrayList<>(getAccountManager().getTransactions(address));
     }
 
@@ -182,7 +187,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
             chainBest = syncInfo.getChainBestBlock();
             netBest = syncInfo.getNetworkBestBlock();
         } catch (Exception e) {
-            chainBest = getLatest();
+            chainBest = getLatestBlock().getNumber();
             netBest = chainBest;
         }
         SyncInfoDTO syncInfoDTO = new SyncInfoDTO();
@@ -248,7 +253,13 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         if (AccountEvent.Type.CHANGED.equals(event.getType())) {
             getAccountManager().updateAccount(account);
         } else if (AccountEvent.Type.ADDED.equals(event.getType())) {
-            backgroundExecutor.submit(() -> processNewTransactions(0, Collections.singleton(account.getPublicAddress())));
+            backgroundExecutor.submit(() -> {
+                try {
+                    processNewTransactions(null, Collections.singleton(account.getPublicAddress()));
+                } catch (ValidationException e) {
+                    log.error(e.getMessage(), e);
+                }
+            });
         }
     }
 
@@ -277,50 +288,72 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         return txCount;
     }
 
-    private void processNewTransactions(final long lastBlockToCheck, final Set<String> addresses) {
+    private void processNewTransactions(final BlockDTO lastBlockToCheck, final Set<String> addresses) throws ValidationException {
         if (API.isConnected() && !addresses.isEmpty()) {
-            final long latest = getLatest();
-            for (long i = latest; i > lastBlockToCheck; i -= BLOCK_BATCH_SIZE) {
+            final Block latest = getLatestBlock();
+            final long lastChecked;
+            if (lastBlockToCheck != null) {
+                lastChecked = lastBlockToCheck.getNumber();
+                lock();
+                try {
+                    final Block lastSupposedCheck = API.getChain().getBlockByNumber(lastChecked).getObject();
+                    if (!Arrays.equals(lastBlockToCheck.getHash(), (lastSupposedCheck.getHash().toBytes()))) {
+                        throw new ValidationException("A re-organization happened too far back. Please restart Wallet!");
+                    }
+                } finally {
+                    unLock();
+                }
+            } else {
+                lastChecked = 0;
+            }
+            long previousSafe = lastChecked - BLOCK_BATCH_SIZE;
+            if (previousSafe < 0) {
+                previousSafe = 0;
+            }
+            for (long i = latest.getNumber(); i > previousSafe; i -= BLOCK_BATCH_SIZE) {
                 List<Long> blockBatch = LongStream.iterate(i, j -> j - 1).limit(BLOCK_BATCH_SIZE).boxed().collect(Collectors.toList());
                 List<BlockDetails> blk = getBlockDetailsByNumbers(blockBatch);
-                blk.forEach(getBlockDetailsConsumer(addresses));
+                blk.forEach(getBlockDetailsConsumer(addresses, previousSafe));
             }
             for (String address : addresses) {
-                getAccountManager().updateTxInfo(address, latest);
+                getAccountManager().updateLastCheckedBlock(address, new BlockDTO(latest.getNumber(), latest.getHash().toBytes()));
             }
         }
     }
 
-    private Consumer<BlockDetails> getBlockDetailsConsumer(final Set<String> addresses) {
+    private Consumer<BlockDetails> getBlockDetailsConsumer(final Set<String> addresses, final long previousSafe) {
         return blockDetails -> {
             if (blockDetails != null) {
                 final long timestamp = blockDetails.getTimestamp();
                 final long blockNumber = blockDetails.getNumber();
                 for (final String address : addresses) {
                     Set<TransactionDTO> txs = getAccountManager().getTransactions(address);
-                    txs.addAll(blockDetails.getTxDetails().stream()
+                    final List<TransactionDTO> newTxs = blockDetails.getTxDetails().stream()
                             .filter(t -> TypeConverter.toJsonHex(t.getFrom().toString()).equals(address)
                                     || TypeConverter.toJsonHex(t.getTo().toString()).equals(address))
                             .map(t -> mapTransaction(t, timestamp, blockNumber))
-                            .collect(Collectors.toList()));
+                            .collect(Collectors.toList());
+                    txs.removeIf(t -> t.getBlockNumber() > previousSafe);
+                    txs.addAll(newTxs);
                 }
             }
         };
     }
 
-    private Long getLatest() {
-        final Long latest;
+    private Block getLatestBlock() {
+        final Block block;
         lock();
         try {
             if (API.isConnected()) {
-                latest = API.getChain().blockNumber().getObject();
+                final long latest = API.getChain().blockNumber().getObject();
+                block = API.getChain().getBlockByNumber(latest).getObject();
             } else {
-                latest = 0L;
+                block = null;
             }
         } finally {
             unLock();
         }
-        return latest;
+        return block;
     }
 
     private List<BlockDetails> getBlockDetailsByNumbers(final List<Long> numbers) {
