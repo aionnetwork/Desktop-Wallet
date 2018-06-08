@@ -104,18 +104,21 @@ public class OverviewController extends AbstractController {
         }
     }
 
+
+    @Override
+    protected void refreshView(final RefreshEvent event) {
+        switch (event.getType()) {
+            case CONNECTED:
+            case TRANSACTION_FINISHED:
+                reloadAccounts();
+        }
+    }
+
     @Subscribe
     private void handleHeaderPaneButtonEvent(final HeaderPaneButtonEvent event) {
         if (event.getType().equals(HeaderPaneButtonEvent.Type.OVERVIEW)) {
             reloadAccounts();
             addAccountDialog.close();
-        }
-    }
-
-    @Subscribe
-    private void handleRefreshEvent(final RefreshEvent event) {
-        if (RefreshEvent.Type.TRANSACTION_FINISHED.equals(event.getType())) {
-            reloadAccounts();
         }
     }
 
