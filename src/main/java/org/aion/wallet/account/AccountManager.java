@@ -169,7 +169,7 @@ public class AccountManager {
         }
         final ECKey firstDerivation = root.deriveHardened(new int[]{44, 60, 0, 0, derivation}).getEcKey();
         AccountDTO account = createAccountWithPrivateKey(TypeConverter.toJsonHex(firstDerivation.computeAddress(firstDerivation.getPubKey())), firstDerivation.getPrivKeyBytes(), false, derivation);
-        EventPublisher.fireTransactionFinished();
+        EventPublisher.fireAccountAdded(account);
         return account;
     }
 
