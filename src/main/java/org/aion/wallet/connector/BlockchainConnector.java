@@ -108,7 +108,7 @@ public abstract class BlockchainConnector {
 
     public abstract TransactionDTO getTransaction(final String txHash) throws NotFoundException;
 
-    public abstract List<TransactionDTO> getLatestTransactions(final String address);
+    public abstract List<TransactionDTO> getLatestTransactions(final String address) throws ValidationException;
 
     public abstract boolean getConnectionStatus();
 
