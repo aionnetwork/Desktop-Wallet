@@ -282,6 +282,12 @@ public class AccountManager {
         }
     }
 
+    public void removeTimedOutTransaction(final SendTransactionDTO transaction) {
+        if(transaction != null) {
+            addressToTimedoutTransactions.remove(transaction);
+        }
+    }
+    
     public void lockAll() {
         root = null;
         Set<String> seedAccounts = new HashSet<>();

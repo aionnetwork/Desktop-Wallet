@@ -214,6 +214,8 @@ public class SendController extends AbstractController {
         nrgInput.setText(sendTransaction.getNrg().toString());
         nrgPriceInput.setText(String.valueOf(sendTransaction.getNrgPrice()*2));
         valueInput.setText(BalanceUtils.formatBalance(sendTransaction.getValue()));
+        txStatusLabel.setText("");
+        timedoutTransactionsLabel.setVisible(false);
     }
 
     private void setAccountBalanceText() {
