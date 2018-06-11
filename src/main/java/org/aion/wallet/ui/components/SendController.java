@@ -217,9 +217,10 @@ public class SendController extends AbstractController {
     @Subscribe
     private void handleTransactionResubmitEvent(final TransactionEvent event) {
         SendTransactionDTO sendTransaction = event.getTransaction();
+        sendTransaction.setNrgPrice(BigInteger.valueOf(sendTransaction.getNrgPrice() * 2));
         toInput.setText(sendTransaction.getTo());
         nrgInput.setText(sendTransaction.getNrg().toString());
-        nrgPriceInput.setText(String.valueOf(sendTransaction.getNrgPrice()*2));
+        nrgPriceInput.setText(String.valueOf(sendTransaction.getNrgPrice()));
         valueInput.setText(BalanceUtils.formatBalance(sendTransaction.getValue()));
         txStatusLabel.setText("");
         timedoutTransactionsLabel.setVisible(false);
