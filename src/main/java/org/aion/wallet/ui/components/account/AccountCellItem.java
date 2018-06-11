@@ -39,6 +39,8 @@ public class AccountCellItem extends ListCell<AccountDTO> {
 
     private static final Tooltip CONNECTED_ACCOUNT_TOOLTIP = new Tooltip("Connected account");
 
+    private static final Tooltip EDIT_NAME_TOOLTIP = new Tooltip("Edit account name");
+
     private final UnlockAccountDialog accountUnlockDialog = new UnlockAccountDialog();
 
     @FXML
@@ -58,6 +60,7 @@ public class AccountCellItem extends ListCell<AccountDTO> {
 
     public AccountCellItem() {
         loadFXML();
+        Tooltip.install(editNameButton, EDIT_NAME_TOOLTIP);
         publicAddress.setPrefWidth(575);
     }
 
@@ -103,6 +106,9 @@ public class AccountCellItem extends ListCell<AccountDTO> {
             if (item.isImported()) {
                 importedIcon.setVisible(true);
                 publicAddress.setPadding(new Insets(5, 0, 0, 20));
+            } else {
+                importedIcon.setVisible(false);
+                publicAddress.setPadding(new Insets(5, 0, 0, 0));
             }
 
             balance.setText(item.getBalance() + BalanceUtils.CCY_SEPARATOR + item.getCurrency());
