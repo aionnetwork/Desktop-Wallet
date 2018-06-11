@@ -160,6 +160,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
             try {
                 processNewTransactions(lastCheckedBlock, Collections.singleton(address));
             } catch (ValidationException e) {
+                log.error(e.getMessage(), e);
                 e.printStackTrace();
             }
         });

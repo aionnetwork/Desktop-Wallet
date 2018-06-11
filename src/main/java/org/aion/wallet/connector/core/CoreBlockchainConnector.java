@@ -100,7 +100,6 @@ public class CoreBlockchainConnector extends BlockchainConnector {
                 }
             }
             for (String address : addresses) {
-                //todo: fix block updating for core
                 getAccountManager().updateLastCheckedBlock(address, new BlockDTO(latest.getNumber(), latest.getHash()));
             }
         }
