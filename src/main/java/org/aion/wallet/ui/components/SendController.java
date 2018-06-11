@@ -196,8 +196,7 @@ public class SendController extends AbstractController {
                     account.setBalance(BalanceUtils.formatBalance(getBalanceTask.getValue()));
                     setAccountBalanceText();
                 },
-                getErrorEvent(throwable -> {
-                }, getBalanceTask),
+                getErrorEvent(t -> {}, getBalanceTask),
                 getEmptyEvent()
         );
     }

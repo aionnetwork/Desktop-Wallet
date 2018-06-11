@@ -33,7 +33,7 @@ public class PeerCountController extends AbstractController {
             runApiTask(
                     getPeerCountTask,
                     evt -> setPeerCount(getPeerCountTask.getValue()),
-                    getErrorEvent(throwable -> {}, getPeerCountTask),
+                    getErrorEvent(t -> {}, getPeerCountTask),
                     getEmptyEvent()
             );
         }

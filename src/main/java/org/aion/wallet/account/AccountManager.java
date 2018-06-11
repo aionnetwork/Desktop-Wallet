@@ -192,7 +192,19 @@ public class AccountManager {
         return accountDTO;
     }
 
-    public SortedSet<TransactionDTO> getTransactions(final String address) {
+    public Set<TransactionDTO> getTransactions(final String address) {
+        return Collections.unmodifiableSet(new TreeSet<>(internalGetTransactions(address)));
+    }
+
+    public void removeTransactions(final String address, final Collection<TransactionDTO> transactions){
+        internalGetTransactions(address).removeAll(transactions);
+    }
+
+    public void addTransactions(final String address, final Collection<TransactionDTO> transactions){
+        internalGetTransactions(address).addAll(transactions);
+    }
+
+    private SortedSet<TransactionDTO> internalGetTransactions(final String address) {
         return addressToTransactions.getOrDefault(address, Collections.emptySortedSet());
     }
 

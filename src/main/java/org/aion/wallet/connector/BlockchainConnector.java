@@ -16,6 +16,7 @@ import org.aion.wallet.util.ConfigUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
 public abstract class BlockchainConnector {
@@ -108,7 +109,7 @@ public abstract class BlockchainConnector {
 
     public abstract TransactionDTO getTransaction(final String txHash) throws NotFoundException;
 
-    public abstract List<TransactionDTO> getLatestTransactions(final String address);
+    public abstract Set<TransactionDTO> getLatestTransactions(final String address);
 
     public abstract boolean getConnectionStatus();
 

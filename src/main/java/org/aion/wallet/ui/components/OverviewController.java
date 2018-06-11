@@ -74,8 +74,7 @@ public class OverviewController extends AbstractController {
         runApiTask(
                 getAccountsTask,
                 evt -> reloadAccountObservableList(getAccountsTask.getValue()),
-                getErrorEvent(throwable -> {
-                }, getAccountsTask),
+                getErrorEvent(t -> {}, getAccountsTask),
                 getEmptyEvent()
         );
         displayFooterActions();

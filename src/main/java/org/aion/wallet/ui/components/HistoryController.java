@@ -95,7 +95,7 @@ public class HistoryController extends AbstractController {
         runApiTask(
                 getTransactionsTask,
                 event -> txTable.setItems(FXCollections.observableList(getTransactionsTask.getValue())),
-                getEmptyEvent(),
+                getErrorEvent(t -> {}, getTransactionsTask),
                 getEmptyEvent()
         );
     }

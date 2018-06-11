@@ -26,9 +26,7 @@ import org.aion.zero.types.AionTransaction;
 import org.slf4j.Logger;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -75,10 +73,10 @@ public class CoreBlockchainConnector extends BlockchainConnector {
     }
 
     @Override
-    public List<TransactionDTO> getLatestTransactions(final String address) {
+    public Set<TransactionDTO> getLatestTransactions(final String address) {
         final BlockDTO lastCheckedBlock = getAccountManager().getLastCheckedBlock(address);
         processNewTransactions(lastCheckedBlock, Collections.singleton(address));
-        return new ArrayList<>(getAccountManager().getTransactions(address));
+        return getAccountManager().getTransactions(address);
     }
 
     private void processNewTransactions(final BlockDTO lastCheckedBlock, final Set<String> addresses) {
@@ -91,8 +89,8 @@ public class CoreBlockchainConnector extends BlockchainConnector {
                     continue;
                 }
                 for (final String address : addresses) {
-                    Set<TransactionDTO> txs = getAccountManager().getTransactions(address);
-                    txs.addAll(blk.getTransactionsList().stream()
+                    getAccountManager().addTransactions(address,
+                            blk.getTransactionsList().stream()
                             .filter(t -> TypeConverter.toJsonHex(t.getFrom().toString()).equals(address)
                                     || TypeConverter.toJsonHex(t.getTo().toString()).equals(address))
                             .map(this::mapTransaction)
