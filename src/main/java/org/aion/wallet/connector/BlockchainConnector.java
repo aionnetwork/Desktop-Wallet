@@ -130,6 +130,10 @@ public abstract class BlockchainConnector {
         walletStorage.saveLightAppSettings(settings);
     }
 
+    public void lockAll() {
+        accountManager.lockAll();
+    }
+
     protected final AccountManager getAccountManager() {
         return accountManager;
     }

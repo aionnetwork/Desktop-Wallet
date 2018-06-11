@@ -1,6 +1,5 @@
 package org.aion.wallet.account;
 
-import com.google.common.eventbus.Subscribe;
 import io.github.novacrypto.bip39.MnemonicGenerator;
 import io.github.novacrypto.bip39.SeedCalculator;
 import io.github.novacrypto.bip39.Words;
@@ -17,10 +16,7 @@ import org.aion.wallet.connector.dto.TransactionDTO;
 import org.aion.wallet.crypto.ExtendedKey;
 import org.aion.wallet.crypto.SeededECKeyEd25519;
 import org.aion.wallet.dto.AccountDTO;
-import org.aion.wallet.dto.LightAppSettings;
-import org.aion.wallet.events.EventBusFactory;
 import org.aion.wallet.events.EventPublisher;
-import org.aion.wallet.events.SettingsEvent;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.storage.WalletStorage;
@@ -34,7 +30,6 @@ import java.security.SecureRandom;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -64,10 +59,6 @@ public class AccountManager {
 
     private final Supplier<String> currencySupplier;
 
-    private int lockTimeOut;
-
-    private String lockTimeOutMeasurementUnit;
-
     private ExtendedKey root;
 
     public AccountManager(final Function<String, BigInteger> balanceProvider, final Supplier<String> currencySupplier) {
@@ -78,11 +69,6 @@ public class AccountManager {
             addressToTransactions.put(address, new TreeSet<>(transactionComparator));
             addressToLastTxInfo.put(address, new TxInfo(0, -1));
         }
-        registerEventBusConsumer();
-    }
-
-    private void registerEventBusConsumer() {
-        EventBusFactory.getBus(SettingsEvent.ID).register(this);
     }
 
     public String createMasterAccount(final String password, final String name) throws ValidationException {
@@ -261,7 +247,6 @@ public class AccountManager {
         if (storedKey != null) {
             account.setActive(true);
             account.setPrivateKey(storedKey.getPrivKeyBytes());
-            scheduleAccountLock(account);
             EventPublisher.fireAccountChanged(account);
         } else {
             throw new ValidationException("The password is incorrect!");
@@ -269,14 +254,20 @@ public class AccountManager {
 
     }
 
-    @Subscribe
-    private void handleSettingsChanged(final SettingsEvent event) {
-        if (SettingsEvent.Type.CHANGED.equals(event.getType())) {
-            final LightAppSettings settings = event.getSettings();
-            if (settings != null) {
-                lockTimeOut = settings.getUnlockTimeout();
-                lockTimeOutMeasurementUnit = settings.getLockTimeoutMeasurementUnit();
+    public void lockAll() {
+        root = null;
+        Set<String> seedAccounts = new HashSet<>();
+        for (Map.Entry<String, AccountDTO> entry : addressToAccount.entrySet()) {
+            if (entry.getValue().isImported()) {
+                entry.getValue().setPrivateKey(null);
+                entry.getValue().setActive(false);
+                EventPublisher.fireAccountLocked(entry.getValue());
+            } else {
+                seedAccounts.add(entry.getKey());
             }
+        }
+        for (String account : seedAccounts) {
+            EventPublisher.fireAccountLocked(addressToAccount.remove(account));
         }
     }
 
@@ -311,24 +302,7 @@ public class AccountManager {
         addressToLastTxInfo.put(address, new TxInfo(isCreated ? -1 : 0, -1));
         addressToTransactions.put(address, new TreeSet<>(transactionComparator));
         addressToKeystoreContent.put(address, keystoreContent);
-        scheduleAccountLock(account);
         EventPublisher.fireAccountAdded(account);
-    }
-
-    private void scheduleAccountLock(final AccountDTO account) {
-        scheduler.schedule(getAccountLockTask(account), computeDelay(lockTimeOut, lockTimeOutMeasurementUnit), TimeUnit.MILLISECONDS);
-    }
-
-    private long computeDelay(int lockTimeOut, String lockTimeOutMeasurementUnit) {
-        switch (lockTimeOutMeasurementUnit) {
-            case "seconds":
-                return lockTimeOut * 1000;
-            case "minutes":
-                return lockTimeOut * 60 * 1000;
-            case "hours":
-                return lockTimeOut * 3600 * 1000;
-        }
-        return 0;
     }
 
     private String getStoredAccountName(final String publicAddress) {
@@ -343,17 +317,6 @@ public class AccountManager {
 
     private void storeAccountName(final String address, final String name) {
         walletStorage.setAccountName(address, name);
-    }
-
-    private TimerTask getAccountLockTask(final AccountDTO accountDTO) {
-        return new TimerTask() {
-            @Override
-            public void run() {
-                accountDTO.setPrivateKey(null);
-                accountDTO.setActive(false);
-                EventPublisher.fireAccountLocked(accountDTO);
-            }
-        };
     }
 
     private class TransactionComparator implements Comparator<TransactionDTO> {
