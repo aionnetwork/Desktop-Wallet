@@ -65,6 +65,8 @@ public class SendController extends AbstractController {
 
     private TransactionResubmissionDialog transactionResubmissionDialog = new TransactionResubmissionDialog();
 
+    private SendTransactionDTO transactionToResubmit;
+
     @Override
     protected void registerEventBusConsumer() {
         super.registerEventBusConsumer();
@@ -111,7 +113,12 @@ public class SendController extends AbstractController {
         }
         final SendTransactionDTO dto;
         try {
-            dto = mapFormData();
+            if(transactionToResubmit != null) {
+                dto = transactionToResubmit;
+            }
+            else {
+                dto = mapFormData();
+            }
         } catch (ValidationException e) {
             log.error(e.getMessage(), e);
             displayStatus(e.getMessage(), true);
@@ -216,6 +223,7 @@ public class SendController extends AbstractController {
         valueInput.setText(BalanceUtils.formatBalance(sendTransaction.getValue()));
         txStatusLabel.setText("");
         timedoutTransactionsLabel.setVisible(false);
+        transactionToResubmit = sendTransaction;
     }
 
     private void setAccountBalanceText() {
