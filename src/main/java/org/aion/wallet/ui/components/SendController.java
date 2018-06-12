@@ -63,7 +63,7 @@ public class SendController extends AbstractController {
 
     private boolean connected;
 
-    private TransactionResubmissionDialog transactionResubmissionDialog = new TransactionResubmissionDialog();
+    private final TransactionResubmissionDialog transactionResubmissionDialog = new TransactionResubmissionDialog();
 
     private SendTransactionDTO transactionToResubmit;
 
@@ -136,7 +136,7 @@ public class SendController extends AbstractController {
         );
     }
 
-    public void onTimedoutTransactionsClick(MouseEvent mouseEvent) {
+    public void onTimedoutTransactionsClick(final MouseEvent mouseEvent) {
         transactionResubmissionDialog.open(mouseEvent);
     }
 

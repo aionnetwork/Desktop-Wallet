@@ -120,7 +120,7 @@ public abstract class BlockchainConnector {
 
     public abstract LightAppSettings getSettings();
 
-    protected abstract TransactionResponseDTO sendTransactionInternal(final SendTransactionDTO dto) throws ValidationException;
+    protected abstract TransactionResponseDTO sendTransactionInternal(final SendTransactionDTO dto);
 
     protected abstract String getCurrency();
 

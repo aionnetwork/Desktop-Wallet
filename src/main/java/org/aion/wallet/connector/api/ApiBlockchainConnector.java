@@ -114,7 +114,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     }
 
     @Override
-    protected TransactionResponseDTO sendTransactionInternal(final SendTransactionDTO dto) throws ValidationException {
+    protected TransactionResponseDTO sendTransactionInternal(final SendTransactionDTO dto) {
         final BigInteger latestTransactionNonce = getLatestTransactionNonce(dto.getFrom());
         TxArgs txArgs = new TxArgs.TxArgsBuilder()
                 .from(new Address(TypeConverter.toJsonHex(dto.getFrom())))

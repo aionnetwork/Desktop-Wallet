@@ -54,17 +54,9 @@ public class CoreBlockchainConnector extends BlockchainConnector {
     }
 
     @Override
-    protected TransactionResponseDTO sendTransactionInternal(SendTransactionDTO dto) throws ValidationException {
-        if (!API.unlockAccount(dto.getFrom(), dto.getPassword(), getSettings().getUnlockTimeout())) {
-            throw new ValidationException("Failed to unlock wallet");
-        }
-        ArgTxCall transactionParams = new ArgTxCall(Address.wrap(ByteUtil.hexStringToBytes(dto.getFrom()))
-                , Address.wrap(ByteUtil.hexStringToBytes(dto.getTo())), dto.getData(),
-                dto.getNonce(), dto.getValue(), dto.getNrg(), dto.getNrgPrice());
-
-        TransactionResponseDTO transactionResponse = new TransactionResponseDTO();
-        transactionResponse.setTxHash(Hash256.wrap(API.sendTransaction(transactionParams)));
-        return transactionResponse;
+    protected TransactionResponseDTO sendTransactionInternal(SendTransactionDTO dto) {
+        throw new UnsupportedOperationException();
+        //TODO
     }
 
     @Override
