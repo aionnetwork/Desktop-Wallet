@@ -27,10 +27,8 @@ import org.aion.wallet.util.URLManager;
 import org.slf4j.Logger;
 
 import java.net.URL;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class HistoryController extends AbstractController {
@@ -102,10 +100,10 @@ public class HistoryController extends AbstractController {
 
     private void buildTableModel() {
         final TableColumn<TxRow, String> typeCol = getTableColumn("Type", "type", 0.09);
-        final TableColumn<TxRow, String> nameCol = getTableColumn("Name", "name", 0.15);
+        final TableColumn<TxRow, String> nameCol = getTableColumn("Date", "date", 0.2);
         final TableColumn<TxRow, String> hashCol = getTableColumn("Tx Hash", "txHash", 0.5);
         final TableColumn<TxRow, String> valueCol = getTableColumn("Value", "value", 0.12);
-        final TableColumn<TxRow, String> statusCol = getTableColumn("Status", "status", 0.13);
+        final TableColumn<TxRow, String> statusCol = getTableColumn("Status", "status", 0.1);
 
         hashCol.setCellFactory(column -> new TransactionHashCell());
 
@@ -221,7 +219,7 @@ public class HistoryController extends AbstractController {
 
         private final TransactionDTO transaction;
         private final SimpleStringProperty type;
-        private final SimpleStringProperty name;
+        private final SimpleStringProperty date;
         private final SimpleStringProperty status;
         private final SimpleStringProperty value;
 
@@ -230,11 +228,10 @@ public class HistoryController extends AbstractController {
         private TxRow(final String requestingAddress, final TransactionDTO dto) {
             transaction = dto;
             final AccountDTO fromAccount = blockchainConnector.getAccount(dto.getFrom());
-            final AccountDTO toAccount = blockchainConnector.getAccount(dto.getTo());
             final String balance = BalanceUtils.formatBalance(dto.getValue());
             boolean isFromTx = AddressUtils.equals(requestingAddress, fromAccount.getPublicAddress());
             this.type = new SimpleStringProperty(isFromTx ? TO : FROM);
-            this.name = new SimpleStringProperty(isFromTx ? toAccount.getName() : fromAccount.getName());
+            this.date = new SimpleStringProperty(new SimpleDateFormat("yyyy/MM/dd - HH.mm.ss").format(new Date(dto.getTimeStamp() * 1000)));
             this.status = new SimpleStringProperty(getTransactionStatus(dto));
             this.value = new SimpleStringProperty(balance);
             this.txHash = new SimpleStringProperty(dto.getHash());
@@ -257,12 +254,12 @@ public class HistoryController extends AbstractController {
             this.type.setValue(type);
         }
 
-        public String getName() {
-            return name.get();
+        public String getDate() {
+            return date.get();
         }
 
         public void setName(final String name) {
-            this.name.setValue(name);
+            this.date.setValue(name);
         }
 
         public String getStatus() {
