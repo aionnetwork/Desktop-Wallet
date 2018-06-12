@@ -56,6 +56,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     private Future<?> connectionFuture;
 
     private String connectionString;
+    public static final List ACCEPTED_TRANSACTION_RESPONSE_STATUSES = Arrays.asList(Message.Retcode.r_tx_Init_VALUE, Message.Retcode.r_tx_Recved_VALUE, Message.Retcode.r_tx_NewPending_VALUE, Message.Retcode.r_tx_Pending_VALUE, Message.Retcode.r_tx_Included_VALUE);
 
     public ApiBlockchainConnector() {
         connect(getConnectionString());
@@ -138,8 +139,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         }
 
         final TransactionResponseDTO transactionResponseDTO = mapTransactionResponse(response);
-        List acceptedTransactionResponseStatuses = Arrays.asList(Message.Retcode.r_tx_Init_VALUE, Message.Retcode.r_tx_Recved_VALUE, Message.Retcode.r_tx_NewPending_VALUE, Message.Retcode.r_tx_Pending_VALUE, Message.Retcode.r_tx_Included_VALUE);
-        if(!acceptedTransactionResponseStatuses.contains(transactionResponseDTO.getStatus())) {
+        if(!ACCEPTED_TRANSACTION_RESPONSE_STATUSES.contains(transactionResponseDTO.getStatus())) {
             getAccountManager().addTimedoutTransaction(dto);
         }
         return transactionResponseDTO;
