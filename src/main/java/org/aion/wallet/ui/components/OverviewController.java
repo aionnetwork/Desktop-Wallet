@@ -118,7 +118,6 @@ public class OverviewController extends AbstractController {
     private void handleHeaderPaneButtonEvent(final HeaderPaneButtonEvent event) {
         if (event.getType().equals(HeaderPaneButtonEvent.Type.OVERVIEW)) {
             reloadAccounts();
-            addAccountDialog.close();
         }
     }
 

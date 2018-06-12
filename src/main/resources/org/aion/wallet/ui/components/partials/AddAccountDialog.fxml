@@ -13,7 +13,7 @@
     </stylesheets>
 
     <ImageView fitHeight="80.0" fitWidth="80.0" layoutX="135.0" layoutY="4.0" pickOnBounds="true" preserveRatio="true">
-        <Image url="@../icons/aion_logo.png"/>
+        <Image url="@../icons/aion-icon.png"/>
     </ImageView>
 
 
