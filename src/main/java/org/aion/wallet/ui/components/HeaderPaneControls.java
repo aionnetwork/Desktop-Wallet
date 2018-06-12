@@ -154,7 +154,7 @@ public class HeaderPaneControls extends AbstractController {
             runApiTask(
                     getBalanceTask,
                     evt -> updateNewBalance(currency, getBalanceTask.getValue()),
-                    getErrorEvent(throwable -> {}, getBalanceTask),
+                    getErrorEvent(t -> {}, getBalanceTask),
                     getEmptyEvent()
             );
         }

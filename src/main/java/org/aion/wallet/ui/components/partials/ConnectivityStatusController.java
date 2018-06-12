@@ -33,7 +33,7 @@ public class ConnectivityStatusController extends AbstractController {
             runApiTask(
                     getConnectedStatusTask,
                     evt -> setConnectivityLabel(getConnectedStatusTask.getValue()),
-                    getErrorEvent(throwable -> {}, getConnectedStatusTask),
+                    getErrorEvent(t -> {}, getConnectedStatusTask),
                     getEmptyEvent());
         }
     }

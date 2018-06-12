@@ -30,7 +30,7 @@ public class SyncStatusController extends AbstractController {
             runApiTask(
                     getSyncInfoTask,
                     evt -> setSyncStatus(getSyncInfoTask.getValue()),
-                    getErrorEvent(throwable -> {}, getSyncInfoTask),
+                    getErrorEvent(t -> {}, getSyncInfoTask),
                     getEmptyEvent()
             );
         }
