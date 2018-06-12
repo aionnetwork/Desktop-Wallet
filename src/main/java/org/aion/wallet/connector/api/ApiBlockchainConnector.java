@@ -146,11 +146,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     }
 
     private TransactionResponseDTO mapTransactionResponse(final MsgRsp response) {
-        TransactionResponseDTO transactionResponse = new TransactionResponseDTO();
-        transactionResponse.setStatus(response.getStatus());
-        transactionResponse.setTxHash(response.getTxHash());
-        transactionResponse.setError(response.getError());
-        return transactionResponse;
+        return new TransactionResponseDTO(response.getStatus(), response.getTxHash(), response.getError());
     }
 
     @Override

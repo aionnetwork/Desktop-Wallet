@@ -13,6 +13,12 @@ public class TransactionResponseDTO {
         error = null;
     }
 
+    public TransactionResponseDTO(final byte status, final Hash256 txHash, final String error){
+        this.status = status;
+        this.txHash = txHash;
+        this.error = error;
+    }
+
     public byte getStatus() {
         return status;
     }
