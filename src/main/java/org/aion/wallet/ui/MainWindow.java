@@ -19,11 +19,14 @@ import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.dto.LightAppSettings;
 import org.aion.wallet.events.*;
 import org.aion.wallet.log.WalletLoggerFactory;
+import org.aion.wallet.ui.components.partials.FatalErrorDialog;
 import org.aion.wallet.util.AionConstants;
 import org.aion.wallet.util.DataUpdater;
 import org.slf4j.Logger;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -42,6 +45,7 @@ public class MainWindow extends Application {
 
     private final Map<HeaderPaneButtonEvent.Type, Node> panes = new HashMap<>();
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+    private FatalErrorDialog fatalErrorDialog;
     private double xOffset;
     private double yOffset;
     private Stage stage;
@@ -63,7 +67,7 @@ public class MainWindow extends Application {
 
         scene = new Scene(root);
         scene.setFill(Color.TRANSPARENT);
-        stage.setOnCloseRequest(t -> shutDown());
+        stage.setOnCloseRequest(t -> shutDown(false));
 
         stage.setTitle(TITLE);
         stage.setScene(scene);
@@ -83,6 +87,8 @@ public class MainWindow extends Application {
                 TimeUnit.MILLISECONDS
         );
         registerIdleMonitor();
+
+        fatalErrorDialog = new FatalErrorDialog();
     }
 
 
@@ -129,6 +135,7 @@ public class MainWindow extends Application {
         EventBusFactory.getBus(WindowControlsEvent.ID).register(this);
         EventBusFactory.getBus(HeaderPaneButtonEvent.ID).register(this);
         EventBusFactory.getBus(SettingsEvent.ID).register(this);
+        EventBusFactory.getBus(ErrorEvent.ID).register(this);
     }
 
     @Subscribe
@@ -137,8 +144,11 @@ public class MainWindow extends Application {
             case MINIMIZE:
                 minimize(event);
                 break;
+            case RESTART:
+                shutDown(true);
+                break;
             case CLOSE:
-                shutDown();
+                shutDown(false);
                 break;
         }
     }
@@ -159,15 +169,39 @@ public class MainWindow extends Application {
         }
     }
 
+    @Subscribe
+    private void handleErrorEvent(final ErrorEvent errorEvent) {
+        Platform.runLater(() -> fatalErrorDialog.open(scene.getRoot()));
+    }
+
     private void minimize(final WindowControlsEvent event) {
         ((Stage) event.getSource().getScene().getWindow()).setIconified(true);
     }
 
-    private void shutDown() {
+    private void shutDown(final boolean restart) {
         Platform.exit();
         BlockchainConnector.getInstance().close();
-        Executors.newSingleThreadExecutor().submit(() -> System.exit(0));
         scheduler.shutdown();
+        if (restart) {
+            restartApplication();
+        }
+        Executors.newSingleThreadExecutor().submit(() -> System.exit(0));
+    }
+
+    private void restartApplication()
+    {
+        final String localDir = System.getProperty("user.dir");
+        final String executable = localDir + File.separator + "aion_ui.sh";
+
+        final ArrayList<String> command = new ArrayList<>();
+        command.add(executable);
+
+        final ProcessBuilder builder = new ProcessBuilder(command);
+        try {
+            builder.start();
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+        }
     }
 
     private void handleMousePressed(final MouseEvent event) {
