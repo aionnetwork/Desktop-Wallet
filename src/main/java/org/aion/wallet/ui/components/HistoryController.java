@@ -38,6 +38,7 @@ public class HistoryController extends AbstractController {
     private static final String COPY_MENU = "Copy";
 
     private static final String LINK_STYLE = "link-style";
+    public static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy/MM/dd - HH.mm.ss");
 
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
     @FXML
@@ -231,7 +232,7 @@ public class HistoryController extends AbstractController {
             final String balance = BalanceUtils.formatBalance(dto.getValue());
             boolean isFromTx = AddressUtils.equals(requestingAddress, fromAccount.getPublicAddress());
             this.type = new SimpleStringProperty(isFromTx ? TO : FROM);
-            this.date = new SimpleStringProperty(new SimpleDateFormat("yyyy/MM/dd - HH.mm.ss").format(new Date(dto.getTimeStamp() * 1000)));
+            this.date = new SimpleStringProperty(simpleDateFormat.format(new Date(dto.getTimeStamp() * 1000)));
             this.status = new SimpleStringProperty(getTransactionStatus(dto));
             this.value = new SimpleStringProperty(balance);
             this.txHash = new SimpleStringProperty(dto.getHash());
