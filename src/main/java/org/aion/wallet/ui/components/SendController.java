@@ -4,19 +4,23 @@ import com.google.common.eventbus.Subscribe;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseEvent;
 import org.aion.api.log.LogEnum;
 import org.aion.base.util.TypeConverter;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.connector.dto.SendTransactionDTO;
+import org.aion.wallet.connector.dto.TransactionResponseDTO;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.events.*;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
+import org.aion.wallet.ui.components.partials.TransactionResubmissionDialog;
 import org.aion.wallet.util.*;
 import org.slf4j.Logger;
 
 import java.math.BigInteger;
 import java.net.URL;
+import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
@@ -52,16 +56,23 @@ public class SendController extends AbstractController {
     private TextField accountBalance;
     @FXML
     private Button sendButton;
+    @FXML
+    private Label timedoutTransactionsLabel;
 
     private AccountDTO account;
 
     private boolean connected;
+
+    private final TransactionResubmissionDialog transactionResubmissionDialog = new TransactionResubmissionDialog();
+
+    private SendTransactionDTO transactionToResubmit;
 
     @Override
     protected void registerEventBusConsumer() {
         super.registerEventBusConsumer();
         EventBusFactory.getBus(HeaderPaneButtonEvent.ID).register(this);
         EventBusFactory.getBus(AccountEvent.ID).register(this);
+        EventBusFactory.getBus(TransactionEvent.ID).register(this);
     }
 
     @Override
@@ -93,6 +104,7 @@ public class SendController extends AbstractController {
                 break;
             default:
         }
+        setTimedoutTransactionsLabelText();
     }
 
     public void onSendAionClicked() {
@@ -101,7 +113,12 @@ public class SendController extends AbstractController {
         }
         final SendTransactionDTO dto;
         try {
-            dto = mapFormData();
+            if(transactionToResubmit != null) {
+                dto = transactionToResubmit;
+            }
+            else {
+                dto = mapFormData();
+            }
         } catch (ValidationException e) {
             log.error(e.getMessage(), e);
             displayStatus(e.getMessage(), true);
@@ -109,17 +126,22 @@ public class SendController extends AbstractController {
         }
         displayStatus(PENDING_MESSAGE, false);
 
-        final Task<String> sendTransactionTask = getApiTask(this::sendTransaction, dto);
+        final Task<TransactionResponseDTO> sendTransactionTask = getApiTask(this::sendTransaction, dto);
 
         runApiTask(
                 sendTransactionTask,
-                evt -> handleTransactionFinished(sendTransactionTask.getValue()),
+                evt -> handleTransactionFinished(sendTransactionTask.getValue().getTxHash().toString()),
                 getErrorEvent(t -> Optional.ofNullable(t.getCause()).ifPresent(cause -> displayStatus(cause.getMessage(), true)), sendTransactionTask),
                 getEmptyEvent()
         );
     }
 
+    public void onTimedoutTransactionsClick(final MouseEvent mouseEvent) {
+        transactionResubmissionDialog.open(mouseEvent);
+    }
+
     private void handleTransactionFinished(final String txHash) {
+        setTimedoutTransactionsLabelText();
         log.info("%s: %s", SUCCESS_MESSAGE, txHash);
         displayStatus(SUCCESS_MESSAGE, false);
         EventPublisher.fireTransactionFinished();
@@ -134,7 +156,7 @@ public class SendController extends AbstractController {
         txStatusLabel.setText(message);
     }
 
-    private String sendTransaction(final SendTransactionDTO sendTransactionDTO) {
+    private TransactionResponseDTO sendTransaction(final SendTransactionDTO sendTransactionDTO) {
         try {
             return blockchainConnector.sendTransaction(sendTransactionDTO);
         } catch (ValidationException e) {
@@ -149,6 +171,19 @@ public class SendController extends AbstractController {
         toInput.setText("");
         valueInput.setText("");
         passwordInput.setText("");
+
+        setTimedoutTransactionsLabelText();
+    }
+
+    private void setTimedoutTransactionsLabelText() {
+        if(account != null) {
+            final List<SendTransactionDTO> timedoutTransactions = blockchainConnector.getAccountManager().getTimedoutTransactions(account.getPublicAddress());
+            if(!timedoutTransactions.isEmpty()) {
+                timedoutTransactionsLabel.setVisible(true);
+                timedoutTransactionsLabel.getStyleClass().add("warning-link-style");
+                timedoutTransactionsLabel.setText("You have transactions that require your attention!");
+            }
+        }
     }
 
     @Subscribe
@@ -177,6 +212,19 @@ public class SendController extends AbstractController {
         if (event.getType().equals(HeaderPaneButtonEvent.Type.SEND)) {
             refreshAccountBalance();
         }
+    }
+
+    @Subscribe
+    private void handleTransactionResubmitEvent(final TransactionEvent event) {
+        SendTransactionDTO sendTransaction = event.getTransaction();
+        sendTransaction.setNrgPrice(BigInteger.valueOf(sendTransaction.getNrgPrice() * 2));
+        toInput.setText(sendTransaction.getTo());
+        nrgInput.setText(sendTransaction.getNrg().toString());
+        nrgPriceInput.setText(String.valueOf(sendTransaction.getNrgPrice()));
+        valueInput.setText(BalanceUtils.formatBalance(sendTransaction.getValue()));
+        txStatusLabel.setText("");
+        timedoutTransactionsLabel.setVisible(false);
+        transactionToResubmit = sendTransaction;
     }
 
     private void setAccountBalanceText() {
@@ -242,5 +290,4 @@ public class SendController extends AbstractController {
 
         return dto;
     }
-
 }

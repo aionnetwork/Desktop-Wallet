@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.AnchorPane?>
+<?import java.net.URL?>
+<?import javafx.scene.layout.VBox?>
+<AnchorPane prefHeight="350.0" prefWidth="600.0"
+            xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="org.aion.wallet.ui.components.partials.TransactionResubmissionDialog"
+            styleClass="anchor-pane">
+    <stylesheets>
+        <URL value="@dialog.css"/>
+    </stylesheets>
+    <VBox fx:id="transactions" spacing="10" AnchorPane.leftAnchor="10" AnchorPane.topAnchor="10" AnchorPane.rightAnchor="10"/>
+</AnchorPane>

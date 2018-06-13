@@ -5,6 +5,7 @@ import org.aion.api.log.LogEnum;
 import org.aion.api.server.types.ArgTxCall;
 import org.aion.api.server.types.SyncInfo;
 import org.aion.base.type.Address;
+import org.aion.base.type.Hash256;
 import org.aion.base.util.ByteUtil;
 import org.aion.base.util.TypeConverter;
 import org.aion.wallet.connector.BlockchainConnector;
@@ -12,6 +13,7 @@ import org.aion.wallet.connector.dto.BlockDTO;
 import org.aion.wallet.connector.dto.SendTransactionDTO;
 import org.aion.wallet.connector.dto.SyncInfoDTO;
 import org.aion.wallet.connector.dto.TransactionDTO;
+import org.aion.wallet.connector.dto.TransactionResponseDTO;
 import org.aion.wallet.dto.LightAppSettings;
 import org.aion.wallet.events.AccountEvent;
 import org.aion.wallet.events.EventBusFactory;
@@ -52,15 +54,9 @@ public class CoreBlockchainConnector extends BlockchainConnector {
     }
 
     @Override
-    protected String sendTransactionInternal(SendTransactionDTO dto) throws ValidationException {
-        if (!API.unlockAccount(dto.getFrom(), dto.getPassword(), getSettings().getUnlockTimeout())) {
-            throw new ValidationException("Failed to unlock wallet");
-        }
-        ArgTxCall transactionParams = new ArgTxCall(Address.wrap(ByteUtil.hexStringToBytes(dto.getFrom()))
-                , Address.wrap(ByteUtil.hexStringToBytes(dto.getTo())), dto.getData(),
-                dto.getNonce(), dto.getValue(), dto.getNrg(), dto.getNrgPrice());
-
-        return TypeConverter.toJsonHex(API.sendTransaction(transactionParams));
+    protected TransactionResponseDTO sendTransactionInternal(SendTransactionDTO dto) {
+        throw new UnsupportedOperationException();
+        //TODO
     }
 
     @Override

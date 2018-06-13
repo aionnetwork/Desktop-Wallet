@@ -12,8 +12,10 @@ import org.aion.mcf.account.Keystore;
 import org.aion.mcf.account.KeystoreFormat;
 import org.aion.mcf.account.KeystoreItem;
 import org.aion.wallet.connector.dto.BlockDTO;
+import org.aion.wallet.connector.dto.SendTransactionDTO;
 import org.aion.wallet.connector.dto.TransactionDTO;
 import org.aion.wallet.crypto.ExtendedKey;
+import org.aion.wallet.connector.dto.TransactionResponseDTO;
 import org.aion.wallet.crypto.SeededECKeyEd25519;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.events.EventPublisher;
@@ -32,6 +34,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public class AccountManager {
 
@@ -48,6 +51,10 @@ public class AccountManager {
     private final Map<String, SortedSet<TransactionDTO>> addressToTransactions = Collections.synchronizedMap(new HashMap<>());
 
     private final Map<String, BlockDTO> addressToLastCheckedBlock = Collections.synchronizedMap(new HashMap<>());
+    
+    private final List<SendTransactionDTO> addressToTimedoutTransactions = new ArrayList<>();
+    
+
 
     private final Map<String, byte[]> addressToKeystoreContent = Collections.synchronizedMap(new HashMap<>());
 
@@ -265,6 +272,22 @@ public class AccountManager {
 
     }
 
+    public List<SendTransactionDTO> getTimedoutTransactions(final String accountAddress) {
+        return addressToTimedoutTransactions.stream().filter(p -> p.getFrom().equals(accountAddress)).collect(Collectors.toList());
+    }
+
+    public void addTimedoutTransaction(final SendTransactionDTO transaction) {
+        if(transaction != null) {
+            addressToTimedoutTransactions.add(transaction);
+        }
+    }
+
+    public void removeTimedOutTransaction(final SendTransactionDTO transaction) {
+        if(transaction != null) {
+            addressToTimedoutTransactions.remove(transaction);
+        }
+    }
+    
     public void lockAll() {
         root = null;
         Set<String> seedAccounts = new HashSet<>();

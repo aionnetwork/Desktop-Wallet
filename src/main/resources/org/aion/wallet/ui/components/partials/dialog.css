@@ -18,6 +18,14 @@
     -fx-font-size: 18px;
 }
 
+.submit-button-small {
+    -fx-background-color: #5AF0BD;
+    -fx-background-radius: 0,0,0,0;
+    -fx-text-fill: white;
+    -fx-font-family: 'Open Sans Bold';
+    -fx-font-size: 14px;
+}
+
 .error-input-fields {
     -fx-text-box-border: red ;
     -fx-focus-color: red ;
@@ -28,4 +36,22 @@
     -fx-background-insets: 0px;
     -fx-text-fill: BLACK;
     -fx-display-caret: false;
+}
+
+.transaction-table-header-text {
+    -fx-text-fill: BLACK;
+    -fx-font-family: 'Open Sans Light';
+    -fx-font-size: 18px;
+}
+
+.transaction-row-text {
+    -fx-text-fill: BLACK;
+    -fx-font-family: 'Open Sans Light';
+    -fx-font-size: 14px;
+}
+
+.transaction-row {
+    -fx-border-color: #ececec;
+    -fx-border-style: solid inside;
+    -fx-border-width: 0 0 1 0;
 }

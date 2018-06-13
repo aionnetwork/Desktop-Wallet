@@ -5,6 +5,7 @@ import org.aion.wallet.connector.api.ApiBlockchainConnector;
 import org.aion.wallet.connector.dto.SendTransactionDTO;
 import org.aion.wallet.connector.dto.SyncInfoDTO;
 import org.aion.wallet.connector.dto.TransactionDTO;
+import org.aion.wallet.connector.dto.TransactionResponseDTO;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.dto.LightAppSettings;
 import org.aion.wallet.exception.NotFoundException;
@@ -97,7 +98,7 @@ public abstract class BlockchainConnector {
 
     public abstract BigInteger getBalance(final String address);
 
-    public final String sendTransaction(final SendTransactionDTO dto) throws ValidationException {
+    public final TransactionResponseDTO sendTransaction(final SendTransactionDTO dto) throws ValidationException {
         if (dto == null || !dto.validate()) {
             throw new ValidationException("Invalid transaction request data");
         }
@@ -119,7 +120,7 @@ public abstract class BlockchainConnector {
 
     public abstract LightAppSettings getSettings();
 
-    protected abstract String sendTransactionInternal(final SendTransactionDTO dto) throws ValidationException;
+    protected abstract TransactionResponseDTO sendTransactionInternal(final SendTransactionDTO dto);
 
     protected abstract String getCurrency();
 
@@ -135,7 +136,7 @@ public abstract class BlockchainConnector {
         accountManager.lockAll();
     }
 
-    protected final AccountManager getAccountManager() {
+    public final AccountManager getAccountManager() {
         return accountManager;
     }
 
