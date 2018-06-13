@@ -32,7 +32,6 @@ public class AddAccountDialog {
     private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
 
     private final MnemonicDialog mnemonicDialog = new MnemonicDialog();
-    private final Popup popup = new Popup();
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
     @FXML
     public TextField mnemonicTextField;
@@ -81,6 +80,7 @@ public class AddAccountDialog {
                         .ofWordList(English.INSTANCE)
                         .validate(mnemonic);
                 blockchainConnector.importMasterAccount(mnemonic, mnemonicPassword);
+                this.close(mouseEvent);
             } catch (UnexpectedWhiteSpaceException | InvalidWordCountException | InvalidChecksumException | WordNotFoundException | ValidationException e) {
                 showInvalidFieldsError(getMnemonicValidationErrorMessage(e));
                 log.error(e.getMessage(), e);
@@ -122,6 +122,7 @@ public class AddAccountDialog {
     }
 
     public void open(final MouseEvent mouseEvent) {
+        Popup popup = new Popup();
         popup.setAutoHide(true);
         popup.setAutoFix(true);
 
@@ -142,8 +143,8 @@ public class AddAccountDialog {
         popup.show(eventSource.getScene().getWindow());
     }
 
-    public void close() {
-        popup.hide();
+    public void close(final InputEvent eventSource) {
+        ((Node) eventSource.getSource()).getScene().getWindow().hide();
     }
 
     @FXML
