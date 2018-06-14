@@ -2,8 +2,6 @@ package org.aion.wallet.ui.components;
 
 import com.google.common.eventbus.Subscribe;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -15,7 +13,6 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.*;
-import org.aion.api.impl.Tx;
 import org.aion.api.log.LogEnum;
 import org.aion.log.AionLoggerFactory;
 import org.aion.wallet.connector.BlockchainConnector;
@@ -51,6 +48,9 @@ public class HistoryController extends AbstractController {
     @FXML
     private TextField searchField;
 
+    @FXML
+    private ComboBox searchItem;
+
     private AccountDTO account;
 
     private List<TxRow> completeTransactionList = null;
@@ -60,6 +60,18 @@ public class HistoryController extends AbstractController {
         buildTableModel();
         setEventHandlers();
         reloadWalletView();
+        initSearchItemDropdown();
+    }
+
+    private void initSearchItemDropdown() {
+        searchItem.setItems(FXCollections.observableArrayList(
+                "Type",
+                       "Date",
+                       "Transaction hash",
+                       "Value",
+                       "Status"
+        ));
+        searchItem.getSelectionModel().select(0);
     }
 
     @Subscribe
@@ -107,7 +119,7 @@ public class HistoryController extends AbstractController {
                     completeTransactionList = new ArrayList<>(transactions);
                     txTable.setItems(FXCollections.observableList(transactions));
                 },
-                getEmptyEvent()
+                getEmptyEvent(), null
         );
     }
 
@@ -143,22 +155,25 @@ public class HistoryController extends AbstractController {
 
         searchField.textProperty().addListener((observable, oldValue, newValue) -> {
             FilteredList<TxRow> filteredData = new FilteredList(FXCollections.observableList(completeTransactionList), s -> true);
-            if(!newValue.isEmpty()) {
+            if (!newValue.isEmpty()) {
                 filteredData.setPredicate(s -> anyFieldHasString(s, newValue));
                 txTable.setItems(filteredData);
-            }
-            else {
+            } else {
                 filteredData.setPredicate(s -> true);
             }
         });
     }
 
     private boolean anyFieldHasString(TxRow s, String newValue) {
-        return s.getName().toLowerCase().contains(newValue.toLowerCase())
-            || s.getTxHash().toLowerCase().contains(newValue.toLowerCase())
-            || s.getStatus().toLowerCase().contains(newValue.toLowerCase())
-            || s.getValue().toLowerCase().contains(newValue.toLowerCase())
-            || s.getType().toLowerCase().contains(newValue.toLowerCase());    }
+        switch (searchItem.getSelectionModel().getSelectedIndex()) {
+            case 0 : return s.getType().toLowerCase().contains(newValue.toLowerCase());
+            case 1 : return s.getDate().toLowerCase().contains(newValue.toLowerCase());
+            case 2 : return s.getTxHash().toLowerCase().contains(newValue.toLowerCase());
+            case 3 : return s.getValue().toLowerCase().contains(newValue.toLowerCase());
+            case 4 : return s.getStatus().toLowerCase().contains(newValue.toLowerCase());
+        }
+        return true;
+    }
 
     private static class KeyTableCopyEventHandler extends TableCopyEventHandler<KeyEvent> {
         private final KeyCodeCombination copyKeyCodeCombination = new KeyCodeCombination(KeyCode.C, KeyCombination.CONTROL_ANY);
