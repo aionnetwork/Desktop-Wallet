@@ -6,6 +6,10 @@ import org.aion.wallet.dto.LightAppSettings;
 
 public class EventPublisher {
 
+    public static void fireFatalErrorEncountered(final String message) {
+        EventBusFactory.getBus(ErrorEvent.ID).post(new ErrorEvent(ErrorEvent.Type.FATAL, message));
+    }
+
     public static void fireMnemonicCreated(final String mnemonic) {
         if (mnemonic != null) {
             EventBusFactory.getBus(UiMessageEvent.ID)

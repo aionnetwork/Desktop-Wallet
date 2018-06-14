@@ -2,24 +2,16 @@ package org.aion.wallet.connector.core;
 
 import com.google.common.eventbus.Subscribe;
 import org.aion.api.log.LogEnum;
-import org.aion.api.server.types.ArgTxCall;
 import org.aion.api.server.types.SyncInfo;
-import org.aion.base.type.Address;
-import org.aion.base.type.Hash256;
 import org.aion.base.util.ByteUtil;
 import org.aion.base.util.TypeConverter;
 import org.aion.wallet.connector.BlockchainConnector;
-import org.aion.wallet.connector.dto.BlockDTO;
-import org.aion.wallet.connector.dto.SendTransactionDTO;
-import org.aion.wallet.connector.dto.SyncInfoDTO;
-import org.aion.wallet.connector.dto.TransactionDTO;
-import org.aion.wallet.connector.dto.TransactionResponseDTO;
+import org.aion.wallet.connector.dto.*;
 import org.aion.wallet.dto.LightAppSettings;
 import org.aion.wallet.events.AccountEvent;
 import org.aion.wallet.events.EventBusFactory;
 import org.aion.wallet.events.EventPublisher;
 import org.aion.wallet.exception.NotFoundException;
-import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.storage.ApiType;
 import org.aion.wallet.util.AionConstants;
@@ -44,7 +36,7 @@ public class CoreBlockchainConnector extends BlockchainConnector {
     }
 
     @Override
-    public BigInteger getBalance(String address){
+    public BigInteger getBalance(String address) {
         try {
             return API.getBalance(address);
         } catch (Exception e) {
@@ -70,8 +62,8 @@ public class CoreBlockchainConnector extends BlockchainConnector {
 
     @Override
     public Set<TransactionDTO> getLatestTransactions(final String address) {
-        final BlockDTO lastCheckedBlock = getAccountManager().getLastCheckedBlock(address);
-        processNewTransactions(lastCheckedBlock, Collections.singleton(address));
+        final BlockDTO lastSafeBlock = getAccountManager().getLastSafeBlock(address);
+        processNewTransactions(lastSafeBlock, Collections.singleton(address));
         return getAccountManager().getTransactions(address);
     }
 
@@ -87,14 +79,14 @@ public class CoreBlockchainConnector extends BlockchainConnector {
                 for (final String address : addresses) {
                     getAccountManager().addTransactions(address,
                             blk.getTransactionsList().stream()
-                            .filter(t -> TypeConverter.toJsonHex(t.getFrom().toString()).equals(address)
-                                    || TypeConverter.toJsonHex(t.getTo().toString()).equals(address))
-                            .map(this::mapTransaction)
-                            .collect(Collectors.toList()));
+                                    .filter(t -> TypeConverter.toJsonHex(t.getFrom().toString()).equals(address)
+                                            || TypeConverter.toJsonHex(t.getTo().toString()).equals(address))
+                                    .map(this::mapTransaction)
+                                    .collect(Collectors.toList()));
                 }
             }
             for (String address : addresses) {
-                getAccountManager().updateLastCheckedBlock(address, new BlockDTO(latest.getNumber(), latest.getHash()));
+                getAccountManager().updateLastSafeBlock(address, new BlockDTO(latest.getNumber(), latest.getHash()));
             }
         }
     }

@@ -11,11 +11,7 @@ import org.aion.base.type.Hash256;
 import org.aion.base.util.ByteArrayWrapper;
 import org.aion.base.util.TypeConverter;
 import org.aion.wallet.connector.BlockchainConnector;
-import org.aion.wallet.connector.dto.BlockDTO;
-import org.aion.wallet.connector.dto.SendTransactionDTO;
-import org.aion.wallet.connector.dto.SyncInfoDTO;
-import org.aion.wallet.connector.dto.TransactionDTO;
-import org.aion.wallet.connector.dto.TransactionResponseDTO;
+import org.aion.wallet.connector.dto.*;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.dto.LightAppSettings;
 import org.aion.wallet.events.AccountEvent;
@@ -23,7 +19,6 @@ import org.aion.wallet.events.EventBusFactory;
 import org.aion.wallet.events.EventPublisher;
 import org.aion.wallet.events.SettingsEvent;
 import org.aion.wallet.exception.NotFoundException;
-import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.storage.ApiType;
 import org.aion.wallet.util.AionConstants;
@@ -60,13 +55,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     public ApiBlockchainConnector() {
         connect(getConnectionString());
-        backgroundExecutor.submit(() -> {
-            try {
-                processNewTransactions(null, getAccountManager().getAddresses());
-            } catch (ValidationException e) {
-                log.error(e.getMessage(), e);
-            }
-        });
+        backgroundExecutor.submit(() -> processNewTransactions(null, getAccountManager().getAddresses()));
         EventPublisher.fireApplicationSettingsChanged(lightAppSettings);
         registerEventBusConsumer();
     }
@@ -139,7 +128,8 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         }
 
         final TransactionResponseDTO transactionResponseDTO = mapTransactionResponse(response);
-        if(!ACCEPTED_TRANSACTION_RESPONSE_STATUSES.contains(transactionResponseDTO.getStatus())) {
+        final int responseStatus = transactionResponseDTO.getStatus();
+        if (!ACCEPTED_TRANSACTION_RESPONSE_STATUSES.contains(responseStatus)) {
             getAccountManager().addTimedOutTransaction(dto);
         }
         return transactionResponseDTO;
@@ -167,14 +157,8 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     @Override
     public Set<TransactionDTO> getLatestTransactions(final String address) {
-        final BlockDTO lastCheckedBlock = getAccountManager().getLastCheckedBlock(address);
-        backgroundExecutor.submit(() -> {
-            try {
-                processNewTransactions(lastCheckedBlock, Collections.singleton(address));
-            } catch (ValidationException e) {
-                log.error(e.getMessage(), e);
-            }
-        });
+        final BlockDTO lastSafeBlock = getAccountManager().getLastSafeBlock(address);
+        backgroundExecutor.submit(() -> processNewTransactions(lastSafeBlock, Collections.singleton(address)));
         return getAccountManager().getTransactions(address);
     }
 
@@ -271,13 +255,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         if (AccountEvent.Type.CHANGED.equals(event.getType())) {
             getAccountManager().updateAccount(account);
         } else if (AccountEvent.Type.ADDED.equals(event.getType())) {
-            backgroundExecutor.submit(() -> {
-                try {
-                    processNewTransactions(null, Collections.singleton(account.getPublicAddress()));
-                } catch (ValidationException e) {
-                    log.error(e.getMessage(), e);
-                }
-            });
+            backgroundExecutor.submit(() -> processNewTransactions(null, Collections.singleton(account.getPublicAddress())));
         }
     }
 
@@ -306,35 +284,28 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         return txCount;
     }
 
-    private void processNewTransactions(final BlockDTO lastCheckedBlock, final Set<String> addresses) throws ValidationException {
+    private void processNewTransactions(final BlockDTO lastSafeBlock, final Set<String> addresses) {
         if (API.isConnected() && !addresses.isEmpty()) {
-            final Block latest = getLatestBlock();
-            final long lastChecked;
-            if (lastCheckedBlock != null) {
-                lastChecked = lastCheckedBlock.getNumber();
-                lock();
-                try {
-                    final Block lastSupposedCheck = API.getChain().getBlockByNumber(lastChecked).getObject();
-                    if (!Arrays.equals(lastCheckedBlock.getHash(), (lastSupposedCheck.getHash().toBytes()))) {
-                        throw new ValidationException("A re-organization happened too far back. Please restart Wallet!");
-                    }
-                } finally {
-                    unLock();
+            final long latest = getLatestBlock().getNumber();
+            final long previousSafe = lastSafeBlock != null ? lastSafeBlock.getNumber() : 0;
+            if (previousSafe > 0) {
+                final Block lastSupposedSafe = getBlock(previousSafe);
+                if (!Arrays.equals(lastSafeBlock.getHash(), (lastSupposedSafe.getHash().toBytes()))) {
+                    EventPublisher.fireFatalErrorEncountered("A re-organization happened too far back. Please restart Wallet!");
                 }
-            } else {
-                lastChecked = 0;
             }
-            long previousSafe = lastChecked - BLOCK_BATCH_SIZE;
-            if (previousSafe < 0) {
-                previousSafe = 0;
-            }
-            for (long i = latest.getNumber(); i > previousSafe; i -= BLOCK_BATCH_SIZE) {
+            for (long i = latest; i > previousSafe; i -= BLOCK_BATCH_SIZE) {
                 List<Long> blockBatch = LongStream.iterate(i, j -> j - 1).limit(BLOCK_BATCH_SIZE).boxed().collect(Collectors.toList());
                 List<BlockDetails> blk = getBlockDetailsByNumbers(blockBatch);
                 blk.forEach(getBlockDetailsConsumer(addresses, previousSafe));
             }
-            for (String address : addresses) {
-                getAccountManager().updateLastCheckedBlock(address, new BlockDTO(latest.getNumber(), latest.getHash().toBytes()));
+            final long newSafeBlockNumber = latest - BLOCK_BATCH_SIZE;
+            final Block newSafe;
+            if (newSafeBlockNumber > 0) {
+                newSafe = getBlock(newSafeBlockNumber);
+                for (String address : addresses) {
+                    getAccountManager().updateLastSafeBlock(address, new BlockDTO(newSafe.getNumber(), newSafe.getHash().toBytes()));
+                }
             }
         }
     }
@@ -374,6 +345,17 @@ public class ApiBlockchainConnector extends BlockchainConnector {
             unLock();
         }
         return block;
+    }
+
+    private Block getBlock(final long blockNumber) {
+        final Block lastSupposedSafe;
+        lock();
+        try {
+            lastSupposedSafe = API.getChain().getBlockByNumber(blockNumber).getObject();
+        } finally {
+            unLock();
+        }
+        return lastSupposedSafe;
     }
 
     private List<BlockDetails> getBlockDetailsByNumbers(final List<Long> numbers) {
