@@ -10,20 +10,22 @@ import java.awt.image.BufferedImage;
 import java.util.*;
 
 public class AccountDTO {
+    private final Comparator<? super TransactionDTO> TRANSACTION_COMPARATOR = new TransactionComparator();
+
     private final String currency;
     private final String publicAddress;
     private final boolean isImported;
     private final int derivationIndex;
     private final BufferedImage qrCode;
-    private final SortedSet<TransactionDTO> transactions;
+    private final SortedSet<TransactionDTO> transactions = new TreeSet<>(TRANSACTION_COMPARATOR);
+    private final List<SendTransactionDTO> timedOutTransactions = new ArrayList<>();
     private byte[] privateKey;
     private String balance;  //TODO this has to be BigInteger
     private String name;
     private boolean active;
     private BlockDTO lastCheckedBlock = null;
-    private final List<SendTransactionDTO> timedOutTransactions = new ArrayList<>();
 
-    public AccountDTO(final String name, final String publicAddress, final String balance, final String currency, boolean isImported, int derivationIndex, SortedSet<TransactionDTO> transactions) {
+    public AccountDTO(final String name, final String publicAddress, final String balance, final String currency, boolean isImported, int derivationIndex) {
         this.name = name;
         this.publicAddress = TypeConverter.toJsonHex(publicAddress);
         this.balance = balance;
@@ -31,7 +33,6 @@ public class AccountDTO {
         this.qrCode = QRCodeUtils.writeQRCode(publicAddress);
         this.isImported = isImported;
         this.derivationIndex = derivationIndex;
-        this.transactions = transactions;
     }
 
     public String getName() {
@@ -87,7 +88,7 @@ public class AccountDTO {
     }
 
     public SortedSet<TransactionDTO> getTransactionsSnapshot() {
-        return new TreeSet<>(Collections.unmodifiableSortedSet(transactions));
+        return Collections.unmodifiableSortedSet(new TreeSet<>(transactions));
     }
 
     public void addTransactions(final Collection<TransactionDTO> transactions) {
@@ -111,14 +112,14 @@ public class AccountDTO {
     }
 
     public void addTimedOutTransaction(SendTransactionDTO transaction) {
-        if(transaction == null) {
+        if (transaction == null) {
             return;
         }
         this.timedOutTransactions.add(transaction);
     }
 
     public void removeTimedOutTransaction(SendTransactionDTO transaction) {
-        if(transaction == null) {
+        if (transaction == null) {
             return;
         }
         this.timedOutTransactions.remove(transaction);
@@ -140,5 +141,14 @@ public class AccountDTO {
 
     public boolean isUnlocked() {
         return privateKey != null;
+    }
+
+    private class TransactionComparator implements Comparator<TransactionDTO> {
+        @Override
+        public int compare(final TransactionDTO tx1, final TransactionDTO tx2) {
+            return tx1 == null ?
+                    (tx2 == null ? 0 : -1) :
+                    (tx2 == null ? 1 : tx2.getBlockNumber().compareTo(tx1.getBlockNumber()));
+        }
     }
 }

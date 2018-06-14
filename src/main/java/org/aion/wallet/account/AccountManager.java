@@ -38,13 +38,10 @@ public class AccountManager {
 
     private static final String DEFAULT_MNEMONIC_SALT = "";
 
-    private final Comparator<? super TransactionDTO> transactionComparator = new TransactionComparator();
 
     private final WalletStorage walletStorage = WalletStorage.getInstance();
 
     private final Map<String, AccountDTO> addressToAccount = new HashMap<>();
-
-//    private final List<SendTransactionDTO> addressToTimedoutTransactions = new ArrayList<>();
 
     private final Map<String, byte[]> addressToKeystoreContent = Collections.synchronizedMap(new HashMap<>());
 
@@ -320,8 +317,7 @@ public class AccountManager {
                 getFormattedBalance(publicAddress),
                 currencySupplier.get(),
                 isImported,
-                derivation,
-                new TreeSet<>(transactionComparator));
+                derivation);
     }
 
     private AccountDTO getNewAccount(final String publicAddress) {
@@ -337,14 +333,5 @@ public class AccountManager {
             return;
         }
         walletStorage.setAccountName(address, name);
-    }
-
-    private class TransactionComparator implements Comparator<TransactionDTO> {
-        @Override
-        public int compare(final TransactionDTO tx1, final TransactionDTO tx2) {
-            return tx1 == null ?
-                    (tx2 == null ? 0 : -1) :
-                    (tx2 == null ? 1 : tx2.getBlockNumber().compareTo(tx1.getBlockNumber()));
-        }
     }
 }
