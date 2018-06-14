@@ -2,6 +2,7 @@ package org.aion.wallet.dto;
 
 import org.aion.base.util.TypeConverter;
 import org.aion.wallet.connector.dto.BlockDTO;
+import org.aion.wallet.connector.dto.SendTransactionDTO;
 import org.aion.wallet.connector.dto.TransactionDTO;
 import org.aion.wallet.util.QRCodeUtils;
 
@@ -20,6 +21,7 @@ public class AccountDTO {
     private String name;
     private boolean active;
     private BlockDTO lastCheckedBlock = null;
+    private final List<SendTransactionDTO> timedOutTransactions = new ArrayList<>();
 
     public AccountDTO(final String name, final String publicAddress, final String balance, final String currency, boolean isImported, int derivationIndex, SortedSet<TransactionDTO> transactions) {
         this.name = name;
@@ -102,6 +104,24 @@ public class AccountDTO {
 
     public void setLastCheckedBlock(BlockDTO lastCheckedBlock) {
         this.lastCheckedBlock = lastCheckedBlock;
+    }
+
+    public List<SendTransactionDTO> getTimedOutTransactions() {
+        return timedOutTransactions;
+    }
+
+    public void addTimedOutTransaction(SendTransactionDTO transaction) {
+        if(transaction == null) {
+            return;
+        }
+        this.timedOutTransactions.add(transaction);
+    }
+
+    public void removeTimedOutTransaction(SendTransactionDTO transaction) {
+        if(transaction == null) {
+            return;
+        }
+        this.timedOutTransactions.remove(transaction);
     }
 
     @Override

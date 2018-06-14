@@ -67,7 +67,7 @@ public class TransactionResubmissionDialog implements Initializable {
 
     private void displayTransactions() {
         addHeaderForTable();
-        for (SendTransactionDTO unsentTransaction : blockchainConnector.getAccountManager().getTimedoutTransactions(blockchainConnector.getAccounts().stream().filter(p -> p.isActive()).findAny().get().getPublicAddress())) {
+        for (SendTransactionDTO unsentTransaction : blockchainConnector.getAccountManager().getTimedOutTransactions(blockchainConnector.getAccounts().stream().filter(p -> p.isActive()).findAny().get().getPublicAddress())) {
             HBox row = new HBox();
             row.setSpacing(10);
             row.setAlignment(Pos.CENTER);

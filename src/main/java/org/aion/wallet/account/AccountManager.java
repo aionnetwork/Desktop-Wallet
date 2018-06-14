@@ -13,10 +13,8 @@ import org.aion.mcf.account.KeystoreFormat;
 import org.aion.mcf.account.KeystoreItem;
 import org.aion.wallet.connector.dto.BlockDTO;
 import org.aion.wallet.connector.dto.SendTransactionDTO;
-import org.aion.wallet.connector.dto.SendTransactionDTO;
 import org.aion.wallet.connector.dto.TransactionDTO;
 import org.aion.wallet.crypto.ExtendedKey;
-import org.aion.wallet.connector.dto.TransactionResponseDTO;
 import org.aion.wallet.crypto.SeededECKeyEd25519;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.events.EventPublisher;
@@ -33,7 +31,6 @@ import java.security.SecureRandom;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 public class AccountManager {
 
@@ -47,7 +44,7 @@ public class AccountManager {
 
     private final Map<String, AccountDTO> addressToAccount = new HashMap<>();
 
-    private final List<SendTransactionDTO> addressToTimedoutTransactions = new ArrayList<>();
+//    private final List<SendTransactionDTO> addressToTimedoutTransactions = new ArrayList<>();
 
     private final Map<String, byte[]> addressToKeystoreContent = Collections.synchronizedMap(new HashMap<>());
 
@@ -255,20 +252,16 @@ public class AccountManager {
 
     }
 
-    public List<SendTransactionDTO> getTimedoutTransactions(final String accountAddress) {
-        return addressToTimedoutTransactions.stream().filter(p -> p.getFrom().equals(accountAddress)).collect(Collectors.toList());
+    public List<SendTransactionDTO> getTimedOutTransactions(final String accountAddress) {
+        return addressToAccount.get(accountAddress).getTimedOutTransactions();
     }
 
-    public void addTimedoutTransaction(final SendTransactionDTO transaction) {
-        if(transaction != null) {
-            addressToTimedoutTransactions.add(transaction);
-        }
+    public void addTimedOutTransaction(final SendTransactionDTO transaction) {
+        addressToAccount.get(transaction.getFrom()).addTimedOutTransaction(transaction);
     }
 
     public void removeTimedOutTransaction(final SendTransactionDTO transaction) {
-        if(transaction != null) {
-            addressToTimedoutTransactions.remove(transaction);
-        }
+        addressToAccount.get(transaction.getFrom()).removeTimedOutTransaction(transaction);
     }
 
     public void lockAll() {
