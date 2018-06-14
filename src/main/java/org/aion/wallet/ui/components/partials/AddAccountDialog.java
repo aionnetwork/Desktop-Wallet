@@ -33,6 +33,7 @@ public class AddAccountDialog {
     private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
 
     private final MnemonicDialog mnemonicDialog = new MnemonicDialog();
+
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
     @FXML
     public TextField mnemonicTextField;

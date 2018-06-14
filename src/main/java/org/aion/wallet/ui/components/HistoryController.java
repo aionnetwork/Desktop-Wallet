@@ -15,13 +15,13 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.*;
 import org.aion.api.log.LogEnum;
-import org.aion.log.AionLoggerFactory;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.connector.dto.TransactionDTO;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.events.AccountEvent;
 import org.aion.wallet.events.EventBusFactory;
 import org.aion.wallet.events.HeaderPaneButtonEvent;
+import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.util.AddressUtils;
 import org.aion.wallet.util.AionConstants;
 import org.aion.wallet.util.BalanceUtils;
@@ -35,11 +35,12 @@ import java.util.stream.Collectors;
 
 public class HistoryController extends AbstractController {
 
-    private static final Logger log = AionLoggerFactory.getLogger(LogEnum.WLT.name());
+    private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
 
     private static final String COPY_MENU = "Copy";
 
     private static final String LINK_STYLE = "link-style";
+
     private static final SimpleDateFormat SIMPLE_DATE_FORMAT = new SimpleDateFormat("yyyy/MM/dd - HH.mm.ss");
 
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
@@ -50,21 +51,20 @@ public class HistoryController extends AbstractController {
     private TextField searchField;
 
     @FXML
-    private ComboBox searchItem;
+    private ComboBox<String> searchItem;
 
     private AccountDTO account;
 
     private List<TxRow> completeTransactionList = Lists.newArrayList();
 
-
     protected void internalInit(final URL location, final ResourceBundle resources) {
-        initSearchItemDropdown();
+        initSearchItemDropDown();
         buildTableModel();
         setEventHandlers();
         reloadWalletView();
     }
 
-    private void initSearchItemDropdown() {
+    private void initSearchItemDropDown() {
         searchItem.setItems(FXCollections.observableArrayList(
                 "Type",
                 "Date",
@@ -84,15 +84,17 @@ public class HistoryController extends AbstractController {
 
     @Subscribe
     private void handleAccountChanged(final AccountEvent event) {
-        if (AccountEvent.Type.CHANGED.equals(event.getType())) {
-            this.account = event.getAccount();
+        if (EnumSet.of(AccountEvent.Type.CHANGED, AccountEvent.Type.ADDED).contains(event.getType())) {
+            this.account = event.getPayload();
             if (isInView()) {
                 reloadWalletView();
+            } else {
+                txTable.setItems(FXCollections.emptyObservableList());
             }
         } else if (AccountEvent.Type.LOCKED.equals(event.getType())) {
-            if (event.getAccount().equals(account)) {
+            if (event.getPayload().equals(account)) {
                 account = null;
-                txTable.setItems(FXCollections.observableList(Collections.emptyList()));
+                txTable.setItems(FXCollections.emptyObservableList());
             }
         }
     }

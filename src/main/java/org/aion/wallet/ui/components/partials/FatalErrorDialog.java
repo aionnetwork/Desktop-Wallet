@@ -11,10 +11,10 @@ import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import org.aion.api.log.AionLoggerFactory;
 import org.aion.api.log.LogEnum;
 import org.aion.wallet.events.EventBusFactory;
 import org.aion.wallet.events.WindowControlsEvent;
+import org.aion.wallet.log.WalletLoggerFactory;
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -23,7 +23,7 @@ import java.util.ResourceBundle;
 
 public class FatalErrorDialog implements Initializable {
 
-    private static final Logger log = AionLoggerFactory.getLogger(LogEnum.WLT.name());
+    private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
 
     @Override
     public void initialize(final URL location, final ResourceBundle resources) {

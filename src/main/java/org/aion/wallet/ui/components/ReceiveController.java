@@ -45,13 +45,13 @@ public class ReceiveController implements Initializable{
     @Subscribe
     private void handleAccountChanged(final AccountEvent event) {
         if (EnumSet.of(AccountEvent.Type.CHANGED, AccountEvent.Type.ADDED).contains(event.getType())) {
-            account = event.getAccount();
+            account = event.getPayload();
             accountAddress.setText(account.getPublicAddress());
 
             Image image = SwingFXUtils.toFXImage(account.getQrCode(), null);
             qrCode.setImage(image);
         } else if (AccountEvent.Type.LOCKED.equals(event.getType())) {
-            if (event.getAccount().equals(account)) {
+            if (event.getPayload().equals(account)) {
                 account = null;
                 accountAddress.setText("");
             }

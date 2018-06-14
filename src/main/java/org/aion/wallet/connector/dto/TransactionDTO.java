@@ -3,6 +3,7 @@ package org.aion.wallet.connector.dto;
 import org.aion.base.util.TypeConverter;
 
 import java.math.BigInteger;
+import java.util.Objects;
 
 public class TransactionDTO {
     private final String from;
@@ -61,5 +62,23 @@ public class TransactionDTO {
 
     public BigInteger getNonce() {
         return nonce;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        final TransactionDTO that = (TransactionDTO) o;
+        return Objects.equals(from, that.from) &&
+                Objects.equals(to, that.to) &&
+                Objects.equals(hash, that.hash) &&
+                Objects.equals(value, that.value) &&
+                Objects.equals(blockNumber, that.blockNumber) &&
+                Objects.equals(nonce, that.nonce);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(from, to, hash, value, blockNumber, nonce);
     }
 }

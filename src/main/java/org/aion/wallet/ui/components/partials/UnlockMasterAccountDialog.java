@@ -1,7 +1,9 @@
 package org.aion.wallet.ui.components.partials;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
@@ -18,8 +20,10 @@ import org.aion.wallet.log.WalletLoggerFactory;
 import org.slf4j.Logger;
 
 import java.io.IOException;
+import java.net.URL;
+import java.util.ResourceBundle;
 
-public class UnlockMasterAccountDialog {
+public class UnlockMasterAccountDialog implements Initializable {
 
     private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
     private final Popup popup = new Popup();
@@ -29,24 +33,9 @@ public class UnlockMasterAccountDialog {
     @FXML
     private Label validationError;
 
-    public void unlockMasterAccount(final InputEvent mouseEvent) {
-        try {
-            blockchainConnector.unlockMasterAccount(passwordField.getText());
-            ConsoleManager.addLog("Master account unlocked", ConsoleManager.LogType.ACCOUNT);
-            close(mouseEvent);
-        } catch (Exception e) {
-            ConsoleManager.addLog("Could not unlock master account", ConsoleManager.LogType.ACCOUNT, ConsoleManager.LogLevel.WARNING);
-            showInvalidFieldsError(e.getMessage());
-        }
-    }
-
-    public void resetValidation() {
-        validationError.setVisible(false);
-    }
-
-    private void showInvalidFieldsError(String message) {
-        validationError.setVisible(true);
-        validationError.setText(message);
+    @Override
+    public void initialize(final URL location, final ResourceBundle resources) {
+        Platform.runLater(() -> passwordField.requestFocus());
     }
 
     public void open(MouseEvent mouseEvent) {
@@ -79,5 +68,26 @@ public class UnlockMasterAccountDialog {
         if (event.getCode().equals(KeyCode.ENTER)) {
             unlockMasterAccount(event);
         }
+    }
+
+    @FXML
+    private void unlockMasterAccount(final InputEvent mouseEvent) {
+        try {
+            blockchainConnector.unlockMasterAccount(passwordField.getText());
+            ConsoleManager.addLog("Master account unlocked", ConsoleManager.LogType.ACCOUNT);
+            close(mouseEvent);
+        } catch (Exception e) {
+            ConsoleManager.addLog("Could not unlock master account", ConsoleManager.LogType.ACCOUNT, ConsoleManager.LogLevel.WARNING);
+            showInvalidFieldsError(e.getMessage());
+        }
+    }
+
+    public void resetValidation() {
+        validationError.setVisible(false);
+    }
+
+    private void showInvalidFieldsError(String message) {
+        validationError.setVisible(true);
+        validationError.setText(message);
     }
 }

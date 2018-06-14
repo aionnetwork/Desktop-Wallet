@@ -40,8 +40,8 @@ public class MainWindow extends Application {
     private static final String TITLE = "Aion Wallet";
     private static final String MAIN_WINDOW_FXML = "MainWindow.fxml";
     private static final String AION_LOGO = "components/icons/aion-icon.png";
-
-    private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
+    private static final String LOCAL_DIR = System.getProperty("user.dir");
+    private static final String AION_EXECUTABLE = "aion_ui.sh";
 
     private final Map<HeaderPaneButtonEvent.Type, Node> panes = new HashMap<>();
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
@@ -116,7 +116,7 @@ public class MainWindow extends Application {
             idleMonitor.stopMonitoring();
             idleMonitor = null;
         }
-        idleMonitor = new IdleMonitor(lockDelayDuration, blockchainConnector::lockAll);
+        idleMonitor = new IdleMonitor(lockDelayDuration, BlockchainConnector.getInstance()::lockAll);
         idleMonitor.register(scene, Event.ANY);
     }
 
@@ -158,8 +158,6 @@ public class MainWindow extends Application {
         if (stage.getScene() == null) {
             return;
         }
-        log.debug(event.getType().toString());
-        // todo: refactor by adding a view controller
         for (Map.Entry<HeaderPaneButtonEvent.Type, Node> entry : panes.entrySet()) {
             if (event.getType().equals(entry.getKey())) {
                 entry.getValue().setVisible(true);
@@ -189,8 +187,7 @@ public class MainWindow extends Application {
     }
 
     private void restartApplication() {
-        final String localDir = System.getProperty("user.dir");
-        final String executable = localDir + File.separator + "aion_ui.sh";
+        final String executable = LOCAL_DIR + File.separator + AION_EXECUTABLE;
 
         final ArrayList<String> command = new ArrayList<>();
         command.add(executable);
