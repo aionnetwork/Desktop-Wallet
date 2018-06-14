@@ -1,9 +1,11 @@
 package org.aion.wallet.ui.components;
 
+import com.google.common.collect.Lists;
 import com.google.common.eventbus.Subscribe;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -44,13 +46,33 @@ public class HistoryController extends AbstractController {
     @FXML
     private TableView<TxRow> txTable;
 
+    @FXML
+    private TextField searchField;
+
+    @FXML
+    private ComboBox searchItem;
+
     private AccountDTO account;
+
+    private List<TxRow> completeTransactionList = Lists.newArrayList();
 
 
     protected void internalInit(final URL location, final ResourceBundle resources) {
+        initSearchItemDropdown();
         buildTableModel();
         setEventHandlers();
         reloadWalletView();
+    }
+
+    private void initSearchItemDropdown() {
+        searchItem.setItems(FXCollections.observableArrayList(
+                "Type",
+                "Date",
+                "Transaction hash",
+                "Value",
+                "Status"
+        ));
+        searchItem.getSelectionModel().select(0);
     }
 
     @Subscribe
@@ -93,8 +115,12 @@ public class HistoryController extends AbstractController {
 
         runApiTask(
                 getTransactionsTask,
-                event -> txTable.setItems(FXCollections.observableList(getTransactionsTask.getValue())),
-                getErrorEvent(t -> {}, getTransactionsTask),
+                event -> {
+                    final List<TxRow> transactions = getTransactionsTask.getValue();
+                    completeTransactionList = new ArrayList<>(transactions);
+                    txTable.setItems(FXCollections.observableList(transactions));
+                },
+                getEmptyEvent(),
                 getEmptyEvent()
         );
     }
@@ -127,6 +153,38 @@ public class HistoryController extends AbstractController {
         copyItem.setOnAction(new ContextMenuTableCopyEventHandler(txTable));
         menu.getItems().add(copyItem);
         txTable.setContextMenu(menu);
+
+        searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+            final FilteredList<TxRow> filteredData = new FilteredList<>(FXCollections.observableList(completeTransactionList), s -> true);
+            if (!newValue.isEmpty()) {
+                filteredData.setPredicate(s -> anyFieldHasString(s, newValue));
+                txTable.setItems(filteredData);
+            }
+        });
+
+        searchItem.valueProperty().addListener((observable, oldValue, newValue) -> {
+            final FilteredList<TxRow> filteredData = new FilteredList<>(FXCollections.observableList(completeTransactionList), s -> true);
+            if(!String.valueOf(newValue).equals(String.valueOf(oldValue))) {
+                filteredData.setPredicate(s -> anyFieldHasString(s, searchField.getText()));
+                txTable.setItems(filteredData);
+            }
+        });
+    }
+
+    private boolean anyFieldHasString(final TxRow currentRow, final String searchString) {
+        switch (searchItem.getSelectionModel().getSelectedIndex()) {
+            case 0:
+                return currentRow.getType().toLowerCase().contains(searchString.toLowerCase());
+            case 1:
+                return currentRow.getDate().toLowerCase().contains(searchString.toLowerCase());
+            case 2:
+                return currentRow.getTxHash().toLowerCase().contains(searchString.toLowerCase());
+            case 3:
+                return currentRow.getValue().toLowerCase().contains(searchString.toLowerCase());
+            case 4:
+                return currentRow.getStatus().toLowerCase().contains(searchString.toLowerCase());
+        }
+        return true;
     }
 
     private static class KeyTableCopyEventHandler extends TableCopyEventHandler<KeyEvent> {
