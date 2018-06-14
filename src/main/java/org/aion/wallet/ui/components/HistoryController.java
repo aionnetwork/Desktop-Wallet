@@ -1,5 +1,6 @@
 package org.aion.wallet.ui.components;
 
+import com.google.common.collect.Lists;
 import com.google.common.eventbus.Subscribe;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -53,23 +54,23 @@ public class HistoryController extends AbstractController {
 
     private AccountDTO account;
 
-    private List<TxRow> completeTransactionList = null;
+    private List<TxRow> completeTransactionList = Lists.newArrayList();
 
 
     protected void internalInit(final URL location, final ResourceBundle resources) {
+        initSearchItemDropdown();
         buildTableModel();
         setEventHandlers();
         reloadWalletView();
-        initSearchItemDropdown();
     }
 
     private void initSearchItemDropdown() {
         searchItem.setItems(FXCollections.observableArrayList(
                 "Type",
-                       "Date",
-                       "Transaction hash",
-                       "Value",
-                       "Status"
+                "Date",
+                "Transaction hash",
+                "Value",
+                "Status"
         ));
         searchItem.getSelectionModel().select(0);
     }
@@ -119,7 +120,8 @@ public class HistoryController extends AbstractController {
                     completeTransactionList = new ArrayList<>(transactions);
                     txTable.setItems(FXCollections.observableList(transactions));
                 },
-                getEmptyEvent(), null
+                getEmptyEvent(),
+                getEmptyEvent()
         );
     }
 
@@ -152,25 +154,35 @@ public class HistoryController extends AbstractController {
         menu.getItems().add(copyItem);
         txTable.setContextMenu(menu);
 
-
         searchField.textProperty().addListener((observable, oldValue, newValue) -> {
-            FilteredList<TxRow> filteredData = new FilteredList(FXCollections.observableList(completeTransactionList), s -> true);
+            final FilteredList<TxRow> filteredData = new FilteredList(FXCollections.observableList(completeTransactionList), s -> true);
             if (!newValue.isEmpty()) {
                 filteredData.setPredicate(s -> anyFieldHasString(s, newValue));
                 txTable.setItems(filteredData);
-            } else {
-                filteredData.setPredicate(s -> true);
+            }
+        });
+
+        searchItem.valueProperty().addListener((observable, oldValue, newValue) -> {
+            final FilteredList<TxRow> filteredData = new FilteredList(FXCollections.observableList(completeTransactionList), s -> true);
+            if(!String.valueOf(newValue).equals(String.valueOf(oldValue))) {
+                filteredData.setPredicate(s -> anyFieldHasString(s, searchField.getText()));
+                txTable.setItems(filteredData);
             }
         });
     }
 
-    private boolean anyFieldHasString(TxRow s, String newValue) {
+    private boolean anyFieldHasString(final TxRow currentRow, final String searchString) {
         switch (searchItem.getSelectionModel().getSelectedIndex()) {
-            case 0 : return s.getType().toLowerCase().contains(newValue.toLowerCase());
-            case 1 : return s.getDate().toLowerCase().contains(newValue.toLowerCase());
-            case 2 : return s.getTxHash().toLowerCase().contains(newValue.toLowerCase());
-            case 3 : return s.getValue().toLowerCase().contains(newValue.toLowerCase());
-            case 4 : return s.getStatus().toLowerCase().contains(newValue.toLowerCase());
+            case 0:
+                return currentRow.getType().toLowerCase().contains(searchString.toLowerCase());
+            case 1:
+                return currentRow.getDate().toLowerCase().contains(searchString.toLowerCase());
+            case 2:
+                return currentRow.getTxHash().toLowerCase().contains(searchString.toLowerCase());
+            case 3:
+                return currentRow.getValue().toLowerCase().contains(searchString.toLowerCase());
+            case 4:
+                return currentRow.getStatus().toLowerCase().contains(searchString.toLowerCase());
         }
         return true;
     }
