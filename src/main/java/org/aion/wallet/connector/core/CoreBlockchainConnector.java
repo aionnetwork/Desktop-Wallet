@@ -36,7 +36,7 @@ public class CoreBlockchainConnector extends BlockchainConnector {
     }
 
     @Override
-    public BigInteger getBalance(String address) {
+    public BigInteger getBalance(final String address) {
         try {
             return API.getBalance(address);
         } catch (Exception e) {
@@ -46,13 +46,13 @@ public class CoreBlockchainConnector extends BlockchainConnector {
     }
 
     @Override
-    protected TransactionResponseDTO sendTransactionInternal(SendTransactionDTO dto) {
+    protected TransactionResponseDTO sendTransactionInternal(final SendTransactionDTO dto) {
         throw new UnsupportedOperationException();
         //TODO
     }
 
     @Override
-    public TransactionDTO getTransaction(String txHash) throws NotFoundException {
+    public TransactionDTO getTransaction(final String txHash) throws NotFoundException {
         TransactionDTO transaction = mapTransaction(API.getTransactionByHash(TypeConverter.StringHexToByteArray(txHash)));
         if (transaction == null) {
             throw new NotFoundException();
@@ -123,14 +123,14 @@ public class CoreBlockchainConnector extends BlockchainConnector {
         }
     }
 
-    private SyncInfoDTO mapSyncInfo(SyncInfo sync) {
+    private SyncInfoDTO mapSyncInfo(final SyncInfo sync) {
         SyncInfoDTO syncInfoDTO = new SyncInfoDTO();
         syncInfoDTO.setChainBestBlkNumber(sync.chainBestBlkNumber);
         syncInfoDTO.setNetworkBestBlkNumber(sync.networkBestBlkNumber);
         return syncInfoDTO;
     }
 
-    private TransactionDTO mapTransaction(AionTransaction transaction) {
+    private TransactionDTO mapTransaction(final AionTransaction transaction) {
         if (transaction == null) {
             return null;
         }
