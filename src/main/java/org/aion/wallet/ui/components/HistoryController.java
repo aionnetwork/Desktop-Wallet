@@ -155,7 +155,7 @@ public class HistoryController extends AbstractController {
         txTable.setContextMenu(menu);
 
         searchField.textProperty().addListener((observable, oldValue, newValue) -> {
-            final FilteredList<TxRow> filteredData = new FilteredList(FXCollections.observableList(completeTransactionList), s -> true);
+            final FilteredList<TxRow> filteredData = new FilteredList<>(FXCollections.observableList(completeTransactionList), s -> true);
             if (!newValue.isEmpty()) {
                 filteredData.setPredicate(s -> anyFieldHasString(s, newValue));
                 txTable.setItems(filteredData);
@@ -163,7 +163,7 @@ public class HistoryController extends AbstractController {
         });
 
         searchItem.valueProperty().addListener((observable, oldValue, newValue) -> {
-            final FilteredList<TxRow> filteredData = new FilteredList(FXCollections.observableList(completeTransactionList), s -> true);
+            final FilteredList<TxRow> filteredData = new FilteredList<>(FXCollections.observableList(completeTransactionList), s -> true);
             if(!String.valueOf(newValue).equals(String.valueOf(oldValue))) {
                 filteredData.setPredicate(s -> anyFieldHasString(s, searchField.getText()));
                 txTable.setItems(filteredData);
