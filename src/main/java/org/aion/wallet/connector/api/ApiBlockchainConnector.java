@@ -140,7 +140,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
         final TransactionResponseDTO transactionResponseDTO = mapTransactionResponse(response);
         if(!ACCEPTED_TRANSACTION_RESPONSE_STATUSES.contains(transactionResponseDTO.getStatus())) {
-            getAccountManager().addTimedoutTransaction(dto);
+            getAccountManager().addTimedOutTransaction(dto);
         }
         return transactionResponseDTO;
     }

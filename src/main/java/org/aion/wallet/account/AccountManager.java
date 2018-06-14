@@ -15,7 +15,6 @@ import org.aion.wallet.connector.dto.BlockDTO;
 import org.aion.wallet.connector.dto.SendTransactionDTO;
 import org.aion.wallet.connector.dto.TransactionDTO;
 import org.aion.wallet.crypto.ExtendedKey;
-import org.aion.wallet.connector.dto.TransactionResponseDTO;
 import org.aion.wallet.crypto.SeededECKeyEd25519;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.events.EventPublisher;
@@ -30,11 +29,8 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.*;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 public class AccountManager {
 
@@ -42,25 +38,14 @@ public class AccountManager {
 
     private static final String DEFAULT_MNEMONIC_SALT = "";
 
-    private final Comparator<? super TransactionDTO> transactionComparator = new TransactionComparator();
 
     private final WalletStorage walletStorage = WalletStorage.getInstance();
 
     private final Map<String, AccountDTO> addressToAccount = new HashMap<>();
 
-    private final Map<String, SortedSet<TransactionDTO>> addressToTransactions = Collections.synchronizedMap(new HashMap<>());
-
-    private final Map<String, BlockDTO> addressToLastCheckedBlock = Collections.synchronizedMap(new HashMap<>());
-    
-    private final List<SendTransactionDTO> addressToTimedoutTransactions = new ArrayList<>();
-    
-
-
     private final Map<String, byte[]> addressToKeystoreContent = Collections.synchronizedMap(new HashMap<>());
 
     private final KeystoreFormat keystoreFormat = new KeystoreFormat();
-
-    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
     private final Function<String, BigInteger> balanceProvider;
 
@@ -73,8 +58,6 @@ public class AccountManager {
         this.currencySupplier = currencySupplier;
         for (String address : Keystore.list()) {
             addressToAccount.put(address, getNewAccount(address));
-            addressToTransactions.put(address, new TreeSet<>(transactionComparator));
-            addressToLastCheckedBlock.put(address, null);
         }
     }
 
@@ -200,27 +183,23 @@ public class AccountManager {
     }
 
     public Set<TransactionDTO> getTransactions(final String address) {
-        return Collections.unmodifiableSet(new TreeSet<>(internalGetTransactions(address)));
+        return addressToAccount.get(address).getTransactionsSnapshot();
     }
 
-    public void removeTransactions(final String address, final Collection<TransactionDTO> transactions){
-        internalGetTransactions(address).removeAll(transactions);
+    public void removeTransactions(final String address, final Collection<TransactionDTO> transactions) {
+        addressToAccount.get(address).removeTransactions(transactions);
     }
 
-    public void addTransactions(final String address, final Collection<TransactionDTO> transactions){
-        internalGetTransactions(address).addAll(transactions);
-    }
-
-    private SortedSet<TransactionDTO> internalGetTransactions(final String address) {
-        return addressToTransactions.getOrDefault(address, Collections.emptySortedSet());
+    public void addTransactions(final String address, final Collection<TransactionDTO> transactions) {
+        addressToAccount.get(address).addTransactions(transactions);
     }
 
     public BlockDTO getLastCheckedBlock(final String address) {
-        return addressToLastCheckedBlock.get(address);
+        return addressToAccount.get(address).getLastCheckedBlock();
     }
 
     public void updateLastCheckedBlock(final String address, final BlockDTO lastCheckedBlock) {
-        addressToLastCheckedBlock.put(address, lastCheckedBlock);
+        addressToAccount.get(address).setLastCheckedBlock(lastCheckedBlock);
     }
 
     public List<AccountDTO> getAccounts() {
@@ -248,9 +227,7 @@ public class AccountManager {
     }
 
     public void updateAccount(final AccountDTO account) {
-        if (!account.getName().equalsIgnoreCase(getStoredAccountName(account.getPublicAddress()))) {
-            storeAccountName(account.getPublicAddress(), account.getName());
-        }
+        storeAccountName(account.getPublicAddress(), account.getName());
     }
 
     public void unlockAccount(final AccountDTO account, final String password) throws ValidationException {
@@ -272,22 +249,18 @@ public class AccountManager {
 
     }
 
-    public List<SendTransactionDTO> getTimedoutTransactions(final String accountAddress) {
-        return addressToTimedoutTransactions.stream().filter(p -> p.getFrom().equals(accountAddress)).collect(Collectors.toList());
+    public List<SendTransactionDTO> getTimedOutTransactions(final String accountAddress) {
+        return addressToAccount.get(accountAddress).getTimedOutTransactions();
     }
 
-    public void addTimedoutTransaction(final SendTransactionDTO transaction) {
-        if(transaction != null) {
-            addressToTimedoutTransactions.add(transaction);
-        }
+    public void addTimedOutTransaction(final SendTransactionDTO transaction) {
+        addressToAccount.get(transaction.getFrom()).addTimedOutTransaction(transaction);
     }
 
     public void removeTimedOutTransaction(final SendTransactionDTO transaction) {
-        if(transaction != null) {
-            addressToTimedoutTransactions.remove(transaction);
-        }
+        addressToAccount.get(transaction.getFrom()).removeTimedOutTransaction(transaction);
     }
-    
+
     public void lockAll() {
         root = null;
         Set<String> seedAccounts = new HashSet<>();
@@ -318,10 +291,7 @@ public class AccountManager {
             log.error("Can't create account without private key");
             return null;
         }
-        final String name = getStoredAccountName(address);
-        final String balance = BalanceUtils.formatBalance(balanceProvider.apply(address));
-
-        AccountDTO account = new AccountDTO(name, address, balance, currencySupplier.get(), isImported, derivation);
+        AccountDTO account = getNewAccount(address, isImported, derivation);
         account.setPrivateKey(privateKeyBytes);
         account.setActive(true);
         addressToAccount.put(account.getPublicAddress(), account);
@@ -333,8 +303,6 @@ public class AccountManager {
             throw new IllegalArgumentException(String.format("account %s ; keystoreContent: %s", account, Arrays.toString(keystoreContent)));
         }
         final String address = account.getPublicAddress();
-        addressToLastCheckedBlock.put(address, null);
-        addressToTransactions.put(address, new TreeSet<>(transactionComparator));
         addressToKeystoreContent.put(address, keystoreContent);
         EventPublisher.fireAccountAdded(account);
     }
@@ -343,22 +311,27 @@ public class AccountManager {
         return walletStorage.getAccountName(publicAddress);
     }
 
+    private AccountDTO getNewAccount(final String publicAddress, boolean isImported, int derivation) {
+        return new AccountDTO(getStoredAccountName(publicAddress),
+                publicAddress,
+                getFormattedBalance(publicAddress),
+                currencySupplier.get(),
+                isImported,
+                derivation);
+    }
+
     private AccountDTO getNewAccount(final String publicAddress) {
-        final String name = getStoredAccountName(publicAddress);
-        final String balance = BalanceUtils.formatBalance(balanceProvider.apply(publicAddress));
-        return new AccountDTO(name, publicAddress, balance, currencySupplier.get(), true, -1);
+        return getNewAccount(publicAddress, true, -1);
+    }
+
+    private String getFormattedBalance(String address) {
+        return BalanceUtils.formatBalance(balanceProvider.apply(address));
     }
 
     private void storeAccountName(final String address, final String name) {
-        walletStorage.setAccountName(address, name);
-    }
-
-    private class TransactionComparator implements Comparator<TransactionDTO> {
-        @Override
-        public int compare(final TransactionDTO tx1, final TransactionDTO tx2) {
-            return tx1 == null ?
-                    (tx2 == null ? 0 : -1) :
-                    (tx2 == null ? 1 : tx2.getBlockNumber().compareTo(tx1.getBlockNumber()));
+        if (name.equalsIgnoreCase(getStoredAccountName(address))) {
+            return;
         }
+        walletStorage.setAccountName(address, name);
     }
 }

@@ -177,7 +177,7 @@ public class SendController extends AbstractController {
 
     private void setTimedoutTransactionsLabelText() {
         if(account != null) {
-            final List<SendTransactionDTO> timedoutTransactions = blockchainConnector.getAccountManager().getTimedoutTransactions(account.getPublicAddress());
+            final List<SendTransactionDTO> timedoutTransactions = blockchainConnector.getAccountManager().getTimedOutTransactions(account.getPublicAddress());
             if(!timedoutTransactions.isEmpty()) {
                 timedoutTransactionsLabel.setVisible(true);
                 timedoutTransactionsLabel.getStyleClass().add("warning-link-style");

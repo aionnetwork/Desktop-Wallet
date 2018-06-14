@@ -1,21 +1,29 @@
 package org.aion.wallet.dto;
 
 import org.aion.base.util.TypeConverter;
+import org.aion.wallet.connector.dto.BlockDTO;
+import org.aion.wallet.connector.dto.SendTransactionDTO;
+import org.aion.wallet.connector.dto.TransactionDTO;
 import org.aion.wallet.util.QRCodeUtils;
 
 import java.awt.image.BufferedImage;
-import java.util.Objects;
+import java.util.*;
 
 public class AccountDTO {
+    private final Comparator<? super TransactionDTO> TRANSACTION_COMPARATOR = new TransactionComparator();
+
     private final String currency;
     private final String publicAddress;
+    private final boolean isImported;
+    private final int derivationIndex;
+    private final BufferedImage qrCode;
+    private final SortedSet<TransactionDTO> transactions = new TreeSet<>(TRANSACTION_COMPARATOR);
+    private final List<SendTransactionDTO> timedOutTransactions = new ArrayList<>();
     private byte[] privateKey;
     private String balance;  //TODO this has to be BigInteger
     private String name;
     private boolean active;
-    private final boolean isImported;
-    private final int derivationIndex;
-    private final BufferedImage qrCode;
+    private BlockDTO lastCheckedBlock = null;
 
     public AccountDTO(final String name, final String publicAddress, final String balance, final String currency, boolean isImported, int derivationIndex) {
         this.name = name;
@@ -79,6 +87,44 @@ public class AccountDTO {
         return qrCode;
     }
 
+    public SortedSet<TransactionDTO> getTransactionsSnapshot() {
+        return Collections.unmodifiableSortedSet(new TreeSet<>(transactions));
+    }
+
+    public void addTransactions(final Collection<TransactionDTO> transactions) {
+        this.transactions.addAll(transactions);
+    }
+
+    public void removeTransactions(final Collection<TransactionDTO> transactions) {
+        this.transactions.removeAll(transactions);
+    }
+
+    public BlockDTO getLastCheckedBlock() {
+        return lastCheckedBlock;
+    }
+
+    public void setLastCheckedBlock(BlockDTO lastCheckedBlock) {
+        this.lastCheckedBlock = lastCheckedBlock;
+    }
+
+    public List<SendTransactionDTO> getTimedOutTransactions() {
+        return timedOutTransactions;
+    }
+
+    public void addTimedOutTransaction(SendTransactionDTO transaction) {
+        if (transaction == null) {
+            return;
+        }
+        this.timedOutTransactions.add(transaction);
+    }
+
+    public void removeTimedOutTransaction(SendTransactionDTO transaction) {
+        if (transaction == null) {
+            return;
+        }
+        this.timedOutTransactions.remove(transaction);
+    }
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;
@@ -95,5 +141,14 @@ public class AccountDTO {
 
     public boolean isUnlocked() {
         return privateKey != null;
+    }
+
+    private class TransactionComparator implements Comparator<TransactionDTO> {
+        @Override
+        public int compare(final TransactionDTO tx1, final TransactionDTO tx2) {
+            return tx1 == null ?
+                    (tx2 == null ? 0 : -1) :
+                    (tx2 == null ? 1 : tx2.getBlockNumber().compareTo(tx1.getBlockNumber()));
+        }
     }
 }
