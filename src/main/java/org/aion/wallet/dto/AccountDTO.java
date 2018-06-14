@@ -23,7 +23,7 @@ public class AccountDTO {
     private String balance;  //TODO this has to be BigInteger
     private String name;
     private boolean active;
-    private BlockDTO lastCheckedBlock = null;
+    private BlockDTO lastSafeBlock = null;
 
     public AccountDTO(final String name, final String publicAddress, final String balance, final String currency, boolean isImported, int derivationIndex) {
         this.name = name;
@@ -99,12 +99,12 @@ public class AccountDTO {
         this.transactions.removeAll(transactions);
     }
 
-    public BlockDTO getLastCheckedBlock() {
-        return lastCheckedBlock;
+    public BlockDTO getLastSafeBlock() {
+        return lastSafeBlock;
     }
 
-    public void setLastCheckedBlock(BlockDTO lastCheckedBlock) {
-        this.lastCheckedBlock = lastCheckedBlock;
+    public void setLastSafeBlock(final BlockDTO lastSafeBlock) {
+        this.lastSafeBlock = lastSafeBlock;
     }
 
     public List<SendTransactionDTO> getTimedOutTransactions() {

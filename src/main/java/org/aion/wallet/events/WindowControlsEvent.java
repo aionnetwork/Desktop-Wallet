@@ -18,6 +18,6 @@ public class WindowControlsEvent extends AbstractEvent<WindowControlsEvent.Type>
     }
 
     public enum Type {
-        MINIMIZE, CLOSE
+        MINIMIZE, RESTART, CLOSE
     }
 }

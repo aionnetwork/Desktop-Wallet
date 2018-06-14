@@ -194,12 +194,12 @@ public class AccountManager {
         addressToAccount.get(address).addTransactions(transactions);
     }
 
-    public BlockDTO getLastCheckedBlock(final String address) {
-        return addressToAccount.get(address).getLastCheckedBlock();
+    public BlockDTO getLastSafeBlock(final String address) {
+        return addressToAccount.get(address).getLastSafeBlock();
     }
 
-    public void updateLastCheckedBlock(final String address, final BlockDTO lastCheckedBlock) {
-        addressToAccount.get(address).setLastCheckedBlock(lastCheckedBlock);
+    public void updateLastSafeBlock(final String address, final BlockDTO lastCheckedBlock) {
+        addressToAccount.get(address).setLastSafeBlock(lastCheckedBlock);
     }
 
     public List<AccountDTO> getAccounts() {
