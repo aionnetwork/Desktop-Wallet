@@ -1,23 +1,27 @@
 package org.aion.wallet.dto;
 
 import org.aion.base.util.TypeConverter;
+import org.aion.wallet.connector.dto.BlockDTO;
+import org.aion.wallet.connector.dto.TransactionDTO;
 import org.aion.wallet.util.QRCodeUtils;
 
 import java.awt.image.BufferedImage;
-import java.util.Objects;
+import java.util.*;
 
 public class AccountDTO {
     private final String currency;
     private final String publicAddress;
+    private final boolean isImported;
+    private final int derivationIndex;
+    private final BufferedImage qrCode;
+    private final SortedSet<TransactionDTO> transactions;
     private byte[] privateKey;
     private String balance;  //TODO this has to be BigInteger
     private String name;
     private boolean active;
-    private final boolean isImported;
-    private final int derivationIndex;
-    private final BufferedImage qrCode;
+    private BlockDTO lastCheckedBlock = null;
 
-    public AccountDTO(final String name, final String publicAddress, final String balance, final String currency, boolean isImported, int derivationIndex) {
+    public AccountDTO(final String name, final String publicAddress, final String balance, final String currency, boolean isImported, int derivationIndex, SortedSet<TransactionDTO> transactions) {
         this.name = name;
         this.publicAddress = TypeConverter.toJsonHex(publicAddress);
         this.balance = balance;
@@ -25,6 +29,7 @@ public class AccountDTO {
         this.qrCode = QRCodeUtils.writeQRCode(publicAddress);
         this.isImported = isImported;
         this.derivationIndex = derivationIndex;
+        this.transactions = transactions;
     }
 
     public String getName() {
@@ -77,6 +82,26 @@ public class AccountDTO {
 
     public BufferedImage getQrCode() {
         return qrCode;
+    }
+
+    public SortedSet<TransactionDTO> getTransactionsSnapshot() {
+        return new TreeSet<>(Collections.unmodifiableSortedSet(transactions));
+    }
+
+    public void addTransactions(final Collection<TransactionDTO> transactions) {
+        this.transactions.addAll(transactions);
+    }
+
+    public void removeTransactions(final Collection<TransactionDTO> transactions) {
+        this.transactions.removeAll(transactions);
+    }
+
+    public BlockDTO getLastCheckedBlock() {
+        return lastCheckedBlock;
+    }
+
+    public void setLastCheckedBlock(BlockDTO lastCheckedBlock) {
+        this.lastCheckedBlock = lastCheckedBlock;
     }
 
     @Override
