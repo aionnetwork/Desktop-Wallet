@@ -27,3 +27,10 @@
     -fx-font-family: 'Open Sans Regular';
     -fx-font-size: 14px;
 }
+
+.version-style {
+    -fx-text-fill: black;
+    -fx-font-family: 'Open Sans Regular';
+    -fx-font-size: 14px;
+    -fx-cursor: hand;
+}

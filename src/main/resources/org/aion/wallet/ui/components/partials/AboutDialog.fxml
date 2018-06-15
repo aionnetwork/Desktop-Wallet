@@ -6,6 +6,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.control.Label?>
 <?import java.net.URL?>
+<?import javafx.scene.layout.HBox?>
 <AnchorPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="org.aion.wallet.ui.components.partials.AboutDialog"
@@ -22,5 +23,10 @@
         <Label styleClass="main-text" text="AION Wallet"/>
         <Label styleClass="paragraph-text" text="Current version: 0.2.0-light" />
     </VBox>
-    <Label AnchorPane.rightAnchor="10" AnchorPane.topAnchor="240" text="Powered by Centrys" />
+    <HBox AnchorPane.bottomAnchor="0" AnchorPane.rightAnchor="0" spacing="5">
+        <Label AnchorPane.rightAnchor="10" AnchorPane.topAnchor="240" styleClass="paragraph-text" text="Powered by" />
+        <ImageView id="logo" pickOnBounds="true" preserveRatio="true" fitHeight="25">
+            <Image url="@../icons/centrys-logo.png"/>
+        </ImageView>
+    </HBox>
 </AnchorPane>
