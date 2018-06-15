@@ -12,6 +12,7 @@ import org.aion.base.util.ByteArrayWrapper;
 import org.aion.base.util.TypeConverter;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.connector.dto.*;
+import org.aion.wallet.console.ConsoleManager;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.dto.LightAppSettings;
 import org.aion.wallet.events.AccountEvent;
@@ -19,6 +20,7 @@ import org.aion.wallet.events.EventBusFactory;
 import org.aion.wallet.events.EventPublisher;
 import org.aion.wallet.events.SettingsEvent;
 import org.aion.wallet.exception.NotFoundException;
+import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.storage.ApiType;
 import org.aion.wallet.util.AionConstants;
@@ -119,6 +121,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         final MsgRsp response;
         lock();
         try {
+            ConsoleManager.addLog("Sending transaction", ConsoleManager.LogType.TRANSACTION, ConsoleManager.LogLevel.INFO);
             response = API.getTx().sendSignedTransaction(
                     txArgs,
                     new ByteArrayWrapper((getAccountManager().getAccount(dto.getFrom())).getPrivateKey()),
@@ -132,6 +135,9 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         final int responseStatus = transactionResponseDTO.getStatus();
         if (!ACCEPTED_TRANSACTION_RESPONSE_STATUSES.contains(responseStatus)) {
             getAccountManager().addTimedOutTransaction(dto);
+            ConsoleManager.addLog("Transaction timeout", ConsoleManager.LogType.TRANSACTION, ConsoleManager.LogLevel.WARNING);
+        } else {
+            ConsoleManager.addLog("Transaction sent", ConsoleManager.LogType.TRANSACTION, ConsoleManager.LogLevel.WARNING);
         }
         return transactionResponseDTO;
     }

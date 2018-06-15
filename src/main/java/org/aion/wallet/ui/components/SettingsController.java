@@ -4,11 +4,16 @@ import com.google.common.eventbus.Subscribe;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.StackPane;
+import javafx.stage.Stage;
 import org.aion.api.log.LogEnum;
 import org.aion.wallet.connector.BlockchainConnector;
+import org.aion.wallet.console.ConsoleManager;
 import org.aion.wallet.dto.LightAppSettings;
 import org.aion.wallet.events.EventBusFactory;
 import org.aion.wallet.events.EventPublisher;
@@ -26,7 +31,6 @@ public class SettingsController extends AbstractController {
     private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
 
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
-
     @FXML
     public TextField protocol;
     @FXML
@@ -34,12 +38,11 @@ public class SettingsController extends AbstractController {
     @FXML
     public TextField port;
     @FXML
+    public Label notification;
+    @FXML
     private TextField timeout;
     @FXML
     private ComboBox timeoutMeasurementUnit;
-    @FXML
-    public Label notification;
-
     private LightAppSettings settings;
 
     @Override
@@ -68,21 +71,26 @@ public class SettingsController extends AbstractController {
             displayNotification("", false);
             EventPublisher.fireApplicationSettingsChanged(newSettings);
         } catch (ValidationException e) {
+            ConsoleManager.addLog("Could not update settings", ConsoleManager.LogType.SETTINGS, ConsoleManager.LogLevel.WARNING);
             log.error(e.getMessage(), e);
             displayNotification(e.getMessage(), true);
         }
     }
 
+    public void openConsole() {
+        ConsoleManager.show();
+    }
+
     private String getSelectedTimeoutMeasurementUnit() {
         String measurementUnit = null;
         switch (timeoutMeasurementUnit.getSelectionModel().getSelectedIndex()) {
-            case 0 :
+            case 0:
                 measurementUnit = "seconds";
                 break;
-            case 1 :
+            case 1:
                 measurementUnit = "minutes";
                 break;
-            case 2 :
+            case 2:
                 measurementUnit = "hours";
                 break;
         }
@@ -100,6 +108,7 @@ public class SettingsController extends AbstractController {
     private void handleSettingsChanged(final SettingsEvent event) {
         if (SettingsEvent.Type.APPLIED.equals(event.getType())) {
             displayNotification("Changes applied", false);
+            ConsoleManager.addLog("Settings updated", ConsoleManager.LogType.SETTINGS);
         }
     }
 
@@ -117,13 +126,13 @@ public class SettingsController extends AbstractController {
     private void setInitialMeasurementUnit(String unlockTimeoutMeasurementUnit) {
         int initialIndex = 0;
         switch (unlockTimeoutMeasurementUnit) {
-            case "seconds" :
+            case "seconds":
                 initialIndex = 0;
                 break;
-            case "minutes" :
+            case "minutes":
                 initialIndex = 1;
                 break;
-            case "hours" :
+            case "hours":
                 initialIndex = 2;
                 break;
         }

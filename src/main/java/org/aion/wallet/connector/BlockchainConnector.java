@@ -32,6 +32,10 @@ public abstract class BlockchainConnector {
 
     private final AccountManager accountManager;
 
+    protected BlockchainConnector() {
+        this.accountManager = new AccountManager(this::getBalance, this::getCurrency);
+    }
+
     public static BlockchainConnector getInstance() {
         if (INST != null) {
             return INST;
@@ -48,10 +52,6 @@ public abstract class BlockchainConnector {
         return INST;
     }
 
-    protected BlockchainConnector() {
-        this.accountManager = new AccountManager(this::getBalance, this::getCurrency);
-    }
-
     public final boolean hasMasterAccount() {
         return walletStorage.hasMasterAccount();
     }
@@ -60,7 +60,7 @@ public abstract class BlockchainConnector {
         return accountManager.isMasterAccountUnlocked();
     }
 
-    public final String createMasterAccount(final String password, final String name) throws ValidationException{
+    public final String createMasterAccount(final String password, final String name) throws ValidationException {
         return accountManager.createMasterAccount(password, name);
     }
 
@@ -68,11 +68,11 @@ public abstract class BlockchainConnector {
         accountManager.importMasterAccount(mnemonic, password);
     }
 
-    public final void unlockMasterAccount(final String password) throws ValidationException{
+    public final void unlockMasterAccount(final String password) throws ValidationException {
         accountManager.unlockMasterAccount(password);
     }
 
-    public final void createAccount() throws ValidationException{
+    public final void createAccount() throws ValidationException {
         accountManager.createAccount();
     }
 
@@ -128,7 +128,7 @@ public abstract class BlockchainConnector {
         walletStorage.save();
     }
 
-    public void reloadSettings(final LightAppSettings settings){
+    public void reloadSettings(final LightAppSettings settings) {
         walletStorage.saveLightAppSettings(settings);
     }
 
@@ -140,7 +140,7 @@ public abstract class BlockchainConnector {
         return accountManager;
     }
 
-    protected final void lock(){
+    protected final void lock() {
         lock.lock();
     }
 
@@ -148,11 +148,11 @@ public abstract class BlockchainConnector {
         lock.unlock();
     }
 
-    protected final LightAppSettings getLightweightWalletSettings(final ApiType type){
+    protected final LightAppSettings getLightweightWalletSettings(final ApiType type) {
         return walletStorage.getLightAppSettings(type);
     }
 
-    protected final void storeLightweightWalletSettings(final LightAppSettings lightAppSettings){
+    protected final void storeLightweightWalletSettings(final LightAppSettings lightAppSettings) {
         walletStorage.saveLightAppSettings(lightAppSettings);
     }
 }

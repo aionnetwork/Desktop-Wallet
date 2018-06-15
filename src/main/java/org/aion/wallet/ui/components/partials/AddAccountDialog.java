@@ -20,6 +20,7 @@ import javafx.scene.layout.Pane;
 import javafx.stage.Popup;
 import org.aion.api.log.LogEnum;
 import org.aion.wallet.connector.BlockchainConnector;
+import org.aion.wallet.console.ConsoleManager;
 import org.aion.wallet.events.EventPublisher;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
@@ -62,11 +63,14 @@ public class AddAccountDialog {
 
         try {
             String mnemonic = blockchainConnector.createMasterAccount(newPassword.getText(), newAccountName.getText());
+            ConsoleManager.addLog("Master account created -> name: " + newAccountName.getText(), ConsoleManager.LogType.ACCOUNT);
+
             if (mnemonic != null) {
                 mnemonicDialog.open(mouseEvent);
                 EventPublisher.fireMnemonicCreated(mnemonic);
             }
         } catch (ValidationException e) {
+            ConsoleManager.addLog("Master account could not be created", ConsoleManager.LogType.ACCOUNT, ConsoleManager.LogLevel.WARNING);
             showInvalidFieldsError(e.getMessage());
         }
     }
@@ -80,8 +84,10 @@ public class AddAccountDialog {
                         .ofWordList(English.INSTANCE)
                         .validate(mnemonic);
                 blockchainConnector.importMasterAccount(mnemonic, mnemonicPassword);
+                ConsoleManager.addLog("Master account imported", ConsoleManager.LogType.ACCOUNT);
                 this.close(mouseEvent);
             } catch (UnexpectedWhiteSpaceException | InvalidWordCountException | InvalidChecksumException | WordNotFoundException | ValidationException e) {
+                ConsoleManager.addLog("Could not import master account", ConsoleManager.LogType.ACCOUNT, ConsoleManager.LogLevel.WARNING);
                 showInvalidFieldsError(getMnemonicValidationErrorMessage(e));
                 log.error(e.getMessage(), e);
             }

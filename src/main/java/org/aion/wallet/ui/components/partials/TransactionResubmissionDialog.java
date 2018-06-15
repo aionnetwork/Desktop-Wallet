@@ -17,6 +17,7 @@ import javafx.stage.Popup;
 import org.aion.api.log.LogEnum;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.connector.dto.SendTransactionDTO;
+import org.aion.wallet.console.ConsoleManager;
 import org.aion.wallet.events.EventPublisher;
 import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.util.BalanceUtils;
@@ -97,6 +98,7 @@ public class TransactionResubmissionDialog implements Initializable {
             resubmitTransaction.setOnMouseClicked(event -> {
                 close(event);
                 blockchainConnector.getAccountManager().removeTimedOutTransaction(unsentTransaction);
+                ConsoleManager.addLog("Transaction timeout treated", ConsoleManager.LogType.TRANSACTION);
                 EventPublisher.fireTransactionResubmited(unsentTransaction);
             });
             row.getChildren().add(resubmitTransaction);

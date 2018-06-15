@@ -9,6 +9,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.input.MouseEvent;
 import org.aion.api.log.LogEnum;
 import org.aion.wallet.connector.BlockchainConnector;
+import org.aion.wallet.console.ConsoleManager;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.events.AccountEvent;
 import org.aion.wallet.events.EventBusFactory;
@@ -74,7 +75,8 @@ public class OverviewController extends AbstractController {
         runApiTask(
                 getAccountsTask,
                 evt -> reloadAccountObservableList(getAccountsTask.getValue()),
-                getErrorEvent(t -> {}, getAccountsTask),
+                getErrorEvent(t -> {
+                }, getAccountsTask),
                 getEmptyEvent()
         );
         displayFooterActions();
@@ -132,7 +134,9 @@ public class OverviewController extends AbstractController {
         if (this.blockchainConnector.hasMasterAccount()) {
             try {
                 blockchainConnector.createAccount();
+                ConsoleManager.addLog("New address created", ConsoleManager.LogType.ACCOUNT);
             } catch (ValidationException e) {
+                ConsoleManager.addLog("Address cannot be created", ConsoleManager.LogType.ACCOUNT, ConsoleManager.LogLevel.WARNING);
                 log.error(e.getMessage(), e);
                 // todo: display on yui
             }

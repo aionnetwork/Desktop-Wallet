@@ -30,7 +30,8 @@
         </HBox>
 
 
-        <HBox alignment="BASELINE_RIGHT">
+        <HBox alignment="BASELINE_RIGHT" spacing="6.0">
+            <Button text="Logs" onMouseClicked="#openConsole"/>
             <Button text="Apply" onMouseClicked="#changeSettings" styleClass="disabled"/>
         </HBox>
         <Label fx:id="notification" alignment="CENTER"/>
