@@ -32,13 +32,13 @@ import java.security.SecureRandom;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public class AccountManager {
 
     private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
 
     private static final String DEFAULT_MNEMONIC_SALT = "";
-
 
     private final WalletStorage walletStorage = WalletStorage.getInstance();
 
@@ -107,9 +107,15 @@ public class AccountManager {
         ECKey rootEcKey = new SeededECKeyEd25519(seed);
         root = new ExtendedKey(rootEcKey);
 
-        for (int i = 0; i < walletStorage.getMasterAccountDerivations(); i++) {
-            addInternalAccount(i);
+        final int accountDerivations = walletStorage.getMasterAccountDerivations();
+        Set<String> recoveredAddresses = new LinkedHashSet<>(accountDerivations);
+        for (int i = 0; i < accountDerivations; i++) {
+            final String address = unlockInternalAccount(i);
+            if (address != null) {
+                recoveredAddresses.add(address);
+            }
         }
+        EventPublisher.fireAccountsRecovered(recoveredAddresses);
     }
 
     public boolean isMasterAccountUnlocked() {
@@ -117,7 +123,7 @@ public class AccountManager {
     }
 
     public void createAccount() throws ValidationException {
-        addInternalAccount();
+        EventPublisher.fireAccountAdded(addInternalAccount());
     }
 
     public AccountDTO importKeystore(final byte[] file, final String password, final boolean shouldKeep) throws ValidationException {
@@ -142,14 +148,32 @@ public class AccountManager {
         }
     }
 
-    private AccountDTO addInternalAccount(int derivation) throws ValidationException {
+    private String unlockInternalAccount(final int derivationIndex) throws ValidationException {
         if (root == null) {
             return null;
         }
-        final ECKey firstDerivation = root.deriveHardened(new int[]{44, 60, 0, 0, derivation}).getEcKey();
-        AccountDTO account = createAccountWithPrivateKey(TypeConverter.toJsonHex(firstDerivation.computeAddress(firstDerivation.getPubKey())), firstDerivation.getPrivKeyBytes(), false, derivation);
-        EventPublisher.fireTransactionFinished();
-        return account;
+        final ECKey derivedKey = getEcKeyFromRoot(derivationIndex);
+        final String address = TypeConverter.toJsonHex(derivedKey.computeAddress(derivedKey.getPubKey()));
+        AccountDTO recoveredAccount = addressToAccount.get(address);
+        if (recoveredAccount != null) {
+            recoveredAccount.setPrivateKey(derivedKey.getPrivKeyBytes());
+        } else {
+            recoveredAccount = createAccountWithPrivateKey(address, derivedKey.getPrivKeyBytes(), false, derivationIndex);
+        }
+        return recoveredAccount == null ? null : address;
+    }
+
+    private AccountDTO addInternalAccount(final int derivationIndex) throws ValidationException {
+        if (root == null) {
+            return null;
+        }
+        final ECKey derivedKey = getEcKeyFromRoot(derivationIndex);
+        final String address = TypeConverter.toJsonHex(derivedKey.computeAddress(derivedKey.getPubKey()));
+        return createAccountWithPrivateKey(address, derivedKey.getPrivKeyBytes(), false, derivationIndex);
+    }
+
+    private ECKey getEcKeyFromRoot(final int derivationIndex) throws ValidationException {
+        return root.deriveHardened(new int[]{44, 60, 0, 0, derivationIndex}).getEcKey();
     }
 
     private AccountDTO addInternalAccount() throws ValidationException {
@@ -207,12 +231,11 @@ public class AccountManager {
     }
 
     public List<AccountDTO> getAccounts() {
-        for (Map.Entry<String, AccountDTO> entry : addressToAccount.entrySet()) {
-            AccountDTO account = entry.getValue();
+        final Collection<AccountDTO> filteredAccounts = addressToAccount.values().stream().filter(account -> account.isImported() || account.isUnlocked()).collect(Collectors.toList());
+        for (AccountDTO account : filteredAccounts) {
             account.setBalance(BalanceUtils.formatBalance(balanceProvider.apply(account.getPublicAddress())));
-            entry.setValue(account);
         }
-        List<AccountDTO> accounts = new ArrayList<>(addressToAccount.values());
+        List<AccountDTO> accounts = new ArrayList<>(filteredAccounts);
         accounts.sort((AccountDTO o1, AccountDTO o2) -> {
             if (!o1.isImported() && !o2.isImported()) {
                 return o1.getDerivationIndex() - o2.getDerivationIndex();
@@ -223,7 +246,7 @@ public class AccountManager {
     }
 
     public Set<String> getAddresses() {
-        return addressToAccount.keySet();
+        return new HashSet<>(addressToAccount.keySet());
     }
 
     public AccountDTO getAccount(final String address) {
@@ -273,18 +296,10 @@ public class AccountManager {
         isWalletLocked = true;
         ConsoleManager.addLog("Wallet has been locked due to inactivity", ConsoleManager.LogType.ACCOUNT);
         root = null;
-        Set<String> seedAccounts = new HashSet<>();
-        for (Map.Entry<String, AccountDTO> entry : addressToAccount.entrySet()) {
-            if (entry.getValue().isImported()) {
-                entry.getValue().setPrivateKey(null);
-                entry.getValue().setActive(false);
-                EventPublisher.fireAccountLocked(entry.getValue());
-            } else {
-                seedAccounts.add(entry.getKey());
-            }
-        }
-        for (String account : seedAccounts) {
-            EventPublisher.fireAccountLocked(addressToAccount.remove(account));
+        for (AccountDTO account : addressToAccount.values()) {
+            account.setPrivateKey(null);
+            account.setActive(false);
+            EventPublisher.fireAccountLocked(account);
         }
     }
 

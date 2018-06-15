@@ -1,6 +1,7 @@
 package org.aion.wallet.ui.components.partials;
 
 import com.google.common.eventbus.Subscribe;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -42,6 +43,7 @@ public class UnlockAccountDialog implements Initializable {
     @Override
     public void initialize(final URL location, final ResourceBundle resources) {
         registerEventBusConsumer();
+        Platform.runLater(() -> unlockPassword.requestFocus());
     }
 
     public void open(final MouseEvent mouseEvent) {
@@ -94,7 +96,7 @@ public class UnlockAccountDialog implements Initializable {
     @Subscribe
     private void handleUnlockStarted(final AccountEvent event) {
         if (AccountEvent.Type.UNLOCKED.equals(event.getType())) {
-            this.account = event.getAccount();
+            this.account = event.getPayload();
         }
     }
 

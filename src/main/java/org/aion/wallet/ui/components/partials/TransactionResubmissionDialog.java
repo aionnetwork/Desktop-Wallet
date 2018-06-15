@@ -18,6 +18,7 @@ import org.aion.api.log.LogEnum;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.connector.dto.SendTransactionDTO;
 import org.aion.wallet.console.ConsoleManager;
+import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.events.EventPublisher;
 import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.util.BalanceUtils;
@@ -25,6 +26,7 @@ import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class TransactionResubmissionDialog implements Initializable {
@@ -68,42 +70,47 @@ public class TransactionResubmissionDialog implements Initializable {
 
     private void displayTransactions() {
         addHeaderForTable();
-        for (SendTransactionDTO unsentTransaction : blockchainConnector.getAccountManager().getTimedOutTransactions(blockchainConnector.getAccounts().stream().filter(p -> p.isActive()).findAny().get().getPublicAddress())) {
-            HBox row = new HBox();
-            row.setSpacing(10);
-            row.setAlignment(Pos.CENTER);
-            row.setPrefWidth(600);
+        final Optional<AccountDTO> first = blockchainConnector.getAccounts().stream().filter(AccountDTO::isActive).findFirst();
+        final String publicAddress;
+        if (first.isPresent()) {
+            publicAddress = first.get().getPublicAddress();
+            for (SendTransactionDTO unsentTransaction : blockchainConnector.getAccountManager().getTimedOutTransactions(publicAddress)) {
+                HBox row = new HBox();
+                row.setSpacing(10);
+                row.setAlignment(Pos.CENTER);
+                row.setPrefWidth(600);
 
-            Label to = new Label(unsentTransaction.getTo());
-            to.setPrefWidth(350);
-            to.getStyleClass().add("transaction-row-text");
-            row.getChildren().add(to);
+                Label to = new Label(unsentTransaction.getTo());
+                to.setPrefWidth(350);
+                to.getStyleClass().add("transaction-row-text");
+                row.getChildren().add(to);
 
-            Label value = new Label(BalanceUtils.formatBalance(unsentTransaction.getValue()));
-            value.setPrefWidth(100);
-            value.setPadding(new Insets(0.0, 0.0, 0.0, 10.0));
-            value.getStyleClass().add("transaction-row-text");
-            row.getChildren().add(value);
+                Label value = new Label(BalanceUtils.formatBalance(unsentTransaction.getValue()));
+                value.setPrefWidth(100);
+                value.setPadding(new Insets(0.0, 0.0, 0.0, 10.0));
+                value.getStyleClass().add("transaction-row-text");
+                row.getChildren().add(value);
 
-            Label nonce = new Label(unsentTransaction.getNonce().toString());
-            nonce.setPrefWidth(50);
-            nonce.setPadding(new Insets(0.0, 0.0, 0.0, 5.0));
-            nonce.getStyleClass().add("transaction-row-text");
-            row.getChildren().add(nonce);
+                Label nonce = new Label(unsentTransaction.getNonce().toString());
+                nonce.setPrefWidth(50);
+                nonce.setPadding(new Insets(0.0, 0.0, 0.0, 5.0));
+                nonce.getStyleClass().add("transaction-row-text");
+                row.getChildren().add(nonce);
 
-            Button resubmitTransaction = new Button();
-            resubmitTransaction.setText("Resubmit");
-            resubmitTransaction.setPrefWidth(100);
-            resubmitTransaction.getStyleClass().add("submit-button-small");
-            resubmitTransaction.setOnMouseClicked(event -> {
-                close(event);
-                blockchainConnector.getAccountManager().removeTimedOutTransaction(unsentTransaction);
-                ConsoleManager.addLog("Transaction timeout treated", ConsoleManager.LogType.TRANSACTION);
-                EventPublisher.fireTransactionResubmited(unsentTransaction);
+                Button resubmitTransaction = new Button();
+                resubmitTransaction.setText("Resubmit");
+                resubmitTransaction.setPrefWidth(100);
+                resubmitTransaction.getStyleClass().add("submit-button-small");
+                resubmitTransaction.setOnMouseClicked(event -> {
+                    close(event);
+                    blockchainConnector.getAccountManager().removeTimedOutTransaction(unsentTransaction);
+                    ConsoleManager.addLog("Transaction timeout treated", ConsoleManager.LogType.TRANSACTION);
+                    EventPublisher.fireTransactionResubmited(unsentTransaction);
             });
-            row.getChildren().add(resubmitTransaction);
+                row.getChildren().add(resubmitTransaction);
 
-            transactions.getChildren().add(row);
+                transactions.getChildren().add(row);
+            }
         }
     }
 

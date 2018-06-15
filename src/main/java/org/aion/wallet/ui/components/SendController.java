@@ -188,7 +188,7 @@ public class SendController extends AbstractController {
 
     @Subscribe
     private void handleAccountEvent(final AccountEvent event) {
-        final AccountDTO account = event.getAccount();
+        final AccountDTO account = event.getPayload();
         if (AccountEvent.Type.CHANGED.equals(event.getType())) {
             if (account.isActive()) {
                 this.account = account;

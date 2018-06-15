@@ -1,7 +1,7 @@
 package org.aion.wallet.util;
 
 import org.aion.api.log.LogEnum;
-import org.aion.log.AionLoggerFactory;
+import org.aion.wallet.log.WalletLoggerFactory;
 import org.slf4j.Logger;
 
 import java.awt.*;
@@ -11,7 +11,7 @@ import java.net.URISyntaxException;
 
 public class URLManager {
 
-    private static final Logger log = AionLoggerFactory.getLogger(LogEnum.WLT.name());
+    private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
 
     private static final String TRANSACTION_URL = "/#/transaction/";
 

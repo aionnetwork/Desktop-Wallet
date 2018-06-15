@@ -119,7 +119,7 @@ public class CoreBlockchainConnector extends BlockchainConnector {
     @Subscribe
     private void handleAccountEvent(final AccountEvent event) {
         if (AccountEvent.Type.CHANGED.equals(event.getType())) {
-            getAccountManager().updateAccount(event.getAccount());
+            getAccountManager().updateAccount(event.getPayload());
         }
     }
 
