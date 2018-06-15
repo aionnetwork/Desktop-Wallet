@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Label?>
+<?import java.net.URL?>
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="org.aion.wallet.ui.components.partials.AboutDialog"
+            prefHeight="250.0" prefWidth="350.0"
+            styleClass="anchor-pane">
+    <stylesheets>
+        <URL value="@dialog.css"/>
+    </stylesheets>
+    <VBox AnchorPane.topAnchor="30" prefWidth="350" alignment="CENTER">
+        <ImageView fitHeight="80.0" fitWidth="80.0" layoutX="135.0" layoutY="4.0" pickOnBounds="true"
+                   preserveRatio="true">
+            <Image url="@../icons/aion-icon.png"/>
+        </ImageView>
+        <Label styleClass="main-text" text="AION Wallet"/>
+        <Label alignment="CENTER_LEFT" styleClass="paragraph-text" text="Current version: 0.2.0-light" />
+    </VBox>
+    <Label AnchorPane.rightAnchor="10" AnchorPane.topAnchor="240" text="Powered by Centrys" />
+</AnchorPane>

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.*?>
 <AnchorPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.121"
             stylesheets="@footer-pane.css" styleClass="anchor-pane"
@@ -10,9 +9,7 @@
         <fx:include source="partials/ConnectivityStatus.fxml"/>
         <fx:include source="partials/PeerCount.fxml"/>
         <fx:include source="partials/SyncStatus.fxml"/>
-        <VBox prefWidth="200.0" alignment="CENTER">
-            <Label styleClass="footer-pane-text" text="AION Desktop Wallet v1.0"/>
-        </VBox>
+        <fx:include source="partials/About.fxml"/>
     </HBox>
 
 </AnchorPane>
