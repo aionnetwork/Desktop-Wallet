@@ -20,7 +20,7 @@
             <Image url="@../icons/aion-icon.png"/>
         </ImageView>
         <Label styleClass="main-text" text="AION Wallet"/>
-        <Label alignment="CENTER_LEFT" styleClass="paragraph-text" text="Current version: 0.2.0-light" />
+        <Label styleClass="paragraph-text" text="Current version: 0.2.0-light" />
     </VBox>
     <Label AnchorPane.rightAnchor="10" AnchorPane.topAnchor="240" text="Powered by Centrys" />
 </AnchorPane>
