@@ -7,6 +7,7 @@ import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.connector.dto.SyncInfoDTO;
 import org.aion.wallet.ui.components.AbstractController;
 import org.aion.wallet.events.RefreshEvent;
+import org.aion.wallet.util.SyncStatusUtils;
 
 import java.net.URL;
 import java.util.EnumSet;
@@ -41,6 +42,6 @@ public class SyncStatusController extends AbstractController {
     }
 
     private String getSyncLabelText(final SyncInfoDTO syncInfo) {
-        return syncInfo.getChainBestBlkNumber() + "/" + syncInfo.getNetworkBestBlkNumber() + " total blocks";
+        return SyncStatusUtils.formatSyncStatus(syncInfo);
     }
 }

@@ -16,7 +16,7 @@ public class AionConstants {
 
     public static final BigInteger DEFAULT_NRG_PRICE = BigInteger.valueOf(10 * AMP);
 
-    private static final int BLOCK_MINING_TIME_SECONDS = 10;
+    public static final int BLOCK_MINING_TIME_SECONDS = 10;
 
     public static final Long BLOCK_MINING_TIME_MILLIS = BLOCK_MINING_TIME_SECONDS * 1000L;
 
