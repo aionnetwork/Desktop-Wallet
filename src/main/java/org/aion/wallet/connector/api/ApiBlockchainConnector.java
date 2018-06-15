@@ -17,7 +17,6 @@ import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.dto.LightAppSettings;
 import org.aion.wallet.events.*;
 import org.aion.wallet.exception.NotFoundException;
-import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.storage.ApiType;
 import org.aion.wallet.util.AionConstants;
@@ -317,12 +316,8 @@ public class ApiBlockchainConnector extends BlockchainConnector {
             final String address = addressIterator.next();
             final BlockDTO lastSafeBlock = getAccountManager().getLastSafeBlock(address);
             if (lastSafeBlock != null) {
-                if (oldestSafeBlock == null) {
+                if (oldestSafeBlock == null || oldestSafeBlock.getNumber() > lastSafeBlock.getNumber()) {
                     oldestSafeBlock = lastSafeBlock;
-                } else {
-                    if (oldestSafeBlock.getNumber() > lastSafeBlock.getNumber()) {
-                        oldestSafeBlock = lastSafeBlock;
-                    }
                 }
             } else {
                 nullSafeBlockFilter.accept(addressIterator);

@@ -97,7 +97,6 @@ public class UnlockAccountDialog implements Initializable {
     private void handleUnlockStarted(final AccountEvent event) {
         if (AccountEvent.Type.UNLOCKED.equals(event.getType())) {
             this.account = event.getPayload();
-//            unlockPassword.requestFocus();
         }
     }
 

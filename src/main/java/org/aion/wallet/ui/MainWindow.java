@@ -40,7 +40,7 @@ public class MainWindow extends Application {
     private static final String TITLE = "Aion Wallet";
     private static final String MAIN_WINDOW_FXML = "MainWindow.fxml";
     private static final String AION_LOGO = "components/icons/aion-icon.png";
-    private static final String LOCAL_DIR = System.getProperty("user.dir");
+    private static final String AION_UI_DIR = System.getProperty("user.dir");
     private static final String AION_EXECUTABLE = "aion_ui.sh";
 
     private final Map<HeaderPaneButtonEvent.Type, Node> panes = new HashMap<>();
@@ -187,7 +187,7 @@ public class MainWindow extends Application {
     }
 
     private void restartApplication() {
-        final String executable = LOCAL_DIR + File.separator + AION_EXECUTABLE;
+        final String executable = AION_UI_DIR + File.separator + AION_EXECUTABLE;
 
         final ArrayList<String> command = new ArrayList<>();
         command.add(executable);
