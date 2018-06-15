@@ -10,6 +10,12 @@
     -fx-font-size: 26px;
 }
 
+.paragraph-text {
+    -fx-text-fill: BLACK;
+    -fx-font-family: 'Open Sans Light';
+    -fx-font-size: 18px;
+}
+
 .submit-button {
     -fx-background-color: #5AF0BD;
     -fx-background-radius: 0,0,0,0;
