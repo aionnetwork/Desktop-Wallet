@@ -121,8 +121,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         try {
             response = API.getTx().sendSignedTransaction(
                     txArgs,
-                    new ByteArrayWrapper((getAccountManager().getAccount(dto.getFrom())).getPrivateKey()),
-                    dto.getPassword()
+                    new ByteArrayWrapper((getAccountManager().getAccount(dto.getFrom())).getPrivateKey())
             ).getObject();
         } finally {
             unLock();
