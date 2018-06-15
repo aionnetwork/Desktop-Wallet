@@ -15,6 +15,7 @@ import javafx.scene.layout.Pane;
 import javafx.stage.Popup;
 import org.aion.api.log.LogEnum;
 import org.aion.wallet.connector.BlockchainConnector;
+import org.aion.wallet.console.ConsoleManager;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.events.AccountEvent;
 import org.aion.wallet.events.EventBusFactory;
@@ -31,13 +32,11 @@ public class UnlockAccountDialog implements Initializable {
     private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
 
     private final Popup popup = new Popup();
+    private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
     @FXML
     private PasswordField unlockPassword;
     @FXML
     private Label validationError;
-
-    private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
-
     private AccountDTO account;
 
     @Override
@@ -75,8 +74,10 @@ public class UnlockAccountDialog implements Initializable {
         if (password != null && !password.isEmpty()) {
             try {
                 blockchainConnector.unlockAccount(account, password);
+                ConsoleManager.addLog("Account" + account.getPublicAddress() + " unlocked", ConsoleManager.LogType.ACCOUNT);
                 close(event);
             } catch (ValidationException e) {
+                ConsoleManager.addLog("Account" + account.getPublicAddress() + " could not be unlocked", ConsoleManager.LogType.ACCOUNT, ConsoleManager.LogLevel.WARNING);
                 validationError.setText(e.getMessage());
                 validationError.setVisible(true);
             }

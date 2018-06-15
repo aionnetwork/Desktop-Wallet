@@ -188,8 +188,7 @@ public class MainWindow extends Application {
         Executors.newSingleThreadExecutor().submit(() -> System.exit(0));
     }
 
-    private void restartApplication()
-    {
+    private void restartApplication() {
         final String localDir = System.getProperty("user.dir");
         final String executable = localDir + File.separator + "aion_ui.sh";
 

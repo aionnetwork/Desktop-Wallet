@@ -22,6 +22,7 @@ import javafx.stage.StageStyle;
 import org.aion.api.log.LogEnum;
 import org.aion.base.util.Hex;
 import org.aion.wallet.connector.BlockchainConnector;
+import org.aion.wallet.console.ConsoleManager;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.events.EventPublisher;
 import org.aion.wallet.exception.ValidationException;
@@ -112,8 +113,11 @@ public class ImportAccountDialog implements Initializable {
         String password = keystorePassword.getText();
         if (!password.isEmpty() && keystoreFile != null) {
             try {
-                return blockchainConnector.importKeystoreFile(keystoreFile, password, shouldKeep);
+                AccountDTO dto = blockchainConnector.importKeystoreFile(keystoreFile, password, shouldKeep);
+                ConsoleManager.addLog("Keystore imported", ConsoleManager.LogType.ACCOUNT);
+                return dto;
             } catch (final ValidationException e) {
+                ConsoleManager.addLog("Keystore could not be imported", ConsoleManager.LogType.ACCOUNT, ConsoleManager.LogLevel.WARNING);
                 log.error(e.getMessage(), e);
                 displayError(e.getMessage());
                 return null;
@@ -136,8 +140,11 @@ public class ImportAccountDialog implements Initializable {
                 return null;
             }
             try {
-                return blockchainConnector.importPrivateKey(raw, password, shouldKeep);
+                AccountDTO dto = blockchainConnector.importPrivateKey(raw, password, shouldKeep);
+                ConsoleManager.addLog("Private key imported", ConsoleManager.LogType.ACCOUNT);
+                return dto;
             } catch (ValidationException e) {
+                ConsoleManager.addLog("Private key could not be imported", ConsoleManager.LogType.ACCOUNT, ConsoleManager.LogLevel.WARNING);
                 log.error(e.getMessage(), e);
                 displayError(e.getMessage());
                 return null;

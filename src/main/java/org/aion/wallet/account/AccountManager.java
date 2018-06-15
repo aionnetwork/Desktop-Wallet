@@ -14,6 +14,7 @@ import org.aion.mcf.account.KeystoreItem;
 import org.aion.wallet.connector.dto.BlockDTO;
 import org.aion.wallet.connector.dto.SendTransactionDTO;
 import org.aion.wallet.connector.dto.TransactionDTO;
+import org.aion.wallet.console.ConsoleManager;
 import org.aion.wallet.crypto.ExtendedKey;
 import org.aion.wallet.crypto.SeededECKeyEd25519;
 import org.aion.wallet.dto.AccountDTO;
@@ -52,6 +53,8 @@ public class AccountManager {
     private final Supplier<String> currencySupplier;
 
     private ExtendedKey root;
+
+    private boolean isWalletLocked = false;
 
     public AccountManager(final Function<String, BigInteger> balanceProvider, final Supplier<String> currencySupplier) {
         this.balanceProvider = balanceProvider;
@@ -98,6 +101,7 @@ public class AccountManager {
         if (!walletStorage.hasMasterAccount()) {
             return;
         }
+        isWalletLocked = false;
 
         final byte[] seed = new SeedCalculator().calculateSeed(walletStorage.getMasterAccountMnemonic(password), DEFAULT_MNEMONIC_SALT);
         ECKey rootEcKey = new SeededECKeyEd25519(seed);
@@ -231,6 +235,7 @@ public class AccountManager {
     }
 
     public void unlockAccount(final AccountDTO account, final String password) throws ValidationException {
+        isWalletLocked = false;
         final Optional<byte[]> fileContent = Optional.ofNullable(addressToKeystoreContent.get(account.getPublicAddress()));
         final ECKey storedKey;
         if (fileContent.isPresent()) {
@@ -262,6 +267,11 @@ public class AccountManager {
     }
 
     public void lockAll() {
+        if (isWalletLocked) {
+            return;
+        }
+        isWalletLocked = true;
+        ConsoleManager.addLog("Wallet has been locked due to inactivity", ConsoleManager.LogType.ACCOUNT);
         root = null;
         Set<String> seedAccounts = new HashSet<>();
         for (Map.Entry<String, AccountDTO> entry : addressToAccount.entrySet()) {
