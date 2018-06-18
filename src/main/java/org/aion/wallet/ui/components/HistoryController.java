@@ -6,6 +6,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -160,7 +161,9 @@ public class HistoryController extends AbstractController {
             final FilteredList<TxRow> filteredData = new FilteredList<>(FXCollections.observableList(completeTransactionList), s -> true);
             if (!newValue.isEmpty()) {
                 filteredData.setPredicate(s -> anyFieldHasString(s, newValue));
-                txTable.setItems(filteredData);
+                SortedList<TxRow> sortedData = new SortedList<>(filteredData);
+                sortedData.comparatorProperty().bind(txTable.comparatorProperty());
+                txTable.setItems(sortedData);
             }
         });
 
@@ -168,7 +171,9 @@ public class HistoryController extends AbstractController {
             final FilteredList<TxRow> filteredData = new FilteredList<>(FXCollections.observableList(completeTransactionList), s -> true);
             if(!String.valueOf(newValue).equals(String.valueOf(oldValue))) {
                 filteredData.setPredicate(s -> anyFieldHasString(s, searchField.getText()));
-                txTable.setItems(filteredData);
+                SortedList<TxRow> sortedData = new SortedList<>(filteredData);
+                sortedData.comparatorProperty().bind(txTable.comparatorProperty());
+                txTable.setItems(sortedData);
             }
         });
     }
