@@ -84,6 +84,14 @@ public class SendController extends AbstractController {
             passwordInput.setVisible(false);
             passwordInput.setManaged(false);
         }
+
+        toInput.textProperty().addListener(event -> transactionToResubmit = null);
+
+        nrgInput.textProperty().addListener(event -> transactionToResubmit = null);
+
+        nrgPriceInput.textProperty().addListener(event -> transactionToResubmit = null);
+
+        valueInput.textProperty().addListener(event -> transactionToResubmit = null);
     }
 
     @Override
