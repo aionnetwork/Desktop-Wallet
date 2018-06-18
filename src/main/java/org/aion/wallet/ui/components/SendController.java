@@ -5,11 +5,13 @@ import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
+import org.aion.api.impl.internal.Message;
 import org.aion.api.log.LogEnum;
 import org.aion.base.util.TypeConverter;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.connector.dto.SendTransactionDTO;
 import org.aion.wallet.connector.dto.TransactionResponseDTO;
+import org.aion.wallet.console.ConsoleManager;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.events.*;
 import org.aion.wallet.exception.ValidationException;
@@ -138,7 +140,7 @@ public class SendController extends AbstractController {
 
         runApiTask(
                 sendTransactionTask,
-                evt -> handleTransactionFinished(sendTransactionTask.getValue().getTxHash().toString()),
+                evt -> handleTransactionFinished(sendTransactionTask.getValue()),
                 getErrorEvent(t -> Optional.ofNullable(t.getCause()).ifPresent(cause -> displayStatus(cause.getMessage(), true)), sendTransactionTask),
                 getEmptyEvent()
         );
@@ -148,11 +150,27 @@ public class SendController extends AbstractController {
         transactionResubmissionDialog.open(mouseEvent);
     }
 
-    private void handleTransactionFinished(final String txHash) {
+    private void handleTransactionFinished(final TransactionResponseDTO response) {
         setTimedoutTransactionsLabelText();
-        log.info("%s: %s", SUCCESS_MESSAGE, txHash);
-        displayStatus(SUCCESS_MESSAGE, false);
-        EventPublisher.fireTransactionFinished();
+        final String error = response.getError();
+        if (error != null) {
+            final String failReason;
+            final int responseStatus = response.getStatus();
+            if (Message.Retcode.r_tx_Dropped_VALUE == responseStatus) {
+                failReason = String.format("dropped: %s", error);
+            } else {
+                failReason = "timeout";
+            }
+            final String errorMessage = "Transaction " + failReason;
+            ConsoleManager.addLog(errorMessage, ConsoleManager.LogType.TRANSACTION, ConsoleManager.LogLevel.WARNING);
+            SendController.log.error("{}: {}", errorMessage, response);
+            displayStatus(errorMessage, false);
+        } else {
+            log.info("{}: {}", SUCCESS_MESSAGE, response);
+            ConsoleManager.addLog("Transaction sent", ConsoleManager.LogType.TRANSACTION, ConsoleManager.LogLevel.WARNING);
+            displayStatus(SUCCESS_MESSAGE, false);
+            EventPublisher.fireTransactionFinished();
+        }
     }
 
     private void displayStatus(final String message, final boolean isError) {
