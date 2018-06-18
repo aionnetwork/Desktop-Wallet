@@ -143,6 +143,7 @@ public class CoreBlockchainConnector extends BlockchainConnector {
                 transaction.getNrgPrice(),
                 transaction.getTimeStampBI().longValue(),
                 0L,
-                transaction.getNonceBI());
+                transaction.getNonceBI(),
+                (int) transaction.getTxIndexInBlock());
     }
 }
