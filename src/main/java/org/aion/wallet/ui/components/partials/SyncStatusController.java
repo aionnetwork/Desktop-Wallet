@@ -3,6 +3,8 @@ package org.aion.wallet.ui.components.partials;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
+import javafx.scene.control.Tooltip;
+import javafx.scene.image.ImageView;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.connector.dto.SyncInfoDTO;
 import org.aion.wallet.ui.components.AbstractController;
@@ -18,10 +20,18 @@ public class SyncStatusController extends AbstractController {
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
 
     @FXML
+    private ImageView progressBarIcon;
+
+    @FXML
     private Label progressBarLabel;
+
+    private final Tooltip syncTooltip = new Tooltip();
 
     @Override
     protected void internalInit(URL location, ResourceBundle resources) {
+        syncTooltip.setText("Loading...");
+        Tooltip.install(progressBarIcon, syncTooltip);
+        Tooltip.install(progressBarLabel, syncTooltip);
     }
 
     @Override
@@ -39,6 +49,7 @@ public class SyncStatusController extends AbstractController {
 
     private void setSyncStatus(final SyncInfoDTO syncInfo) {
         progressBarLabel.setText(getSyncLabelText(syncInfo));
+        syncTooltip.setText(syncInfo.getChainBestBlkNumber() + "/" + syncInfo.getNetworkBestBlkNumber() + " blocks");
     }
 
     private String getSyncLabelText(final SyncInfoDTO syncInfo) {
