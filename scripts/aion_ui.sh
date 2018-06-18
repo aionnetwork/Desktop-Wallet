@@ -2,8 +2,7 @@
 
 SCRIPT_PATH=$(dirname $(realpath $0))
 
-pushd ${SCRIPT_PATH}
+cd ${SCRIPT_PATH}
 
-java -cp "${SCRIPT_PATH}/mod/*:${SCRIPT_PATH}/lib/*" -Dlocal.storage.dir=${HOME}/.aion org.aion.wallet.WalletApplication
-
-popd
+STORAGE_DIR=${HOME}/.aion
+java -cp "${SCRIPT_PATH}/mod/*:${SCRIPT_PATH}/lib/*" -Dlocal.storage.dir=${STORAGE_DIR} org.aion.wallet.WalletApplication >> ${STORAGE_DIR}/log_file 2>&1 &
