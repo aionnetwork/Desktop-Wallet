@@ -155,9 +155,16 @@ public class AddAccountDialog {
     }
 
     @FXML
-    private void submitOnEnterPressed(final KeyEvent event) {
+    private void submitCreate(final KeyEvent event) {
         if (event.getCode().equals(KeyCode.ENTER)) {
             createAccount(event);
+        }
+    }
+
+    @FXML
+    private void submitImport(final KeyEvent event) {
+        if (event.getCode().equals(KeyCode.ENTER)) {
+            importMnemonic(event);
         }
     }
 }

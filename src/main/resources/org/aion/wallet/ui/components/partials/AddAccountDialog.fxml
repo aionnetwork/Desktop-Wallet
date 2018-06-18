@@ -24,7 +24,7 @@
                    onMouseClicked="#resetValidation"/>
         <PasswordField fx:id="mnemonicPasswordField"
                        prefWidth="275.0" promptText="Password" styleClass="add-account-input-fields"
-                       onKeyPressed="#submitOnEnterPressed" onMouseClicked="#resetValidation"/>
+                       onKeyPressed="#submitImport" onMouseClicked="#resetValidation"/>
         <Button mnemonicParsing="false" onMouseClicked="#importMnemonic" prefWidth="275.0"
                 styleClass="add-account-buttons" text="Recover"/>
     </VBox>
@@ -38,7 +38,7 @@
                        prefWidth="275.0" promptText="New password" styleClass="add-account-input-fields"/>
         <PasswordField fx:id="retypedPassword" layoutX="40.0" onMouseClicked="#resetValidation"
                        prefWidth="275.0" promptText="Retype your password" styleClass="add-account-input-fields"
-                       onKeyPressed="#submitOnEnterPressed"/>
+                       onKeyPressed="#submitCreate"/>
         <Label fx:id="validationError" layoutX="40.0" prefWidth="275.0" text="ERROR"
                textFill="orangered"
                visible="false"/>
