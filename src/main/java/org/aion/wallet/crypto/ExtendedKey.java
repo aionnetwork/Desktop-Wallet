@@ -61,7 +61,7 @@ public class ExtendedKey {
         Mac mac = Mac.getInstance(HmacSHA512_ALGORITHM);
         SecretKey key = new SecretKeySpec(parentChainCode, HmacSHA512_ALGORITHM);
         mac.init(key);
-        return new ExtendedKey(ed25519KeyFactory.fromPrivate(mac.doFinal(parentPaddedKey)));
+        return new ExtendedKey(new SeededECKeyEd25519(mac.doFinal(parentPaddedKey)));
     }
 
 }
