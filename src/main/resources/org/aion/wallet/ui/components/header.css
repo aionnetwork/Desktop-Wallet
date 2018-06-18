@@ -2,7 +2,7 @@
     -fx-background-color: white;
 }
 
-.pressed{
+.header-button-pressed{
     -fx-border-color: #4221CC;
     -fx-border-width: 0 0 5 0;
 }
