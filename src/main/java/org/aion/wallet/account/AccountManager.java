@@ -94,7 +94,9 @@ public class AccountManager {
 
         root = new ExtendedKey(rootEcKey);
         walletStorage.setMasterAccountMnemonic(mnemonic, password);
-        return addInternalAccount();
+        final AccountDTO accountDTO = addInternalAccount();
+        EventPublisher.fireAccountAdded(accountDTO);
+        return accountDTO;
     }
 
     public void unlockMasterAccount(String password) throws ValidationException {
