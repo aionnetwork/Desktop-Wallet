@@ -35,9 +35,9 @@ public class HeaderPaneControls extends AbstractController {
 
     private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
 
-    private static final String STYLE_DEFAULT = "default";
+    private static final String STYLE_DEFAULT = "header-button-default";
 
-    private static final String STYLE_PRESSED = "pressed";
+    private static final String STYLE_PRESSED = "header-button-pressed";
 
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
 
