@@ -442,7 +442,8 @@ public class ApiBlockchainConnector extends BlockchainConnector {
                 transaction.getNrgPrice(),
                 transaction.getTimeStamp(),
                 transaction.getBlockNumber(),
-                transaction.getNonce());
+                transaction.getNonce(),
+                transaction.getTransactionIndex());
     }
 
     private TransactionDTO mapTransaction(final TxDetails transaction, final long timeStamp, final long blockNumber) {
@@ -458,7 +459,8 @@ public class ApiBlockchainConnector extends BlockchainConnector {
                 transaction.getNrgPrice(),
                 timeStamp,
                 blockNumber,
-                transaction.getNonce());
+                transaction.getNonce(),
+                transaction.getTxIndex());
     }
 
     private String getConnectionString() {

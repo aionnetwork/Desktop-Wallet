@@ -10,14 +10,13 @@ import java.awt.image.BufferedImage;
 import java.util.*;
 
 public class AccountDTO {
-    private final Comparator<? super TransactionDTO> TRANSACTION_COMPARATOR = new TransactionComparator();
 
     private final String currency;
     private final String publicAddress;
     private final boolean isImported;
     private final int derivationIndex;
     private final BufferedImage qrCode;
-    private final SortedSet<TransactionDTO> transactions = new TreeSet<>(TRANSACTION_COMPARATOR);
+    private final SortedSet<TransactionDTO> transactions = new TreeSet<>();
     private final List<SendTransactionDTO> timedOutTransactions = new ArrayList<>();
     private byte[] privateKey;
     private String balance;  //TODO this has to be BigInteger
@@ -143,12 +142,4 @@ public class AccountDTO {
         return privateKey != null;
     }
 
-    private class TransactionComparator implements Comparator<TransactionDTO> {
-        @Override
-        public int compare(final TransactionDTO tx1, final TransactionDTO tx2) {
-            return tx1 == null ?
-                    (tx2 == null ? 0 : -1) :
-                    (tx2 == null ? 1 : tx2.getBlockNumber().compareTo(tx1.getBlockNumber()));
-        }
-    }
 }
