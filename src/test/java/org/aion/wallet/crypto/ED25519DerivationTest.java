@@ -3,6 +3,8 @@ package org.aion.wallet.crypto;
 import io.github.novacrypto.bip39.SeedCalculator;
 import org.aion.base.util.TypeConverter;
 import org.aion.crypto.ECKey;
+import org.aion.crypto.ISignature;
+import org.aion.crypto.ed25519.ECKeyEd25519;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -23,12 +25,24 @@ public class ED25519DerivationTest {
         Assert.assertEquals(GENERATED_PUBLIC_ROOT, TypeConverter.toJsonHex(ecKey.computeAddress(ecKey.getPubKey())));
         ExtendedKey root = new ExtendedKey(ecKey);
 
-        ExtendedKey childOne = root.deriveHardened(new int[]{44, 60, 0, 0});
-        ExtendedKey childTwo = root.deriveHardened(new int[]{44, 60, 0, 0});
+        ExtendedKey childOne = root.deriveHardened(new int[]{44, 60, 0, 0, 14});
+        ExtendedKey childTwo = root.deriveHardened(new int[]{44, 60, 0, 0, 14});
 
         Assert.assertEquals(TypeConverter.toJsonHex(childOne.getEcKey().computeAddress(childOne.getEcKey().getPubKey())),
                 TypeConverter.toJsonHex(childTwo.getEcKey().computeAddress(childTwo.getEcKey().getPubKey())));
         Assert.assertEquals(TypeConverter.toJsonHex(childOne.getEcKey().getPrivKeyBytes()),
                 TypeConverter.toJsonHex(childTwo.getEcKey().getPrivKeyBytes()));
+
+        verifyECKey(ecKey);
+        verifyECKey(new ECKeyEd25519().fromPrivate(ecKey.getPrivKeyBytes()));
+        verifyECKey(childOne.getEcKey());
+        verifyECKey(childTwo.getEcKey());
+    }
+
+
+    private void verifyECKey(ECKey ecKey) {
+        byte[] msg = "dadakaaakaksadfasdfaasd8123".getBytes();
+        ISignature sig = ecKey.sign(msg);
+        Assert.assertTrue(ECKeyEd25519.verify(msg, sig.getSignature(), sig.getPubkey(null)));
     }
 }
