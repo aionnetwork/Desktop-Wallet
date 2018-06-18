@@ -30,4 +30,13 @@ public class TransactionResponseDTO {
     public String getError() {
         return error;
     }
+
+    @Override
+    public String toString() {
+        return "TransactionResponseDTO{" +
+                "status=" + status +
+                ", txHash=" + txHash +
+                ", error='" + error + '\'' +
+                '}';
+    }
 }

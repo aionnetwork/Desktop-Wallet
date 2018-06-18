@@ -139,9 +139,6 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         final int responseStatus = transactionResponseDTO.getStatus();
         if (!ACCEPTED_TRANSACTION_RESPONSE_STATUSES.contains(responseStatus)) {
             getAccountManager().addTimedOutTransaction(dto);
-            ConsoleManager.addLog("Transaction timeout", ConsoleManager.LogType.TRANSACTION, ConsoleManager.LogLevel.WARNING);
-        } else {
-            ConsoleManager.addLog("Transaction sent", ConsoleManager.LogType.TRANSACTION, ConsoleManager.LogLevel.WARNING);
         }
         return transactionResponseDTO;
     }
