@@ -1,7 +1,6 @@
 package org.aion.wallet.account;
 
 import io.github.novacrypto.bip39.MnemonicGenerator;
-import io.github.novacrypto.bip39.SeedCalculator;
 import io.github.novacrypto.bip39.Words;
 import io.github.novacrypto.bip39.wordlists.English;
 import org.aion.api.log.LogEnum;
@@ -15,8 +14,7 @@ import org.aion.wallet.connector.dto.BlockDTO;
 import org.aion.wallet.connector.dto.SendTransactionDTO;
 import org.aion.wallet.connector.dto.TransactionDTO;
 import org.aion.wallet.console.ConsoleManager;
-import org.aion.wallet.crypto.ExtendedKey;
-import org.aion.wallet.crypto.SeededECKeyEd25519;
+import org.aion.wallet.crypto.MasterKey;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.events.EventPublisher;
 import org.aion.wallet.exception.ValidationException;
@@ -24,6 +22,7 @@ import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.storage.WalletStorage;
 import org.aion.wallet.util.AddressUtils;
 import org.aion.wallet.util.BalanceUtils;
+import org.aion.wallet.util.CryptoUtils;
 import org.slf4j.Logger;
 
 import java.io.UnsupportedEncodingException;
@@ -38,8 +37,6 @@ public class AccountManager {
 
     private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
 
-    private static final String DEFAULT_MNEMONIC_SALT = "";
-
     private final WalletStorage walletStorage = WalletStorage.getInstance();
 
     private final Map<String, AccountDTO> addressToAccount = new HashMap<>();
@@ -52,7 +49,7 @@ public class AccountManager {
 
     private final Supplier<String> currencySupplier;
 
-    private ExtendedKey root;
+    private MasterKey root;
 
     private boolean isWalletLocked = false;
 
@@ -88,26 +85,24 @@ public class AccountManager {
         }
     }
 
-    private AccountDTO processMasterAccount(String mnemonic, String password) throws ValidationException {
-        final byte[] seed = new SeedCalculator().calculateSeed(mnemonic, DEFAULT_MNEMONIC_SALT);
-        final ECKey rootEcKey = new SeededECKeyEd25519(seed);
+    private AccountDTO processMasterAccount(final String mnemonic, final String password) throws ValidationException {
+        final ECKey rootEcKey = CryptoUtils.getBip39ECKey(mnemonic);
 
-        root = new ExtendedKey(rootEcKey);
+        root = new MasterKey(rootEcKey);
         walletStorage.setMasterAccountMnemonic(mnemonic, password);
         final AccountDTO accountDTO = addInternalAccount();
         EventPublisher.fireAccountAdded(accountDTO);
         return accountDTO;
     }
 
-    public void unlockMasterAccount(String password) throws ValidationException {
+    public void unlockMasterAccount(final String password) throws ValidationException {
         if (!walletStorage.hasMasterAccount()) {
             return;
         }
         isWalletLocked = false;
 
-        final byte[] seed = new SeedCalculator().calculateSeed(walletStorage.getMasterAccountMnemonic(password), DEFAULT_MNEMONIC_SALT);
-        ECKey rootEcKey = new SeededECKeyEd25519(seed);
-        root = new ExtendedKey(rootEcKey);
+        final ECKey rootEcKey = CryptoUtils.getBip39ECKey(walletStorage.getMasterAccountMnemonic(password));
+        root = new MasterKey(rootEcKey);
 
         final int accountDerivations = walletStorage.getMasterAccountDerivations();
         Set<String> recoveredAddresses = new LinkedHashSet<>(accountDerivations);
@@ -175,7 +170,7 @@ public class AccountManager {
     }
 
     private ECKey getEcKeyFromRoot(final int derivationIndex) throws ValidationException {
-        return root.deriveHardened(new int[]{44, 60, 0, 0, derivationIndex}).getEcKey();
+        return root.deriveHardened(new int[]{44, 60, 0, 0, derivationIndex});
     }
 
     private AccountDTO addInternalAccount() throws ValidationException {
