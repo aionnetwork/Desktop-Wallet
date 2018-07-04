@@ -11,9 +11,6 @@
         <Label text="Settings" styleClass="tile-label" alignment="CENTER"/>
         <HBox spacing="10" alignment="CENTER">
             <VBox>
-                <Label text="Protocol" styleClass="paragraph-text" alignment="CENTER"/>
-                <TextField fx:id="protocol" prefColumnCount="30"/>
-                <Label/>
                 <Label text="Address" styleClass="paragraph-text" alignment="CENTER"/>
                 <TextField fx:id="address" prefColumnCount="30"/>
                 <Label/>
