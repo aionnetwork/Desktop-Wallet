@@ -15,7 +15,7 @@
 
     <VBox alignment="CENTER" prefWidth="300.0" spacing="6.0" style="-fx-padding: 0 25 0 25;">
         <ImageView fitHeight="80.0" fitWidth="80.0" pickOnBounds="true" preserveRatio="true">
-            <Image url="@../icons/aion_logo.png"/>
+            <Image url="@../icons/aion-icon.png"/>
         </ImageView>
         <fx:define>
             <ToggleGroup fx:id="accountTypeToggleGroup"/>
@@ -57,7 +57,7 @@
                 <HBox spacing="10.0">
                     <Button prefHeight="50.0" prefWidth="130.0" styleClass="add-account-buttons"
                             text="Import" onMouseClicked="#importAccount"/>
-                    <Button prefHeight="50.0" prefWidth="130.0" styleClass="add-account-buttons"
+                    <Button prefHeight="50.0" prefWidth="130.0" styleClass="cancel-button"
                             text="Close" onMouseClicked="#close"/>
                 </HBox>
             </AnchorPane>

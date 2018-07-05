@@ -3,34 +3,40 @@ package org.aion.wallet.ui.components;
 import com.google.common.eventbus.Subscribe;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
-import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
+import javafx.scene.input.MouseEvent;
+import org.aion.api.impl.internal.Message;
 import org.aion.api.log.LogEnum;
 import org.aion.base.util.TypeConverter;
 import org.aion.wallet.connector.BlockchainConnector;
-import org.aion.wallet.connector.dto.SendRequestDTO;
+import org.aion.wallet.connector.dto.SendTransactionDTO;
+import org.aion.wallet.connector.dto.TransactionResponseDTO;
+import org.aion.wallet.console.ConsoleManager;
 import org.aion.wallet.dto.AccountDTO;
+import org.aion.wallet.events.*;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
-import org.aion.wallet.ui.events.EventBusFactory;
-import org.aion.wallet.ui.events.EventPublisher;
-import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
-import org.aion.wallet.ui.events.RefreshEvent;
-import org.aion.wallet.util.AionConstants;
-import org.aion.wallet.util.BalanceUtils;
-import org.aion.wallet.util.ConfigUtils;
-import org.aion.wallet.util.UIUtils;
+import org.aion.wallet.ui.components.partials.TransactionResubmissionDialog;
+import org.aion.wallet.util.*;
 import org.slf4j.Logger;
 
 import java.math.BigInteger;
 import java.net.URL;
+import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class SendController extends AbstractController {
 
     private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
+
+    private static final String PENDING_MESSAGE = "Sending transaction...";
+
+    private static final String SUCCESS_MESSAGE = "Transaction finished";
+
+    private static final Tooltip NRG_LIMIT_TOOLTIP = new Tooltip("NRG limit");
+
+    private static final Tooltip NRG_PRICE_TOOLTIP = new Tooltip("NRG price");
 
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
 
@@ -51,52 +57,136 @@ public class SendController extends AbstractController {
     @FXML
     private TextField accountBalance;
     @FXML
-    private TextField equivalentEUR;
+    private Button sendButton;
     @FXML
-    private TextField equivalentUSD;
+    private Label timedoutTransactionsLabel;
 
     private AccountDTO account;
 
-    public void onSendAionClicked() {
-        final SendRequestDTO dto;
-        try {
-            dto = mapFormData();
-        } catch (ValidationException e) {
-            log.error(e.getMessage(), e);
-            return;
-        }
-        txStatusLabel.setText("Sending transaction...");
+    private boolean connected;
 
-        final Task<String> sendTransactionTask = getApiTask(this::sendTransaction, dto);
+    private final TransactionResubmissionDialog transactionResubmissionDialog = new TransactionResubmissionDialog();
 
-        runApiTask(
-                sendTransactionTask,
-                evt -> handleTransactionFinished(sendTransactionTask.getValue()),
-                getErrorEvent(t -> txStatusLabel.setText(t.getMessage()), sendTransactionTask),
-                getEmptyEvent()
-        );
-    }
+    private SendTransactionDTO transactionToResubmit;
 
-    private void handleTransactionFinished(final String txHash) {
-        log.info("Transaction finished: " + txHash);
-        txStatusLabel.setText("Transaction Finished");
-        EventPublisher.fireOperationFinished();
-    }
-
-    private String sendTransaction(final SendRequestDTO sendRequestDTO) {
-        try {
-            return blockchainConnector.sendTransaction(sendRequestDTO);
-        } catch (ValidationException e) {
-            throw new RuntimeException(e);
-        }
+    @Override
+    protected void registerEventBusConsumer() {
+        super.registerEventBusConsumer();
+        EventBusFactory.getBus(HeaderPaneButtonEvent.ID).register(this);
+        EventBusFactory.getBus(AccountEvent.ID).register(this);
+        EventBusFactory.getBus(TransactionEvent.ID).register(this);
     }
 
     @Override
     protected void internalInit(final URL location, final ResourceBundle resources) {
+        nrgInput.setTooltip(NRG_LIMIT_TOOLTIP);
+        nrgPriceInput.setTooltip(NRG_PRICE_TOOLTIP);
         setDefaults();
         if (!ConfigUtils.isEmbedded()) {
             passwordInput.setVisible(false);
             passwordInput.setManaged(false);
+        }
+
+        toInput.textProperty().addListener(event -> transactionToResubmit = null);
+
+        nrgInput.textProperty().addListener(event -> transactionToResubmit = null);
+
+        nrgPriceInput.textProperty().addListener(event -> transactionToResubmit = null);
+
+        valueInput.textProperty().addListener(event -> transactionToResubmit = null);
+    }
+
+    @Override
+    protected void refreshView(final RefreshEvent event) {
+        switch (event.getType()) {
+            case CONNECTED:
+                connected = true;
+                if (account != null) {
+                    sendButton.setDisable(false);
+                }
+                break;
+            case DISCONNECTED:
+                connected = false;
+                sendButton.setDisable(true);
+                break;
+            case TRANSACTION_FINISHED:
+                setDefaults();
+                break;
+            default:
+        }
+        setTimedoutTransactionsLabelText();
+    }
+
+    public void onSendAionClicked() {
+        if (account == null) {
+            return;
+        }
+        final SendTransactionDTO dto;
+        try {
+            if(transactionToResubmit != null) {
+                dto = transactionToResubmit;
+            }
+            else {
+                dto = mapFormData();
+            }
+        } catch (ValidationException e) {
+            log.error(e.getMessage(), e);
+            displayStatus(e.getMessage(), true);
+            return;
+        }
+        displayStatus(PENDING_MESSAGE, false);
+
+        final Task<TransactionResponseDTO> sendTransactionTask = getApiTask(this::sendTransaction, dto);
+
+        runApiTask(
+                sendTransactionTask,
+                evt -> handleTransactionFinished(sendTransactionTask.getValue()),
+                getErrorEvent(t -> Optional.ofNullable(t.getCause()).ifPresent(cause -> displayStatus(cause.getMessage(), true)), sendTransactionTask),
+                getEmptyEvent()
+        );
+    }
+
+    public void onTimedoutTransactionsClick(final MouseEvent mouseEvent) {
+        transactionResubmissionDialog.open(mouseEvent);
+    }
+
+    private void handleTransactionFinished(final TransactionResponseDTO response) {
+        setTimedoutTransactionsLabelText();
+        final String error = response.getError();
+        if (error != null) {
+            final String failReason;
+            final int responseStatus = response.getStatus();
+            if (Message.Retcode.r_tx_Dropped_VALUE == responseStatus) {
+                failReason = String.format("dropped: %s", error);
+            } else {
+                failReason = "timeout";
+            }
+            final String errorMessage = "Transaction " + failReason;
+            ConsoleManager.addLog(errorMessage, ConsoleManager.LogType.TRANSACTION, ConsoleManager.LogLevel.WARNING);
+            SendController.log.error("{}: {}", errorMessage, response);
+            displayStatus(errorMessage, false);
+        } else {
+            log.info("{}: {}", SUCCESS_MESSAGE, response);
+            ConsoleManager.addLog("Transaction sent", ConsoleManager.LogType.TRANSACTION, ConsoleManager.LogLevel.WARNING);
+            displayStatus(SUCCESS_MESSAGE, false);
+            EventPublisher.fireTransactionFinished();
+        }
+    }
+
+    private void displayStatus(final String message, final boolean isError) {
+        if (isError) {
+            txStatusLabel.getStyleClass().add(ERROR_STYLE);
+        } else {
+            txStatusLabel.getStyleClass().removeAll(ERROR_STYLE);
+        }
+        txStatusLabel.setText(message);
+    }
+
+    private TransactionResponseDTO sendTransaction(final SendTransactionDTO sendTransactionDTO) {
+        try {
+            return blockchainConnector.sendTransaction(sendTransactionDTO);
+        } catch (ValidationException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -107,31 +197,40 @@ public class SendController extends AbstractController {
         toInput.setText("");
         valueInput.setText("");
         passwordInput.setText("");
+
+        setTimedoutTransactionsLabelText();
     }
 
-    @Override
-    protected void refreshView(final RefreshEvent event) {
-        if (RefreshEvent.Type.OPERATION_FINISHED.equals(event.getType())) {
-            setDefaults();
+    private void setTimedoutTransactionsLabelText() {
+        if(account != null) {
+            final List<SendTransactionDTO> timedoutTransactions = blockchainConnector.getAccountManager().getTimedOutTransactions(account.getPublicAddress());
+            if(!timedoutTransactions.isEmpty()) {
+                timedoutTransactionsLabel.setVisible(true);
+                timedoutTransactionsLabel.getStyleClass().add("warning-link-style");
+                timedoutTransactionsLabel.setText("You have transactions that require your attention!");
+            }
         }
     }
 
     @Subscribe
-    private void handleAccountChanged(final AccountDTO account) {
-        this.account = account;
-
-        accountAddress.setText(account.getPublicAddress());
-
-        accountBalance.setVisible(true);
-        setAccountBalanceText();
-
-        equivalentEUR.setVisible(true);
-        equivalentEUR.setText(convertBalanceToCcy(account, AionConstants.AION_TO_EUR) + " " + AionConstants.EUR_CCY);
-        UIUtils.setWidth(equivalentEUR);
-
-        equivalentUSD.setVisible(true);
-        equivalentUSD.setText(convertBalanceToCcy(account, AionConstants.AION_TO_USD) + " " + AionConstants.USD_CCY);
-        UIUtils.setWidth(equivalentUSD);
+    private void handleAccountEvent(final AccountEvent event) {
+        final AccountDTO account = event.getPayload();
+        if (AccountEvent.Type.CHANGED.equals(event.getType())) {
+            if (account.isActive()) {
+                this.account = account;
+                sendButton.setDisable(!connected);
+                accountAddress.setText(this.account.getPublicAddress());
+                accountBalance.setVisible(true);
+                setAccountBalanceText();
+            }
+        } else if (AccountEvent.Type.LOCKED.equals(event.getType())) {
+            if (account.equals(this.account)) {
+                sendButton.setDisable(true);
+                accountAddress.setText("");
+                accountBalance.setVisible(false);
+                this.account = null;
+            }
+        }
     }
 
     @Subscribe
@@ -141,15 +240,17 @@ public class SendController extends AbstractController {
         }
     }
 
-    @Override
-    protected void registerEventBusConsumer() {
-        super.registerEventBusConsumer();
-        EventBusFactory.getBus(HeaderPaneButtonEvent.ID).register(this);
-        EventBusFactory.getBus(EventPublisher.ACCOUNT_CHANGE_EVENT_ID).register(this);
-    }
-
-    private double convertBalanceToCcy(final AccountDTO account, final double exchangeRate) {
-        return Double.parseDouble(account.getBalance()) * exchangeRate;
+    @Subscribe
+    private void handleTransactionResubmitEvent(final TransactionEvent event) {
+        SendTransactionDTO sendTransaction = event.getTransaction();
+        sendTransaction.setNrgPrice(BigInteger.valueOf(sendTransaction.getNrgPrice() * 2));
+        toInput.setText(sendTransaction.getTo());
+        nrgInput.setText(sendTransaction.getNrg().toString());
+        nrgPriceInput.setText(String.valueOf(sendTransaction.getNrgPrice()));
+        valueInput.setText(BalanceUtils.formatBalance(sendTransaction.getValue()));
+        txStatusLabel.setText("");
+        timedoutTransactionsLabel.setVisible(false);
+        transactionToResubmit = sendTransaction;
     }
 
     private void setAccountBalanceText() {
@@ -169,36 +270,50 @@ public class SendController extends AbstractController {
                     account.setBalance(BalanceUtils.formatBalance(getBalanceTask.getValue()));
                     setAccountBalanceText();
                 },
-                getErrorEvent(throwable -> {}, getBalanceTask),
+                getErrorEvent(t -> {}, getBalanceTask),
                 getEmptyEvent()
         );
     }
 
-    private SendRequestDTO mapFormData() throws ValidationException {
-        final SendRequestDTO dto = new SendRequestDTO();
+    private SendTransactionDTO mapFormData() throws ValidationException {
+        final SendTransactionDTO dto = new SendTransactionDTO();
         dto.setFrom(account.getPublicAddress());
+
+        if (!AddressUtils.isValid(toInput.getText())) {
+            throw new ValidationException("Address is not a valid AION address!");
+        }
         dto.setTo(toInput.getText());
-        dto.setPassword(passwordInput.getText());
 
         try {
-            dto.setNrg(TypeConverter.StringNumberAsBigInt(nrgInput.getText()).longValue());
+            final long nrg = TypeConverter.StringNumberAsBigInt(nrgInput.getText()).longValue();
+            if (nrg <= 0) {
+                throw new ValidationException("Nrg must be greater than 0!");
+            }
+            dto.setNrg(nrg);
         } catch (NumberFormatException e) {
-            throw new ValidationException("Nrg must be a valid number");
+            throw new ValidationException("Nrg must be a valid number!");
         }
 
         try {
-            dto.setNrgPrice(TypeConverter.StringNumberAsBigInt(nrgPriceInput.getText()));
+            final BigInteger nrgPrice = TypeConverter.StringNumberAsBigInt(nrgPriceInput.getText());
+            dto.setNrgPrice(nrgPrice);
+            if (nrgPrice.compareTo(AionConstants.DEFAULT_NRG_PRICE) < 0) {
+                throw new ValidationException(String.format("Nrg price must be greater than %s!", AionConstants.DEFAULT_NRG_PRICE));
+            }
         } catch (NumberFormatException e) {
-            throw new ValidationException("Nrg price must be a valid number");
+            throw new ValidationException("Nrg price must be a valid number!");
         }
 
         try {
-            dto.setValue(BalanceUtils.extractBalance(valueInput.getText()));
+            final BigInteger value = BalanceUtils.extractBalance(valueInput.getText());
+            if (value.compareTo(BigInteger.ZERO) <= 0) {
+                throw new ValidationException("Amount must be greater than 0");
+            }
+            dto.setValue(value);
         } catch (NumberFormatException e) {
-            throw new ValidationException("Value must be a number");
+            throw new ValidationException("Amount must be a number");
         }
 
         return dto;
     }
-
 }

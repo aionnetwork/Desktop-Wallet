@@ -1,11 +1,11 @@
 package org.aion.wallet.ui.components.partials;
 
 import com.google.common.eventbus.Subscribe;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
-import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.input.InputEvent;
@@ -13,41 +13,40 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
-import javafx.scene.paint.Color;
-import javafx.stage.Modality;
 import javafx.stage.Popup;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
-import org.aion.api.log.AionLoggerFactory;
 import org.aion.api.log.LogEnum;
-import org.aion.crypto.ECKey;
-import org.aion.mcf.account.Keystore;
+import org.aion.wallet.connector.BlockchainConnector;
+import org.aion.wallet.console.ConsoleManager;
 import org.aion.wallet.dto.AccountDTO;
-import org.aion.wallet.ui.events.EventBusFactory;
-import org.aion.wallet.ui.events.EventPublisher;
-import org.aion.wallet.util.DataUpdater;
+import org.aion.wallet.events.AccountEvent;
+import org.aion.wallet.events.EventBusFactory;
+import org.aion.wallet.exception.ValidationException;
+import org.aion.wallet.log.WalletLoggerFactory;
 import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.Map;
 import java.util.ResourceBundle;
 
-public class UnlockAccountDialog implements Initializable{
-    private static final Logger log = AionLoggerFactory.getLogger(LogEnum.WLT.name());
+public class UnlockAccountDialog implements Initializable {
 
-    @FXML
-    private PasswordField unlockPassword;
-
-    @FXML
-    private Label validationError;
-
-    private AccountDTO account;
+    private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
 
     private final Popup popup = new Popup();
+    private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
+    @FXML
+    private PasswordField unlockPassword;
+    @FXML
+    private Label validationError;
+    private AccountDTO account;
 
-    public void open(MouseEvent mouseEvent) {
+    @Override
+    public void initialize(final URL location, final ResourceBundle resources) {
+        registerEventBusConsumer();
+        Platform.runLater(() -> unlockPassword.requestFocus());
+    }
+
+    public void open(final MouseEvent mouseEvent) {
         popup.setAutoHide(true);
         popup.setAutoFix(true);
 
@@ -68,41 +67,37 @@ public class UnlockAccountDialog implements Initializable{
         popup.show(eventSource.getScene().getWindow());
     }
 
-    public void unlockAccount(InputEvent event) {
-        if(unlockPassword.getText() != null && !unlockPassword.getText().isEmpty()) {
-            ECKey storedKey = Keystore.getKey(account.getPublicAddress(), unlockPassword.getText());
-            if(storedKey != null) {
-                account.setPrivateKey(storedKey.getPrivKeyBytes());
-                EventPublisher.fireAccountChanged(account);
-                this.close(event);
-            }
-            else {
-                validationError.setText("The password is incorrect!");
+    private void close(final InputEvent event) {
+        ((Node) event.getSource()).getScene().getWindow().hide();
+    }
+
+    public void unlockAccount(final InputEvent event) {
+        final String password = unlockPassword.getText();
+        if (password != null && !password.isEmpty()) {
+            try {
+                blockchainConnector.unlockAccount(account, password);
+                ConsoleManager.addLog("Account" + account.getPublicAddress() + " unlocked", ConsoleManager.LogType.ACCOUNT);
+                close(event);
+            } catch (ValidationException e) {
+                ConsoleManager.addLog("Account" + account.getPublicAddress() + " could not be unlocked", ConsoleManager.LogType.ACCOUNT, ConsoleManager.LogLevel.WARNING);
+                validationError.setText(e.getMessage());
                 validationError.setVisible(true);
             }
-        }
-        else {
+        } else {
             validationError.setText("Please insert a password!");
             validationError.setVisible(true);
         }
     }
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        registerEventBusConsumer();
-    }
-
-    public void resetValidation(MouseEvent mouseEvent) {
+    public void resetValidation() {
         validationError.setVisible(false);
     }
 
-    public void close(InputEvent event) {
-        ((Node) event.getSource()).getScene().getWindow().hide();
-    }
-
     @Subscribe
-    private void handleUnlockStarted(AccountDTO account) {
-        this.account = account;
+    private void handleUnlockStarted(final AccountEvent event) {
+        if (AccountEvent.Type.UNLOCKED.equals(event.getType())) {
+            this.account = event.getPayload();
+        }
     }
 
     @FXML
@@ -111,7 +106,8 @@ public class UnlockAccountDialog implements Initializable{
             unlockAccount(event);
         }
     }
+
     private void registerEventBusConsumer() {
-        EventBusFactory.getBus(EventPublisher.ACCOUNT_UNLOCK_EVENT_ID).register(this);
+        EventBusFactory.getBus(AccountEvent.ID).register(this);
     }
 }

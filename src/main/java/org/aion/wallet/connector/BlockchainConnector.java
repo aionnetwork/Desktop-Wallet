@@ -1,20 +1,25 @@
 package org.aion.wallet.connector;
 
+import org.aion.wallet.account.AccountManager;
 import org.aion.wallet.connector.api.ApiBlockchainConnector;
-import org.aion.wallet.connector.dto.SendRequestDTO;
+import org.aion.wallet.connector.dto.SendTransactionDTO;
 import org.aion.wallet.connector.dto.SyncInfoDTO;
 import org.aion.wallet.connector.dto.TransactionDTO;
+import org.aion.wallet.connector.dto.TransactionResponseDTO;
 import org.aion.wallet.dto.AccountDTO;
+import org.aion.wallet.dto.LightAppSettings;
 import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.storage.ApiType;
-import org.aion.wallet.dto.LightAppSettings;
 import org.aion.wallet.storage.WalletStorage;
 import org.aion.wallet.util.ConfigUtils;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
+import java.nio.file.Path;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
 public abstract class BlockchainConnector {
@@ -26,6 +31,12 @@ public abstract class BlockchainConnector {
     private final WalletStorage walletStorage = WalletStorage.getInstance();
 
     private final ReentrantLock lock = new ReentrantLock();
+
+    private final AccountManager accountManager;
+
+    protected BlockchainConnector() {
+        this.accountManager = new AccountManager(this::getBalance, this::getCurrency);
+    }
 
     public static BlockchainConnector getInstance() {
         if (INST != null) {
@@ -43,19 +54,57 @@ public abstract class BlockchainConnector {
         return INST;
     }
 
-    public abstract void createAccount(final String password, final String name);
+    public final boolean hasMasterAccount() {
+        return walletStorage.hasMasterAccount();
+    }
 
-    public abstract AccountDTO addKeystoreUTCFile(final byte[] file, final String password, final boolean shouldKeep) throws ValidationException;
+    public final boolean isMasterAccountUnlocked() {
+        return accountManager.isMasterAccountUnlocked();
+    }
 
-    public abstract AccountDTO addPrivateKey(final byte[] raw, final String password, final boolean shouldKeep) throws ValidationException;
+    public final String createMasterAccount(final String password, final String name) throws ValidationException {
+        return accountManager.createMasterAccount(password, name);
+    }
 
-    public abstract AccountDTO getAccount(final String address);
+    public final void importMasterAccount(final String mnemonic, final String password) throws ValidationException {
+        accountManager.importMasterAccount(mnemonic, password);
+    }
 
-    public abstract List<AccountDTO> getAccounts();
+    public final void unlockMasterAccount(final String password) throws ValidationException {
+        accountManager.unlockMasterAccount(password);
+    }
+
+    public final void createAccount() throws ValidationException {
+        accountManager.createAccount();
+    }
+
+    public final AccountDTO importKeystoreFile(final byte[] file, final String password, final boolean shouldKeep) throws ValidationException {
+        return accountManager.importKeystore(file, password, shouldKeep);
+    }
+
+    public final AccountDTO importPrivateKey(final byte[] raw, final String password, final boolean shouldKeep) throws ValidationException {
+        return accountManager.importPrivateKey(raw, password, shouldKeep);
+    }
+
+    public final void exportAccount(final AccountDTO account, final String password, final String destinationDir) throws ValidationException {
+        accountManager.exportAccount(account, password, destinationDir);
+    }
+
+    public final void unlockAccount(final AccountDTO account, final String password) throws ValidationException {
+        accountManager.unlockAccount(account, password);
+    }
+
+    public final AccountDTO getAccount(final String publicAddress) {
+        return accountManager.getAccount(publicAddress);
+    }
+
+    public final List<AccountDTO> getAccounts() {
+        return accountManager.getAccounts();
+    }
 
     public abstract BigInteger getBalance(final String address);
 
-    public final String sendTransaction(final SendRequestDTO dto) throws ValidationException {
+    public final TransactionResponseDTO sendTransaction(final SendTransactionDTO dto) throws ValidationException {
         if (dto == null || !dto.validate()) {
             throw new ValidationException("Invalid transaction request data");
         }
@@ -65,32 +114,39 @@ public abstract class BlockchainConnector {
         return sendTransactionInternal(dto);
     }
 
-    protected abstract String sendTransactionInternal(final SendRequestDTO dto) throws ValidationException;
-
     public abstract TransactionDTO getTransaction(final String txHash) throws NotFoundException;
 
-    public abstract List<TransactionDTO> getLatestTransactions(final String address);
+    public abstract Set<TransactionDTO> getLatestTransactions(final String address);
 
-    public abstract boolean getConnectionStatusByConnectedPeers();
+    public abstract boolean getConnectionStatus();
 
     public abstract SyncInfoDTO getSyncInfo();
 
     public abstract int getPeerCount();
-    // todo: Add balances with different currencies in AccountDTO
 
-    public abstract String getCurrency();
+    public abstract LightAppSettings getSettings();
+
+    protected abstract TransactionResponseDTO sendTransactionInternal(final SendTransactionDTO dto);
+
+    protected abstract String getCurrency();
 
     public void close() {
         walletStorage.save();
     }
 
-    public void reloadSettings(final LightAppSettings settings){
+    public void reloadSettings(final LightAppSettings settings) {
         walletStorage.saveLightAppSettings(settings);
     }
 
-    public abstract LightAppSettings getSettings();
+    public void lockAll() {
+        accountManager.lockAll();
+    }
 
-    protected final void lock(){
+    public final AccountManager getAccountManager() {
+        return accountManager;
+    }
+
+    protected final void lock() {
         lock.lock();
     }
 
@@ -98,19 +154,11 @@ public abstract class BlockchainConnector {
         lock.unlock();
     }
 
-    protected final String getStoredAccountName(final String publicAddress) {
-        return walletStorage.getAccountName(publicAddress);
-    }
-
-    protected final void storeAccountName(final String address, final String name) {
-        walletStorage.setAccountName(address, name);
-    }
-
-    protected final LightAppSettings getLightweightWalletSettings(final ApiType type){
+    protected final LightAppSettings getLightweightWalletSettings(final ApiType type) {
         return walletStorage.getLightAppSettings(type);
     }
 
-    protected final void storeLightweightWalletSettings(final LightAppSettings lightAppSettings){
+    protected final void storeLightweightWalletSettings(final LightAppSettings lightAppSettings) {
         walletStorage.saveLightAppSettings(lightAppSettings);
     }
 }

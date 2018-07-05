@@ -19,13 +19,14 @@ import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import org.aion.api.log.AionLoggerFactory;
 import org.aion.api.log.LogEnum;
 import org.aion.base.util.Hex;
 import org.aion.wallet.connector.BlockchainConnector;
+import org.aion.wallet.console.ConsoleManager;
 import org.aion.wallet.dto.AccountDTO;
+import org.aion.wallet.events.EventPublisher;
 import org.aion.wallet.exception.ValidationException;
-import org.aion.wallet.ui.events.EventPublisher;
+import org.aion.wallet.log.WalletLoggerFactory;
 import org.slf4j.Logger;
 
 import java.io.File;
@@ -36,11 +37,12 @@ import java.util.ResourceBundle;
 
 public class ImportAccountDialog implements Initializable {
 
-    private static final Logger log = AionLoggerFactory.getLogger(LogEnum.WLT.name());
+    private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
 
     private static final String PK_RADIO_BUTTON_ID = "PK_RB";
 
     private static final String KEYSTORE_RADIO_BUTTON_ID = "KEYSTORE_RB";
+
 
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
 
@@ -80,7 +82,7 @@ public class ImportAccountDialog implements Initializable {
     private byte[] keystoreFile;
 
     public void uploadKeystoreFile() throws IOException {
-        resetValidation(null);
+        resetValidation();
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Open UTC Keystore File");
         File file = fileChooser.showOpenDialog(null);
@@ -94,47 +96,68 @@ public class ImportAccountDialog implements Initializable {
 
     public void importAccount(InputEvent eventSource) {
         AccountDTO account = null;
+        final boolean shouldKeep = rememberAccount.isSelected();
         if (importKeystoreView.isVisible()) {
-            String password = keystorePassword.getText();
-            if (!password.isEmpty() && keystoreFile != null) {
-                try {
-                    account = blockchainConnector.addKeystoreUTCFile(keystoreFile, password, rememberAccount.isSelected());
-                } catch (final ValidationException e) {
-                    log.error(e.getMessage(), e);
-                    return;
-                }
-            }
-            else {
-                validationError.setText("Please complete the fields!");
-                validationError.setVisible(true);
-                return;
+            account = getAccountFromKeyStore(shouldKeep);
+        } else if (importPrivateKeyView.isVisible()) {
+            account = getAccountFromPrivateKey(shouldKeep);
+        }
+
+        if (account != null) {
+            EventPublisher.fireAccountChanged(account);
+            this.close(eventSource);
+        }
+    }
+
+    private AccountDTO getAccountFromKeyStore(final boolean shouldKeep) {
+        String password = keystorePassword.getText();
+        if (!password.isEmpty() && keystoreFile != null) {
+            try {
+                AccountDTO dto = blockchainConnector.importKeystoreFile(keystoreFile, password, shouldKeep);
+                ConsoleManager.addLog("Keystore imported", ConsoleManager.LogType.ACCOUNT);
+                return dto;
+            } catch (final ValidationException e) {
+                ConsoleManager.addLog("Keystore could not be imported", ConsoleManager.LogType.ACCOUNT, ConsoleManager.LogLevel.WARNING);
+                log.error(e.getMessage(), e);
+                displayError(e.getMessage());
+                return null;
             }
         } else {
-            String password = privateKeyPassword.getText();
-            String privateKey = privateKeyInput.getText();
-            if (password != null && !password.isEmpty() && privateKey != null && !privateKey.isEmpty()) {
-                byte[] raw = Hex.decode(privateKey.startsWith("0x") ? privateKey.substring(2) : privateKey);
-                if(raw == null) {
-                    log.error("Invalid private key: " + privateKey);
-                    return;
-                }
-                try {
-                    account = blockchainConnector.addPrivateKey(raw, password, rememberAccount.isSelected());
-                } catch (ValidationException e) {
-                    log.error(e.getMessage(), e);
-                    return;
-                }
-            }
-            else {
-                validationError.setText("Please complete the fields!");
-                validationError.setVisible(true);
-                return;
-            }
+            displayError("Please complete the fields!");
+            return null;
         }
-        if(account != null) {
-            EventPublisher.fireAccountChanged(account);
+    }
+
+    private AccountDTO getAccountFromPrivateKey(final boolean shouldKeep) {
+        String password = privateKeyPassword.getText();
+        String privateKey = privateKeyInput.getText();
+        if (password != null && !password.isEmpty() && privateKey != null && !privateKey.isEmpty()) {
+            byte[] raw = Hex.decode(privateKey.startsWith("0x") ? privateKey.substring(2) : privateKey);
+            if (raw == null) {
+                final String errorMessage = "Invalid private key: " + privateKey;
+                log.error(errorMessage);
+                displayError(errorMessage);
+                return null;
+            }
+            try {
+                AccountDTO dto = blockchainConnector.importPrivateKey(raw, password, shouldKeep);
+                ConsoleManager.addLog("Private key imported", ConsoleManager.LogType.ACCOUNT);
+                return dto;
+            } catch (ValidationException e) {
+                ConsoleManager.addLog("Private key could not be imported", ConsoleManager.LogType.ACCOUNT, ConsoleManager.LogLevel.WARNING);
+                log.error(e.getMessage(), e);
+                displayError(e.getMessage());
+                return null;
+            }
+        } else {
+            displayError("Please complete the fields!");
+            return null;
         }
-        this.close(eventSource);
+    }
+
+    private void displayError(final String message) {
+        validationError.setText(message);
+        validationError.setVisible(true);
     }
 
     public void open(MouseEvent mouseEvent) {
@@ -182,7 +205,7 @@ public class ImportAccountDialog implements Initializable {
     }
 
 
-    public void resetValidation(MouseEvent mouseEvent) {
+    public void resetValidation() {
         validationError.setVisible(false);
     }
 

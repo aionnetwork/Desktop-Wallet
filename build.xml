@@ -60,7 +60,7 @@
         <javac
                 debuglevel="source,lines,vars"
                 includeantruntime="false"
-                release="9"
+                release="10"
                 srcdir="${src.test}"
                 destdir="${out.test}"
                 includes="**/*Test.java"
@@ -102,7 +102,7 @@
         <javac
                 debuglevel="source,lines,vars"
                 includeantruntime="false"
-                release="9"
+                release="10"
                 srcdir="./"
                 destdir="${out.main}"
                 excludes="src/main/java/org/aion/connector/api/**/*.java"
@@ -136,7 +136,7 @@
         <javac
                 debuglevel="source,lines,vars"
                 includeantruntime="false"
-                release="9"
+                release="10"
                 srcdir="./"
                 destdir="${out.main}"
                 excludes="src/main/java/org/aion/wallet/connector/core/**/*.java"
