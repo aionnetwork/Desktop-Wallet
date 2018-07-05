@@ -213,7 +213,8 @@ public class AccountManager {
 
     public void exportAccount(final AccountDTO account, final String password, final String destinationDir) throws ValidationException {
         final ECKey ecKey = new ECKeyEd25519().fromPrivate(account.getPrivateKey());
-        if (!account.isImported()) {
+        final boolean remembered = account.isImported() && Keystore.exist(account.getPublicAddress());
+        if (!remembered) {
             Keystore.create(password, ecKey);
         }
         if (Files.isDirectory(WalletStorage.KEYSTORE_PATH)) {
@@ -221,7 +222,7 @@ public class AccountManager {
             try (DirectoryStream<Path> stream = Files.newDirectoryStream(WalletStorage.KEYSTORE_PATH, fileNameRegex)) {
                 for (Path keystoreFile : stream) {
                     final String fileName = keystoreFile.getFileName().toString();
-                    if (account.isImported()) {
+                    if (remembered) {
                         Files.copy(keystoreFile, Paths.get(destinationDir + File.separator + fileName), StandardCopyOption.REPLACE_EXISTING);
                     } else {
                         Files.move(keystoreFile, Paths.get(destinationDir + File.separator + fileName), StandardCopyOption.REPLACE_EXISTING);

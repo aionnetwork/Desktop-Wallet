@@ -23,6 +23,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import org.aion.api.log.LogEnum;
+import org.aion.mcf.account.Keystore;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.console.ConsoleManager;
 import org.aion.wallet.dto.AccountDTO;
@@ -41,10 +42,10 @@ public class SaveKeystoreDialog implements Initializable {
 
     private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
 
-    private static final Tooltip LOCKED_PASSWORD = new Tooltip("Can't change imported account password");
+    private static final Tooltip LOCKED_PASSWORD = new Tooltip("Can't change stored account password");
     private static final Tooltip NEW_PASSWORD = new Tooltip("New keystore file password");
-    public static final String PASSWORD_PLACEHOLDER = "             ";
-    public static final String CHOOSER_TITLE = "Keystore Destination";
+    private static final String PASSWORD_PLACEHOLDER = "             ";
+    private static final String CHOOSER_TITLE = "Keystore Destination";
 
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
     private AccountDTO account;
@@ -69,15 +70,15 @@ public class SaveKeystoreDialog implements Initializable {
 
     public void open(final MouseEvent mouseEvent) {
         final StackPane pane = new StackPane();
-        final Pane importAccountDialog;
+        final Pane saveKeystoreDialog;
         try {
-            importAccountDialog = FXMLLoader.load(getClass().getResource("SaveKeystoreDialog.fxml"));
+            saveKeystoreDialog = FXMLLoader.load(getClass().getResource("SaveKeystoreDialog.fxml"));
         } catch (IOException e) {
             log.error(e.getMessage(), e);
             return;
         }
-        pane.getChildren().add(importAccountDialog);
-        final Scene secondScene = new Scene(pane, importAccountDialog.getPrefWidth(), importAccountDialog.getPrefHeight());
+        pane.getChildren().add(saveKeystoreDialog);
+        final Scene secondScene = new Scene(pane, saveKeystoreDialog.getPrefWidth(), saveKeystoreDialog.getPrefHeight());
         secondScene.setFill(Color.TRANSPARENT);
 
         final Stage popup = new Stage();
@@ -85,8 +86,8 @@ public class SaveKeystoreDialog implements Initializable {
         popup.setScene(secondScene);
 
         final Node eventSource = (Node) mouseEvent.getSource();
-        popup.setX(eventSource.getScene().getWindow().getX() + eventSource.getScene().getWidth() / 2 - importAccountDialog.getPrefWidth() / 2);
-        popup.setY(eventSource.getScene().getWindow().getY() + eventSource.getScene().getHeight() / 2 - importAccountDialog.getPrefHeight() / 2);
+        popup.setX(eventSource.getScene().getWindow().getX() + eventSource.getScene().getWidth() / 2 - saveKeystoreDialog.getPrefWidth() / 2);
+        popup.setY(eventSource.getScene().getWindow().getY() + eventSource.getScene().getHeight() / 2 - saveKeystoreDialog.getPrefHeight() / 2);
         popup.initModality(Modality.APPLICATION_MODAL);
         popup.initStyle(StageStyle.TRANSPARENT);
 
@@ -97,7 +98,7 @@ public class SaveKeystoreDialog implements Initializable {
     private void handleUnlockStarted(final AccountEvent event) {
         if (AccountEvent.Type.EXPORT.equals(event.getType())) {
             this.account = event.getPayload();
-            if (account.isImported()) {
+            if (isRemembered()) {
                 keystorePassword.setEditable(false);
                 keystorePassword.setText(PASSWORD_PLACEHOLDER);
                 Tooltip.uninstall(keystorePassword, NEW_PASSWORD);
@@ -114,7 +115,7 @@ public class SaveKeystoreDialog implements Initializable {
     @FXML
     private void saveKeystore(final InputEvent event) {
         final String password = keystorePassword.getText();
-        if (account.isImported() || (password != null && !password.isEmpty())) {
+        if (isRemembered() || (password != null && !password.isEmpty())) {
             try {
                 blockchainConnector.exportAccount(account, password, destinationDirectory);
                 final String infoMsg = "Account: " + account.getPublicAddress() + " exported to " + destinationDirectory;
@@ -165,6 +166,10 @@ public class SaveKeystoreDialog implements Initializable {
     @FXML
     private void close(final InputEvent event) {
         ((Node) event.getSource()).getScene().getWindow().hide();
+    }
+
+    private boolean isRemembered() {
+        return account.isImported() && Keystore.exist(account.getPublicAddress());
     }
 
     private void resetValidation() {
