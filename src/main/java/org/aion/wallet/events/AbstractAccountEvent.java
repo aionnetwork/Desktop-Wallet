@@ -16,6 +16,6 @@ public abstract class AbstractAccountEvent<T> extends AbstractEvent<AbstractAcco
     }
 
     public enum Type {
-        CHANGED, UNLOCKED, ADDED, LOCKED, RECOVERED
+        CHANGED, UNLOCKED, ADDED, LOCKED, EXPORT, RECOVERED
     }
 }

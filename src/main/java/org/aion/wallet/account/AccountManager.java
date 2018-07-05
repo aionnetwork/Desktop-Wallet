@@ -7,6 +7,7 @@ import org.aion.api.log.LogEnum;
 import org.aion.base.util.TypeConverter;
 import org.aion.crypto.ECKey;
 import org.aion.crypto.ECKeyFac;
+import org.aion.crypto.ed25519.ECKeyEd25519;
 import org.aion.mcf.account.Keystore;
 import org.aion.mcf.account.KeystoreFormat;
 import org.aion.mcf.account.KeystoreItem;
@@ -25,8 +26,11 @@ import org.aion.wallet.util.BalanceUtils;
 import org.aion.wallet.util.CryptoUtils;
 import org.slf4j.Logger;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.nio.file.*;
 import java.security.SecureRandom;
 import java.util.*;
 import java.util.function.Function;
@@ -205,6 +209,33 @@ public class AccountManager {
         }
         processAccountAdded(accountDTO, fileContent);
         return accountDTO;
+    }
+
+    public void exportAccount(final AccountDTO account, final String password, final String destinationDir) throws ValidationException {
+        final ECKey ecKey = new ECKeyEd25519().fromPrivate(account.getPrivateKey());
+        if (!account.isImported()) {
+            Keystore.create(password, ecKey);
+        }
+        if (Files.isDirectory(WalletStorage.KEYSTORE_PATH)) {
+            final String fileNameRegex = getExportedFileNameRegex(account.getPublicAddress());
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(WalletStorage.KEYSTORE_PATH, fileNameRegex)) {
+                for (Path keystoreFile : stream) {
+                    final String fileName = keystoreFile.getFileName().toString();
+                    if (account.isImported()) {
+                        Files.copy(keystoreFile, Paths.get(destinationDir + File.separator + fileName), StandardCopyOption.REPLACE_EXISTING);
+                    } else {
+                        Files.move(keystoreFile, Paths.get(destinationDir + File.separator + fileName), StandardCopyOption.REPLACE_EXISTING);
+                    }
+                }
+            } catch (IOException e) {
+                throw new ValidationException(e);
+            }
+        }
+
+    }
+
+    private String getExportedFileNameRegex(final String publicAddress) {
+        return "UTC--*--" + publicAddress.substring(2);
     }
 
     public Set<TransactionDTO> getTransactions(final String address) {
