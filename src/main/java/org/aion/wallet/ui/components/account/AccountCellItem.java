@@ -1,16 +1,20 @@
 package org.aion.wallet.ui.components.account;
 
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.events.EventPublisher;
+import org.aion.wallet.ui.components.partials.SaveKeystoreDialog;
 import org.aion.wallet.ui.components.partials.UnlockAccountDialog;
 import org.aion.wallet.util.BalanceUtils;
 import org.aion.wallet.util.UIUtils;
@@ -38,12 +42,16 @@ public class AccountCellItem extends ListCell<AccountDTO> {
 
     private static final Tooltip EDIT_NAME_TOOLTIP = new Tooltip("Edit account name");
 
-    private static final String IMPORTED_PREFIX = "Imported: ";
+    private static final Tooltip EXPORT_ACCOUNT_TOOLTIP = new Tooltip("Export to keystore");
 
     private final UnlockAccountDialog accountUnlockDialog = new UnlockAccountDialog();
 
+    private final SaveKeystoreDialog saveKeystoreDialog = new SaveKeystoreDialog();
+
     @FXML
     private TextField importedLabel;
+    @FXML
+    private HBox nameBox;
     @FXML
     private TextField name;
     @FXML
@@ -54,12 +62,14 @@ public class AccountCellItem extends ListCell<AccountDTO> {
     private ImageView accountSelectButton;
     @FXML
     private ImageView editNameButton;
+    @FXML
+    private ImageView accountExportButton;
 
     private boolean nameInEditMode;
 
     public AccountCellItem() {
         loadFXML();
-        Tooltip.install(editNameButton, EDIT_NAME_TOOLTIP);
+        addToolTips();
         publicAddress.setPrefWidth(575);
     }
 
@@ -70,10 +80,14 @@ public class AccountCellItem extends ListCell<AccountDTO> {
             loader.setRoot(this);
             loader.load();
             name.setOnKeyPressed(this::submitNameOnEnterPressed);
-            Tooltip.install(editNameButton, new Tooltip("Edit account name"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void addToolTips() {
+        Tooltip.install(editNameButton, EDIT_NAME_TOOLTIP);
+        Tooltip.install(accountExportButton, EXPORT_ACCOUNT_TOOLTIP);
     }
 
     private void submitNameOnEnterPressed(final KeyEvent event) {
@@ -100,8 +114,12 @@ public class AccountCellItem extends ListCell<AccountDTO> {
             name.setText(item.getName());
             UIUtils.setWidth(name);
 
+            final ObservableList<Node> children = nameBox.getChildren();
+            children.removeAll(importedLabel, name);
             if (item.isImported()) {
-                importedLabel.setVisible(true);
+                children.addAll(importedLabel, name);
+            } else {
+                children.add(name);
             }
 
             publicAddress.setText(item.getPublicAddress());
@@ -126,7 +144,8 @@ public class AccountCellItem extends ListCell<AccountDTO> {
         }
     }
 
-    public void onDisconnectedClicked(MouseEvent mouseEvent) {
+    @FXML
+    public void onDisconnectedClicked(final MouseEvent mouseEvent) {
         final AccountDTO modifiedAccount = this.getItem();
         if (!modifiedAccount.isUnlocked()) {
             accountUnlockDialog.open(mouseEvent);
@@ -137,6 +156,7 @@ public class AccountCellItem extends ListCell<AccountDTO> {
         }
     }
 
+    @FXML
     public void onNameFieldClicked() {
         if (!nameInEditMode) {
             name.setEditable(true);
@@ -150,6 +170,18 @@ public class AccountCellItem extends ListCell<AccountDTO> {
             nameInEditMode = true;
         } else {
             updateNameFieldOnSave();
+        }
+    }
+
+    @FXML
+    public void onExportClicked(final MouseEvent mouseEvent){
+        final AccountDTO account = getItem();
+        if (!account.isUnlocked()) {
+            accountUnlockDialog.open(mouseEvent);
+            EventPublisher.fireAccountUnlocked(account);
+        } else {
+            saveKeystoreDialog.open(mouseEvent);
+            EventPublisher.fireAccountExport(account);
         }
     }
 

@@ -38,6 +38,12 @@ public class EventPublisher {
         }
     }
 
+    public static void fireAccountExport(final AccountDTO account) {
+        if (account != null) {
+            EventBusFactory.getBus(AccountEvent.ID).post(new AccountEvent(AccountEvent.Type.EXPORT, account));
+        }
+    }
+
     public static void fireAccountLocked(final AccountDTO account) {
         if (account != null) {
             EventBusFactory.getBus(AbstractAccountEvent.ID).post(new AccountEvent(AbstractAccountEvent.Type.LOCKED, account));

@@ -14,8 +14,10 @@ import org.aion.wallet.storage.ApiType;
 import org.aion.wallet.storage.WalletStorage;
 import org.aion.wallet.util.ConfigUtils;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
@@ -82,6 +84,10 @@ public abstract class BlockchainConnector {
 
     public final AccountDTO importPrivateKey(final byte[] raw, final String password, final boolean shouldKeep) throws ValidationException {
         return accountManager.importPrivateKey(raw, password, shouldKeep);
+    }
+
+    public final void exportAccount(final AccountDTO account, final String password, final String destinationDir) throws ValidationException {
+        accountManager.exportAccount(account, password, destinationDir);
     }
 
     public final void unlockAccount(final AccountDTO account, final String password) throws ValidationException {

@@ -2,7 +2,7 @@ package org.aion.wallet.util;
 
 import io.github.novacrypto.bip39.SeedCalculator;
 import org.aion.crypto.ECKey;
-import org.aion.crypto.ECKeyFac;
+import org.aion.crypto.ed25519.ECKeyEd25519;
 import org.aion.wallet.exception.ValidationException;
 
 import javax.crypto.Mac;
@@ -19,12 +19,13 @@ public final class CryptoUtils {
     private static final String HMAC_SHA512_ALGORITHM = "HmacSHA512";
     private static final String DEFAULT_MNEMONIC_PASSPHRASE = "";
     private static final int HARDENED_KEY_MULTIPLIER = 0x80000000;
+    private static final ECKeyEd25519 EC_KEY_FACTORY = new ECKeyEd25519();
 
     private CryptoUtils() {}
 
     public static ECKey getBip39ECKey(final String mnemonic) throws ValidationException {
         final byte[] seed = new SeedCalculator().calculateSeed(mnemonic, DEFAULT_MNEMONIC_PASSPHRASE);
-        return ECKeyFac.inst().fromPrivate(getSha512(ED25519_KEY, seed));
+        return getECKey(getSha512(ED25519_KEY, seed));
 
     }
 
@@ -46,5 +47,9 @@ public final class CryptoUtils {
         byteBuffer.order(ByteOrder.BIG_ENDIAN);
         byteBuffer.putInt(number | HARDENED_KEY_MULTIPLIER);
         return byteBuffer.array();
+    }
+
+    public static ECKey getECKey(final byte[] privateKey) {
+        return EC_KEY_FACTORY.fromPrivate(privateKey);
     }
 }

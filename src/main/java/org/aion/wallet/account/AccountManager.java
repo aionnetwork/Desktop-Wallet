@@ -25,8 +25,11 @@ import org.aion.wallet.util.BalanceUtils;
 import org.aion.wallet.util.CryptoUtils;
 import org.slf4j.Logger;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.nio.file.*;
 import java.security.SecureRandom;
 import java.util.*;
 import java.util.function.Function;
@@ -205,6 +208,42 @@ public class AccountManager {
         }
         processAccountAdded(accountDTO, fileContent);
         return accountDTO;
+    }
+
+    public void exportAccount(final AccountDTO account, final String password, final String destinationDir) throws ValidationException {
+        final ECKey ecKey = CryptoUtils.getECKey(account.getPrivateKey());
+        final boolean remembered = account.isImported() && Keystore.exist(account.getPublicAddress());
+        if (!remembered) {
+            Keystore.create(password, ecKey);
+        }
+        if (Files.isDirectory(WalletStorage.KEYSTORE_PATH)) {
+            final String fileNameRegex = getExportedFileNameRegex(account.getPublicAddress());
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(WalletStorage.KEYSTORE_PATH, fileNameRegex)) {
+                for (Path keystoreFile : stream) {
+                    final String fileName = keystoreFile.getFileName().toString();
+                    if (remembered) {
+                        Files.copy(keystoreFile, Paths.get(destinationDir + File.separator + fileName), StandardCopyOption.REPLACE_EXISTING);
+                    } else {
+                        try {
+                            Files.move(keystoreFile, Paths.get(destinationDir + File.separator + fileName), StandardCopyOption.ATOMIC_MOVE);
+                        } finally {
+                            if (Files.exists(keystoreFile)) {
+                                Files.delete(keystoreFile);
+                            }
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                throw new ValidationException(e);
+            }
+        } else {
+            log.error("Could not find Keystore directory: " + WalletStorage.KEYSTORE_PATH);
+        }
+
+    }
+
+    private String getExportedFileNameRegex(final String publicAddress) {
+        return "UTC--*--" + publicAddress.substring(2);
     }
 
     public Set<TransactionDTO> getTransactions(final String address) {

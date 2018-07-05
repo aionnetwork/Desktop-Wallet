@@ -23,9 +23,7 @@ public class WalletStorage {
 
     private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
 
-    private static final String USER_DIR = "user.dir";
-
-    public static final Path KEYSTORE_PATH = Paths.get(System.getProperty(USER_DIR) + File.separator + "keystore");
+    public static final Path KEYSTORE_PATH;
 
     private static final String BLANK = "";
 
@@ -53,6 +51,8 @@ public class WalletStorage {
             storageDir = System.getProperty("user.home") + File.separator + ".aion";
         }
         STORAGE_DIR = storageDir;
+
+        KEYSTORE_PATH = Paths.get(STORAGE_DIR + File.separator + "keystore");
 
         ACCOUNTS_FILE = STORAGE_DIR + File.separator + "accounts.properties";
 
