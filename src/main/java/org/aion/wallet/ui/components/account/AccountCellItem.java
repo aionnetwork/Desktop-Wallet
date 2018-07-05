@@ -3,10 +3,7 @@ package org.aion.wallet.ui.components.account;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
-import javafx.scene.control.ContentDisplay;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.TextField;
-import javafx.scene.control.Tooltip;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
@@ -41,14 +38,16 @@ public class AccountCellItem extends ListCell<AccountDTO> {
 
     private static final Tooltip EDIT_NAME_TOOLTIP = new Tooltip("Edit account name");
 
+    private static final String IMPORTED_PREFIX = "Imported: ";
+
     private final UnlockAccountDialog accountUnlockDialog = new UnlockAccountDialog();
 
+    @FXML
+    private TextField importedLabel;
     @FXML
     private TextField name;
     @FXML
     private TextField publicAddress;
-    @FXML
-    private ImageView importedIcon;
     @FXML
     private TextField balance;
     @FXML
@@ -101,15 +100,12 @@ public class AccountCellItem extends ListCell<AccountDTO> {
             name.setText(item.getName());
             UIUtils.setWidth(name);
 
-            publicAddress.setText(item.getPublicAddress());
-
             if (item.isImported()) {
-                importedIcon.setVisible(true);
-                publicAddress.setPadding(new Insets(5, 0, 0, 20));
-            } else {
-                importedIcon.setVisible(false);
-                publicAddress.setPadding(new Insets(5, 0, 0, 0));
+                importedLabel.setVisible(true);
             }
+
+            publicAddress.setText(item.getPublicAddress());
+            publicAddress.setPadding(new Insets(5, 0, 0, 10));
 
             balance.setText(item.getBalance() + BalanceUtils.CCY_SEPARATOR + item.getCurrency());
             UIUtils.setWidth(balance);

@@ -29,10 +29,9 @@ import java.util.ResourceBundle;
 public class SettingsController extends AbstractController {
 
     private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
+    private static final String DEFAULT_PROTOCOL = "tcp";
 
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
-    @FXML
-    public TextField protocol;
     @FXML
     public TextField address;
     @FXML
@@ -62,7 +61,7 @@ public class SettingsController extends AbstractController {
             newSettings = new LightAppSettings(
                     address.getText().trim(),
                     port.getText().trim(),
-                    protocol.getText().trim(),
+                    DEFAULT_PROTOCOL,
                     settings.getType(),
                     Integer.parseInt(timeout.getText()),
                     getSelectedTimeoutMeasurementUnit()
@@ -114,7 +113,6 @@ public class SettingsController extends AbstractController {
 
     private void reloadView() {
         settings = blockchainConnector.getSettings();
-        protocol.setText(settings.getProtocol());
         address.setText(settings.getAddress());
         port.setText(settings.getPort());
         timeout.setText(settings.getUnlockTimeout().toString());

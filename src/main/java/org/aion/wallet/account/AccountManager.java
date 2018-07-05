@@ -170,7 +170,7 @@ public class AccountManager {
     }
 
     private ECKey getEcKeyFromRoot(final int derivationIndex) throws ValidationException {
-        return root.deriveHardened(new int[]{44, 60, 0, 0, derivationIndex});
+        return root.deriveHardened(new int[]{44, 425, 0, 0, derivationIndex});
     }
 
     private AccountDTO addInternalAccount() throws ValidationException {

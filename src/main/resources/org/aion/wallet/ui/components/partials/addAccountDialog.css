@@ -11,9 +11,17 @@
 }
 
 .add-account-buttons {
-    -fx-background-color: #5AF0BD;
+    -fx-background-color: #4221cc;
     -fx-background-radius: 0,0,0,0;
     -fx-text-fill: white;
+    -fx-font-family: 'Open Sans Bold';
+    -fx-font-size: 18px;
+}
+
+.cancel-button {
+    -fx-background-color: #eae9fb;
+    -fx-background-radius: 0,0,0,0;
+    -fx-text-fill: #4221cc;
     -fx-font-family: 'Open Sans Bold';
     -fx-font-size: 18px;
 }
