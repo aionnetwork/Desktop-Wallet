@@ -14,7 +14,11 @@
                 <TextField text="Balance" styleClass="copyable-label" editable="false"/>
             </VBox>
             <VBox>
-                <TextField fx:id="name" styleClass="name-input-fields" editable="false"/>
+                <HBox spacing="5">
+                    <TextField fx:id="importedLabel" text="Imported" editable="false"
+                               styleClass="name-input-fields" visible="false" prefWidth="75"/>
+                    <TextField fx:id="name" styleClass="name-input-fields" editable="false" HBox.hgrow="ALWAYS"/>
+                </HBox>
                 <TextField fx:id="publicAddress" styleClass="copyable-label" editable="false"/>
                 <TextField fx:id="balance" styleClass="copyable-label" editable="false"/>
             </VBox>

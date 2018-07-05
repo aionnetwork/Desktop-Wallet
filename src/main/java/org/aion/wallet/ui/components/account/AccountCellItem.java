@@ -43,6 +43,8 @@ public class AccountCellItem extends ListCell<AccountDTO> {
     private final UnlockAccountDialog accountUnlockDialog = new UnlockAccountDialog();
 
     @FXML
+    private TextField importedLabel;
+    @FXML
     private TextField name;
     @FXML
     private TextField publicAddress;
@@ -100,8 +102,9 @@ public class AccountCellItem extends ListCell<AccountDTO> {
 
             publicAddress.setText(item.getPublicAddress());
 
+            name.setText(item.getName());
             if (item.isImported()) {
-                name.setText(IMPORTED_PREFIX + item.getName());
+                importedLabel.setVisible(true);
             }
             publicAddress.setPadding(new Insets(5, 0, 0, 10));
             balance.setText(item.getBalance() + BalanceUtils.CCY_SEPARATOR + item.getCurrency());
