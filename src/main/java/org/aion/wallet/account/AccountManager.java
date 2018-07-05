@@ -7,7 +7,6 @@ import org.aion.api.log.LogEnum;
 import org.aion.base.util.TypeConverter;
 import org.aion.crypto.ECKey;
 import org.aion.crypto.ECKeyFac;
-import org.aion.crypto.ed25519.ECKeyEd25519;
 import org.aion.mcf.account.Keystore;
 import org.aion.mcf.account.KeystoreFormat;
 import org.aion.mcf.account.KeystoreItem;
@@ -212,7 +211,7 @@ public class AccountManager {
     }
 
     public void exportAccount(final AccountDTO account, final String password, final String destinationDir) throws ValidationException {
-        final ECKey ecKey = new ECKeyEd25519().fromPrivate(account.getPrivateKey());
+        final ECKey ecKey = CryptoUtils.getECKey(account.getPrivateKey());
         final boolean remembered = account.isImported() && Keystore.exist(account.getPublicAddress());
         if (!remembered) {
             Keystore.create(password, ecKey);
@@ -225,12 +224,20 @@ public class AccountManager {
                     if (remembered) {
                         Files.copy(keystoreFile, Paths.get(destinationDir + File.separator + fileName), StandardCopyOption.REPLACE_EXISTING);
                     } else {
-                        Files.move(keystoreFile, Paths.get(destinationDir + File.separator + fileName), StandardCopyOption.REPLACE_EXISTING);
+                        try {
+                            Files.move(keystoreFile, Paths.get(destinationDir + File.separator + fileName), StandardCopyOption.ATOMIC_MOVE);
+                        } finally {
+                            if (Files.exists(keystoreFile)) {
+                                Files.delete(keystoreFile);
+                            }
+                        }
                     }
                 }
             } catch (IOException e) {
                 throw new ValidationException(e);
             }
+        } else {
+            log.error("Could not find Keystore directory: " + WalletStorage.KEYSTORE_PATH);
         }
 
     }
