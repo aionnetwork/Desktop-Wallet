@@ -100,13 +100,13 @@ public class AccountCellItem extends ListCell<AccountDTO> {
             name.setText(item.getName());
             UIUtils.setWidth(name);
 
-            publicAddress.setText(item.getPublicAddress());
-
-            name.setText(item.getName());
             if (item.isImported()) {
                 importedLabel.setVisible(true);
             }
+
+            publicAddress.setText(item.getPublicAddress());
             publicAddress.setPadding(new Insets(5, 0, 0, 10));
+
             balance.setText(item.getBalance() + BalanceUtils.CCY_SEPARATOR + item.getCurrency());
             UIUtils.setWidth(balance);
 
