@@ -1,4 +1,4 @@
-/configuration
+//configuration
 properties([[$class: 'jenkins.model.BuildDiscarderProperty', strategy:
 			[$class: 'LogRotator', numToKeepStr: '100', artifactNumToKeepStr: '20']
 			]])
