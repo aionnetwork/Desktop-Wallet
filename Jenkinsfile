@@ -2,32 +2,23 @@
 properties([[$class: 'jenkins.model.BuildDiscarderProperty', strategy:
 			[$class: 'LogRotator', numToKeepStr: '100', artifactNumToKeepStr: '20']
 			]])
-node {
-    echo "current branch: ${env.BRANCH_NAME}"
-}
+node {echo "current branch: ${env.BRANCH_NAME}"}
 
 pipeline {
     agent any
     stages {
         stage('Setup') {
             steps {
-                sh "git submodule init" 
+                sh "git submodule init"
                 sh "git submodule update --recursive --remote --merge"
                 sh "${env.ANT_HOME} pack"
-                timeout(60) {
-                	sh "${env.ANT_HOME}"
-                }
+                timeout(60) {sh "${env.ANT_HOME}"}
             }
-            
         }
         
         stage('Archive build output') {
-            when {
-                expression { GIT_BRANCH == 'master' || GIT_BRANCH == 'dev' || GIT_BRANCH == 'aion_ui_Jenkins' }
-            }
-            steps {                
-                archiveArtifacts artifacts: 'pack/aion_ui*.tar.bz2'
-            }
+            when {expression { GIT_BRANCH == 'master' || GIT_BRANCH == 'dev' || GIT_BRANCH == 'aion_ui_Jenkins' }}
+            steps {archiveArtifacts artifacts: 'pack/aion_ui*.tar.bz2'}
         }
         /*
     	stage('Test') {
