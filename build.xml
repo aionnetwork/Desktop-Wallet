@@ -165,7 +165,7 @@
         </move>
     </target>
 
-    <target name="pack_build" depends="build_standalone">
+    <target name="pack" depends="build_standalone">
         <mkdir dir="${dir.pack}"/>
         <delete file="${dir.pack}/aion_ui*.tar.gz"/>
         <tar destfile="${dir.pack}/aion_ui${suffix}.tar.gz" longfile="gnu" compression="gzip">
