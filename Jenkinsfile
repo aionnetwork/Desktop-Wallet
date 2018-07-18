@@ -35,19 +35,12 @@ pipeline {
                 archiveArtifacts artifacts: 'pack/aion-v*.tar.bz2'
             }
         }
-        
+        /*
     	stage('Test') {
-		steps {
-    			timeout(60){
-    				sh "${env.ANT_HOME} ci_build"
-    			}
-    		}
-    		post {
-                	always {
-                    		junit "report/*"
-                	}
-            	}
+		steps {timeout(60){sh "${env.ANT_HOME} ci_build"}}
+    		post {always {junit "report/*"}}
     	}
+	*/
     }
     post {
 	always {
