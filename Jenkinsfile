@@ -18,7 +18,7 @@ pipeline {
 
                 sh "git submodule update --recursive --remote --merge"
 
-                sh "${env.ANT_HOME} pack_build"
+                sh "${env.ANT_HOME} pack"
                 
                 timeout(60) {
                 	sh "${env.ANT_HOME}"
