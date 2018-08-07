@@ -7,7 +7,6 @@ import org.aion.api.log.LogEnum;
 import org.aion.base.util.TypeConverter;
 import org.aion.crypto.ECKey;
 import org.aion.crypto.ECKeyFac;
-import org.aion.mcf.account.Keystore;
 import org.aion.mcf.account.KeystoreFormat;
 import org.aion.mcf.account.KeystoreItem;
 import org.aion.wallet.connector.dto.BlockDTO;
@@ -19,6 +18,7 @@ import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.events.EventPublisher;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
+import org.aion.wallet.storage.LocalKeystore;
 import org.aion.wallet.storage.WalletStorage;
 import org.aion.wallet.util.AddressUtils;
 import org.aion.wallet.util.BalanceUtils;
@@ -59,7 +59,7 @@ public class AccountManager {
     public AccountManager(final Function<String, BigInteger> balanceProvider, final Supplier<String> currencySupplier) {
         this.balanceProvider = balanceProvider;
         this.currencySupplier = currencySupplier;
-        for (String address : Keystore.list()) {
+        for (String address : LocalKeystore.list()) {
             addressToAccount.put(address, getNewAccount(address));
         }
     }
@@ -186,8 +186,8 @@ public class AccountManager {
         String address = TypeConverter.toJsonHex(KeystoreItem.parse(fileContent).getAddress());
         final AccountDTO accountDTO;
         if (shouldKeep) {
-            if (!Keystore.exist(address)) {
-                address = Keystore.create(password, key);
+            if (!LocalKeystore.exist(address)) {
+                address = LocalKeystore.create(password, key);
                 if (AddressUtils.isValid(address)) {
                     accountDTO = createImportedAccountFromPrivateKey(address, key.getPrivKeyBytes());
                 } else {
@@ -212,9 +212,9 @@ public class AccountManager {
 
     public void exportAccount(final AccountDTO account, final String password, final String destinationDir) throws ValidationException {
         final ECKey ecKey = CryptoUtils.getECKey(account.getPrivateKey());
-        final boolean remembered = account.isImported() && Keystore.exist(account.getPublicAddress());
+        final boolean remembered = account.isImported() && LocalKeystore.exist(account.getPublicAddress());
         if (!remembered) {
-            Keystore.create(password, ecKey);
+            LocalKeystore.create(password, ecKey);
         }
         if (Files.isDirectory(WalletStorage.KEYSTORE_PATH)) {
             final String fileNameRegex = getExportedFileNameRegex(account.getPublicAddress());
@@ -300,7 +300,7 @@ public class AccountManager {
         if (fileContent.isPresent()) {
             storedKey = KeystoreFormat.fromKeystore(fileContent.get(), password);
         } else {
-            storedKey = Keystore.getKey(account.getPublicAddress(), password);
+            storedKey = LocalKeystore.getKey(account.getPublicAddress(), password);
         }
 
         if (storedKey != null) {

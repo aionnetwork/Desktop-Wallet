@@ -14,10 +14,8 @@ import org.aion.wallet.storage.ApiType;
 import org.aion.wallet.storage.WalletStorage;
 import org.aion.wallet.util.ConfigUtils;
 
-import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;

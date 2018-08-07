@@ -23,7 +23,6 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import org.aion.api.log.LogEnum;
-import org.aion.mcf.account.Keystore;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.console.ConsoleManager;
 import org.aion.wallet.dto.AccountDTO;
@@ -31,6 +30,7 @@ import org.aion.wallet.events.AccountEvent;
 import org.aion.wallet.events.EventBusFactory;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
+import org.aion.wallet.storage.LocalKeystore;
 import org.slf4j.Logger;
 
 import java.io.File;
@@ -169,7 +169,7 @@ public class SaveKeystoreDialog implements Initializable {
     }
 
     private boolean isRemembered() {
-        return account.isImported() && Keystore.exist(account.getPublicAddress());
+        return account.isImported() && LocalKeystore.exist(account.getPublicAddress());
     }
 
     private void resetValidation() {

@@ -1,7 +1,6 @@
 package org.aion.wallet.events;
 
 import org.aion.wallet.connector.dto.SendTransactionDTO;
-import org.aion.wallet.dto.AccountDTO;
 
 public class TransactionEvent extends AbstractEvent<TransactionEvent.Type> {
 

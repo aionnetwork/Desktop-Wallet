@@ -7,13 +7,15 @@ import java.math.RoundingMode;
 /**
  * @author Cristian Ilca, Centrys Inc.
  */
-public class BalanceUtils {
+public final class BalanceUtils {
 
     public static final String CCY_SEPARATOR = " ";
 
     private static final int PRECISION = 18;
 
     private static final BigDecimal WEI_MULTIPLIER = BigDecimal.valueOf(1E18);
+
+    private BalanceUtils() {}
 
     public static String formatBalance(final BigInteger balance) {
         if (BigInteger.ZERO.equals(balance) || balance == null) {
