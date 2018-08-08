@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aion_api>
+	<log>
+		<SOL>INFO</SOL>
+		<EXE>INFO</EXE>
+		<BSE>INFO</BSE>
+		<CHN>INFO</CHN>
+		<CNT>INFO</CNT>
+		<ADM>INFO</ADM>
+		<TRX>INFO</TRX>
+		<NET>INFO</NET>
+		<WLT>INFO</WLT>
+	</log>
+</aion_api>
