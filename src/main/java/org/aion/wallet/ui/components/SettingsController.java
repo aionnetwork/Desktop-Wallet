@@ -4,14 +4,9 @@ import com.google.common.eventbus.Subscribe;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.StackPane;
-import javafx.stage.Stage;
-import org.aion.api.log.LogEnum;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.console.ConsoleManager;
 import org.aion.wallet.dto.LightAppSettings;
@@ -19,16 +14,12 @@ import org.aion.wallet.events.EventBusFactory;
 import org.aion.wallet.events.EventPublisher;
 import org.aion.wallet.events.HeaderPaneButtonEvent;
 import org.aion.wallet.events.SettingsEvent;
-import org.aion.wallet.exception.ValidationException;
-import org.aion.wallet.log.WalletLoggerFactory;
-import org.slf4j.Logger;
 
 import java.net.URL;
 import java.util.ResourceBundle;
 
 public class SettingsController extends AbstractController {
 
-    private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
     private static final String DEFAULT_PROTOCOL = "tcp";
 
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
@@ -57,23 +48,17 @@ public class SettingsController extends AbstractController {
 
     public void changeSettings() {
         final LightAppSettings newSettings;
-        try {
-            newSettings = new LightAppSettings(
-                    address.getText().trim(),
-                    port.getText().trim(),
-                    DEFAULT_PROTOCOL,
-                    settings.getType(),
-                    Integer.parseInt(timeout.getText()),
-                    getSelectedTimeoutMeasurementUnit()
+        newSettings = new LightAppSettings(
+                address.getText().trim(),
+                port.getText().trim(),
+                DEFAULT_PROTOCOL,
+                settings.getType(),
+                Integer.parseInt(timeout.getText()),
+                getSelectedTimeoutMeasurementUnit()
 
-            );
-            displayNotification("", false);
-            EventPublisher.fireApplicationSettingsChanged(newSettings);
-        } catch (ValidationException e) {
-            ConsoleManager.addLog("Could not update settings", ConsoleManager.LogType.SETTINGS, ConsoleManager.LogLevel.WARNING);
-            log.error(e.getMessage(), e);
-            displayNotification(e.getMessage(), true);
-        }
+        );
+        displayNotification("", false);
+        EventPublisher.fireApplicationSettingsChanged(newSettings);
     }
 
     public void openConsole() {
@@ -138,13 +123,11 @@ public class SettingsController extends AbstractController {
     }
 
     private ObservableList getTimeoutMeasurementUnits() {
-        ObservableList<String> options =
-                FXCollections.observableArrayList(
-                        "seconds",
-                        "minutes",
-                        "hours"
-                );
-        return options;
+        return FXCollections.observableArrayList(
+                "seconds",
+                "minutes",
+                "hours"
+        );
     }
 
     private void displayNotification(final String message, final boolean isError) {

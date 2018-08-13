@@ -4,7 +4,6 @@ import org.aion.wallet.connector.dto.SendTransactionDTO;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.dto.LightAppSettings;
 
-import java.util.List;
 import java.util.Set;
 
 public class EventPublisher {

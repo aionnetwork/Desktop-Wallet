@@ -2,7 +2,7 @@ package org.aion.wallet.util;
 
 import java.math.BigInteger;
 
-public class AionConstants {
+public final class AionConstants {
 
     private AionConstants() {}
 

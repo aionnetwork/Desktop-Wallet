@@ -1,6 +1,5 @@
 package org.aion.wallet.dto;
 
-import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.storage.ApiType;
 
 import java.util.Objects;
@@ -38,7 +37,7 @@ public class LightAppSettings {
         lockTimeoutMeasurementUnit = Optional.ofNullable(lightSettingsProps.getProperty(ACCOUNTS + LOCK_TIMEOUT_MEASUREMENT_UNIT)).orElse(DEFAULT_LOCK_TIMEOUT_MEASUREMENT_UNIT);
     }
 
-    public LightAppSettings(final String address, final String port, final String protocol, final ApiType type, final Integer timeout, final String lockTimeoutMeasurementUnit) throws ValidationException {
+    public LightAppSettings(final String address, final String port, final String protocol, final ApiType type, final Integer timeout, final String lockTimeoutMeasurementUnit) {
         this.type = type;
         this.address = address;
         this.port = port;
