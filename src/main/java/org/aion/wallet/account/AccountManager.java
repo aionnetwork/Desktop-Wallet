@@ -343,7 +343,7 @@ public class AccountManager {
         return createAccountWithPrivateKey(address, privateKeyBytes, AccountType.IMPORTED, -1);
     }
 
-    private AccountDTO createAccountWithPrivateKey(final String address, final byte[] privateKeyBytes, AccountType isImported, int derivation) {
+    private AccountDTO createAccountWithPrivateKey(final String address, final byte[] privateKeyBytes, AccountType accountType, int derivation) {
         if (address == null) {
             log.error("Can't create account with null address");
             return null;
@@ -352,7 +352,7 @@ public class AccountManager {
             log.error("Can't create account without private key");
             return null;
         }
-        AccountDTO account = getNewAccount(address, isImported, derivation);
+        AccountDTO account = getNewAccount(address, accountType, derivation);
         account.setPrivateKey(privateKeyBytes);
         account.setActive(true);
         addressToAccount.put(account.getPublicAddress(), account);
