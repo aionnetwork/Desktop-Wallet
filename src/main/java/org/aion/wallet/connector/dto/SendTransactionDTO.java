@@ -1,68 +1,47 @@
 package org.aion.wallet.connector.dto;
 
 import org.aion.base.util.ByteArrayWrapper;
+import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.util.AddressUtils;
-import org.aion.wallet.util.ConfigUtils;
 
 import java.math.BigInteger;
 
 public class SendTransactionDTO {
-    private String from;
-    private String password = "";
-    private String to;
-    private Long nrg;
+    private final AccountDTO from;
+    private final String to;
+    private final Long nrg;
+    private final BigInteger value;
+    private final byte[] data = ByteArrayWrapper.NULL_BYTE;
+    private final BigInteger nonce = BigInteger.ZERO;
     private BigInteger nrgPrice;
-    private BigInteger value;
-    private byte[] data = ByteArrayWrapper.NULL_BYTE;
-    private BigInteger nonce = BigInteger.ZERO;
 
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getFrom() {
-        return from;
-    }
-
-    public void setFrom(String from) {
+    public SendTransactionDTO(final AccountDTO from, final String to, final Long nrg, final BigInteger nrgPrice, final BigInteger value) {
         this.from = from;
+        this.to = to;
+        this.nrg = nrg;
+        this.nrgPrice = nrgPrice;
+        this.value = value;
+    }
+
+    public AccountDTO getFrom() {
+        return from;
     }
 
     public String getTo() {
         return to;
     }
 
-    public void setTo(String to) {
-        this.to = to;
-    }
-
     public Long getNrg() {
         return nrg;
-    }
-
-    public void setNrg(Long nrg) {
-        this.nrg = nrg;
     }
 
     public Long getNrgPrice() {
         return nrgPrice.longValue();
     }
 
-    public void setNrgPrice(BigInteger nrgPrice) {
-        this.nrgPrice = nrgPrice;
-    }
-
     public BigInteger getValue() {
         return value;
-    }
-
-    public void setValue(BigInteger value) {
-        this.value = value;
     }
 
     public BigInteger estimateValue() {
@@ -73,20 +52,12 @@ public class SendTransactionDTO {
         return data;
     }
 
-    public void setData(byte[] data) {
-        this.data = data;
-    }
-
     public BigInteger getNonce() {
         return nonce;
     }
 
-    private void setNonce(final BigInteger nonce) {
-        this.nonce = nonce;
-    }
-
     public boolean validate() throws ValidationException {
-        if (!AddressUtils.isValid(from)) {
+        if (!AddressUtils.isValid(from.getPublicAddress())) {
             throw new ValidationException("Invalid from address");
         }
         if (!AddressUtils.isValid(to)) {
@@ -101,9 +72,10 @@ public class SendTransactionDTO {
         if (nrgPrice == null || nrgPrice.longValue() < 0) {
             throw new ValidationException("Invalid nrg price");
         }
-        if(ConfigUtils.isEmbedded() && (password == null || password.equals(""))) {
-            throw new ValidationException("Password is invalid");
-        }
         return true;
+    }
+
+    public void setNrgPrice(final BigInteger valueOf) {
+        nrgPrice = valueOf;
     }
 }

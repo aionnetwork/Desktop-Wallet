@@ -276,27 +276,24 @@ public class SendController extends AbstractController {
     }
 
     private SendTransactionDTO mapFormData() throws ValidationException {
-        final SendTransactionDTO dto = new SendTransactionDTO();
-        dto.setFrom(account.getPublicAddress());
 
         if (!AddressUtils.isValid(toInput.getText())) {
             throw new ValidationException("Address is not a valid AION address!");
         }
-        dto.setTo(toInput.getText());
 
+        final long nrg;
         try {
-            final long nrg = TypeConverter.StringNumberAsBigInt(nrgInput.getText()).longValue();
+            nrg = TypeConverter.StringNumberAsBigInt(nrgInput.getText()).longValue();
             if (nrg <= 0) {
                 throw new ValidationException("Nrg must be greater than 0!");
             }
-            dto.setNrg(nrg);
         } catch (NumberFormatException e) {
             throw new ValidationException("Nrg must be a valid number!");
         }
 
+        final BigInteger nrgPrice;
         try {
-            final BigInteger nrgPrice = TypeConverter.StringNumberAsBigInt(nrgPriceInput.getText());
-            dto.setNrgPrice(nrgPrice);
+            nrgPrice = TypeConverter.StringNumberAsBigInt(nrgPriceInput.getText());
             if (nrgPrice.compareTo(AionConstants.DEFAULT_NRG_PRICE) < 0) {
                 throw new ValidationException(String.format("Nrg price must be greater than %s!", AionConstants.DEFAULT_NRG_PRICE));
             }
@@ -304,16 +301,16 @@ public class SendController extends AbstractController {
             throw new ValidationException("Nrg price must be a valid number!");
         }
 
+        final BigInteger value;
         try {
-            final BigInteger value = BalanceUtils.extractBalance(valueInput.getText());
+            value = BalanceUtils.extractBalance(valueInput.getText());
             if (value.compareTo(BigInteger.ZERO) <= 0) {
                 throw new ValidationException("Amount must be greater than 0");
             }
-            dto.setValue(value);
         } catch (NumberFormatException e) {
             throw new ValidationException("Amount must be a number");
         }
 
-        return dto;
+        return new SendTransactionDTO(account, toInput.getText(), nrg, nrgPrice, value);
     }
 }
