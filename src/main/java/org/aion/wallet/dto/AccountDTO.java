@@ -15,7 +15,7 @@ public class AccountDTO {
 
     private final String currency;
     private final String publicAddress;
-    private final boolean isImported;
+    private final AccountType type;
     private final int derivationIndex;
     private final BufferedImage qrCode;
     private final SortedSet<TransactionDTO> transactions = new TreeSet<>();
@@ -26,13 +26,13 @@ public class AccountDTO {
     private boolean active;
     private BlockDTO lastSafeBlock = null;
 
-    public AccountDTO(final String name, final String publicAddress, final BigInteger balance, final String currency, boolean isImported, int derivationIndex) {
+    public AccountDTO(final String name, final String publicAddress, final BigInteger balance, final String currency, AccountType type, int derivationIndex) {
         this.name = name;
         this.publicAddress = TypeConverter.toJsonHex(publicAddress);
         this.balance = balance;
         this.currency = currency;
         this.qrCode = QRCodeUtils.writeQRCode(publicAddress);
-        this.isImported = isImported;
+        this.type = type;
         this.derivationIndex = derivationIndex;
     }
 
@@ -77,7 +77,11 @@ public class AccountDTO {
     }
 
     public boolean isImported() {
-        return isImported;
+        return !AccountType.LOCAL.equals(type);
+    }
+
+    public AccountType getType() {
+        return type;
     }
 
     public int getDerivationIndex() {

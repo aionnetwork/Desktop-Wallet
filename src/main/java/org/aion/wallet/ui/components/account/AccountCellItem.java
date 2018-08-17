@@ -5,7 +5,10 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
-import javafx.scene.control.*;
+import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
@@ -117,6 +120,7 @@ public class AccountCellItem extends ListCell<AccountDTO> {
             final ObservableList<Node> children = nameBox.getChildren();
             children.removeAll(importedLabel, name);
             if (item.isImported()) {
+                importedLabel.setText(item.getType().getDisplayString());
                 children.addAll(importedLabel, name);
             } else {
                 children.add(name);
