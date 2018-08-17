@@ -269,7 +269,7 @@ public class AccountManager {
     public List<AccountDTO> getAccounts() {
         final Collection<AccountDTO> filteredAccounts = addressToAccount.values().stream().filter(account -> account.isImported() || account.isUnlocked()).collect(Collectors.toList());
         for (AccountDTO account : filteredAccounts) {
-            account.setBalance(BalanceUtils.formatBalance(balanceProvider.apply(account.getPublicAddress())));
+            account.setBalance(balanceProvider.apply(account.getPublicAddress()));
         }
         List<AccountDTO> accounts = new ArrayList<>(filteredAccounts);
         accounts.sort((AccountDTO o1, AccountDTO o2) -> {
@@ -375,7 +375,7 @@ public class AccountManager {
     private AccountDTO getNewAccount(final String publicAddress, boolean isImported, int derivation) {
         return new AccountDTO(getStoredAccountName(publicAddress),
                 publicAddress,
-                getFormattedBalance(publicAddress),
+                balanceProvider.apply(publicAddress),
                 currencySupplier.get(),
                 isImported,
                 derivation);
@@ -383,10 +383,6 @@ public class AccountManager {
 
     private AccountDTO getNewAccount(final String publicAddress) {
         return getNewAccount(publicAddress, true, -1);
-    }
-
-    private String getFormattedBalance(String address) {
-        return BalanceUtils.formatBalance(balanceProvider.apply(address));
     }
 
     private void storeAccountName(final String address, final String name) {

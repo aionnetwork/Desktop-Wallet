@@ -126,7 +126,7 @@ public class HeaderPaneControls extends AbstractController {
         final AccountDTO account = event.getPayload();
         if (EnumSet.of(AccountEvent.Type.CHANGED, AccountEvent.Type.ADDED).contains(event.getType())) {
             if (account.isActive()) {
-                accountBalance.setText(account.getBalance() + BalanceUtils.CCY_SEPARATOR + account.getCurrency());
+                accountBalance.setText(account.getFormattedBalance() + BalanceUtils.CCY_SEPARATOR + account.getCurrency());
                 accountBalance.setVisible(true);
                 activeAccount.setText(account.getName());
                 activeAccountLabel.setVisible(true);

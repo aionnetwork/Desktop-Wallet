@@ -125,7 +125,7 @@ public class AccountCellItem extends ListCell<AccountDTO> {
             publicAddress.setText(item.getPublicAddress());
             publicAddress.setPadding(new Insets(5, 0, 0, 10));
 
-            balance.setText(item.getBalance() + BalanceUtils.CCY_SEPARATOR + item.getCurrency());
+            balance.setText(item.getFormattedBalance() + BalanceUtils.CCY_SEPARATOR + item.getCurrency());
             UIUtils.setWidth(balance);
 
             if (item.isActive()) {

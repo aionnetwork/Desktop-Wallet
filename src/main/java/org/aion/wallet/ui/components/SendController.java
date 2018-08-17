@@ -254,7 +254,7 @@ public class SendController extends AbstractController {
     }
 
     private void setAccountBalanceText() {
-        accountBalance.setText(account.getBalance() + " " + AionConstants.CCY);
+        accountBalance.setText(account.getFormattedBalance() + " " + AionConstants.CCY);
         UIUtils.setWidth(accountBalance);
 
     }
@@ -267,7 +267,7 @@ public class SendController extends AbstractController {
         runApiTask(
                 getBalanceTask,
                 evt -> {
-                    account.setBalance(BalanceUtils.formatBalance(getBalanceTask.getValue()));
+                    account.setBalance(getBalanceTask.getValue());
                     setAccountBalanceText();
                 },
                 getErrorEvent(t -> {}, getBalanceTask),

@@ -4,9 +4,11 @@ import org.aion.base.util.TypeConverter;
 import org.aion.wallet.connector.dto.BlockDTO;
 import org.aion.wallet.connector.dto.SendTransactionDTO;
 import org.aion.wallet.connector.dto.TransactionDTO;
+import org.aion.wallet.util.BalanceUtils;
 import org.aion.wallet.util.QRCodeUtils;
 
 import java.awt.image.BufferedImage;
+import java.math.BigInteger;
 import java.util.*;
 
 public class AccountDTO {
@@ -19,12 +21,12 @@ public class AccountDTO {
     private final SortedSet<TransactionDTO> transactions = new TreeSet<>();
     private final List<SendTransactionDTO> timedOutTransactions = new ArrayList<>();
     private byte[] privateKey;
-    private String balance;  //TODO this has to be BigInteger
+    private BigInteger balance;
     private String name;
     private boolean active;
     private BlockDTO lastSafeBlock = null;
 
-    public AccountDTO(final String name, final String publicAddress, final String balance, final String currency, boolean isImported, int derivationIndex) {
+    public AccountDTO(final String name, final String publicAddress, final BigInteger balance, final String currency, boolean isImported, int derivationIndex) {
         this.name = name;
         this.publicAddress = TypeConverter.toJsonHex(publicAddress);
         this.balance = balance;
@@ -58,11 +60,11 @@ public class AccountDTO {
         this.privateKey = privateKey;
     }
 
-    public String getBalance() {
-        return balance;
+    public String getFormattedBalance() {
+        return BalanceUtils.formatBalance(balance);
     }
 
-    public void setBalance(String balance) {
+    public void setBalance(BigInteger balance) {
         this.balance = balance;
     }
 
