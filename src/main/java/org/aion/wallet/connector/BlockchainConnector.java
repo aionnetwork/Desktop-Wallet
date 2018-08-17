@@ -106,10 +106,15 @@ public abstract class BlockchainConnector {
         if (dto == null || !dto.validate()) {
             throw new ValidationException("Invalid transaction request data");
         }
-        if (dto.estimateValue().compareTo(getBalance(dto.getFrom())) >= 0) {
+        if (dto.estimateValue().compareTo(getBalance(dto.getFrom().getPublicAddress())) >= 0) {
             throw new ValidationException("Insufficient funds");
         }
         return sendTransactionInternal(dto);
+    }
+
+
+    protected AionTransactionSigner getTransactionSigner(final AccountDTO from) {
+        return new AionTransactionSigner(from);
     }
 
     public abstract TransactionDTO getTransaction(final String txHash) throws NotFoundException;

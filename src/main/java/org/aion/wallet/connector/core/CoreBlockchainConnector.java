@@ -124,10 +124,7 @@ public class CoreBlockchainConnector extends BlockchainConnector {
     }
 
     private SyncInfoDTO mapSyncInfo(final SyncInfo sync) {
-        SyncInfoDTO syncInfoDTO = new SyncInfoDTO();
-        syncInfoDTO.setChainBestBlkNumber(sync.chainBestBlkNumber);
-        syncInfoDTO.setNetworkBestBlkNumber(sync.networkBestBlkNumber);
-        return syncInfoDTO;
+        return new SyncInfoDTO(sync.chainBestBlkNumber, sync.networkBestBlkNumber);
     }
 
     private TransactionDTO mapTransaction(final AionTransaction transaction) {

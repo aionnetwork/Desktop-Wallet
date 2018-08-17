@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.*?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 <fx:root type="javafx.scene.control.ListCell" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
          stylesheets="@accountListViewItem.css" styleClass="account-item">
@@ -15,7 +14,7 @@
             </VBox>
             <VBox>
                 <HBox fx:id="nameBox">
-                    <TextField fx:id="importedLabel" text="Imported " editable="false"
+                    <TextField fx:id="importedLabel" editable="false"
                                styleClass="name-input-fields" prefWidth="75"/>
                     <TextField fx:id="name" styleClass="name-input-fields" editable="false" HBox.hgrow="ALWAYS"/>
                 </HBox>

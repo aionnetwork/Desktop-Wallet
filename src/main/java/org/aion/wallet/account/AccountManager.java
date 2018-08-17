@@ -15,13 +15,13 @@ import org.aion.wallet.connector.dto.TransactionDTO;
 import org.aion.wallet.console.ConsoleManager;
 import org.aion.wallet.crypto.MasterKey;
 import org.aion.wallet.dto.AccountDTO;
+import org.aion.wallet.dto.AccountType;
 import org.aion.wallet.events.EventPublisher;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.storage.LocalKeystore;
 import org.aion.wallet.storage.WalletStorage;
 import org.aion.wallet.util.AddressUtils;
-import org.aion.wallet.util.BalanceUtils;
 import org.aion.wallet.util.CryptoUtils;
 import org.slf4j.Logger;
 
@@ -158,7 +158,7 @@ public class AccountManager {
         if (recoveredAccount != null) {
             recoveredAccount.setPrivateKey(derivedKey.getPrivKeyBytes());
         } else {
-            recoveredAccount = createAccountWithPrivateKey(address, derivedKey.getPrivKeyBytes(), false, derivationIndex);
+            recoveredAccount = createAccountWithPrivateKey(address, derivedKey.getPrivKeyBytes(), AccountType.LOCAL, derivationIndex);
         }
         return recoveredAccount == null ? null : address;
     }
@@ -169,7 +169,7 @@ public class AccountManager {
         }
         final ECKey derivedKey = getEcKeyFromRoot(derivationIndex);
         final String address = TypeConverter.toJsonHex(derivedKey.computeAddress(derivedKey.getPubKey()));
-        return createAccountWithPrivateKey(address, derivedKey.getPrivKeyBytes(), false, derivationIndex);
+        return createAccountWithPrivateKey(address, derivedKey.getPrivKeyBytes(), AccountType.LOCAL, derivationIndex);
     }
 
     private ECKey getEcKeyFromRoot(final int derivationIndex) throws ValidationException {
@@ -269,7 +269,7 @@ public class AccountManager {
     public List<AccountDTO> getAccounts() {
         final Collection<AccountDTO> filteredAccounts = addressToAccount.values().stream().filter(account -> account.isImported() || account.isUnlocked()).collect(Collectors.toList());
         for (AccountDTO account : filteredAccounts) {
-            account.setBalance(BalanceUtils.formatBalance(balanceProvider.apply(account.getPublicAddress())));
+            account.setBalance(balanceProvider.apply(account.getPublicAddress()));
         }
         List<AccountDTO> accounts = new ArrayList<>(filteredAccounts);
         accounts.sort((AccountDTO o1, AccountDTO o2) -> {
@@ -340,10 +340,10 @@ public class AccountManager {
     }
 
     private AccountDTO createImportedAccountFromPrivateKey(final String address, final byte[] privateKeyBytes) {
-        return createAccountWithPrivateKey(address, privateKeyBytes, true, -1);
+        return createAccountWithPrivateKey(address, privateKeyBytes, AccountType.IMPORTED, -1);
     }
 
-    private AccountDTO createAccountWithPrivateKey(final String address, final byte[] privateKeyBytes, boolean isImported, int derivation) {
+    private AccountDTO createAccountWithPrivateKey(final String address, final byte[] privateKeyBytes, AccountType accountType, int derivation) {
         if (address == null) {
             log.error("Can't create account with null address");
             return null;
@@ -352,7 +352,7 @@ public class AccountManager {
             log.error("Can't create account without private key");
             return null;
         }
-        AccountDTO account = getNewAccount(address, isImported, derivation);
+        AccountDTO account = getNewAccount(address, accountType, derivation);
         account.setPrivateKey(privateKeyBytes);
         account.setActive(true);
         addressToAccount.put(account.getPublicAddress(), account);
@@ -372,21 +372,17 @@ public class AccountManager {
         return walletStorage.getAccountName(publicAddress);
     }
 
-    private AccountDTO getNewAccount(final String publicAddress, boolean isImported, int derivation) {
+    private AccountDTO getNewAccount(final String publicAddress, AccountType accountType, int derivation) {
         return new AccountDTO(getStoredAccountName(publicAddress),
                 publicAddress,
-                getFormattedBalance(publicAddress),
+                balanceProvider.apply(publicAddress),
                 currencySupplier.get(),
-                isImported,
+                accountType,
                 derivation);
     }
 
     private AccountDTO getNewAccount(final String publicAddress) {
-        return getNewAccount(publicAddress, true, -1);
-    }
-
-    private String getFormattedBalance(String address) {
-        return BalanceUtils.formatBalance(balanceProvider.apply(address));
+        return getNewAccount(publicAddress, AccountType.IMPORTED, -1);
     }
 
     private void storeAccountName(final String address, final String name) {

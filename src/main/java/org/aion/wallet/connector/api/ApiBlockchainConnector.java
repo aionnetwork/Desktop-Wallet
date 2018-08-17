@@ -6,6 +6,7 @@ import org.aion.api.impl.AionAPIImpl;
 import org.aion.api.impl.internal.Message;
 import org.aion.api.log.LogEnum;
 import org.aion.api.type.*;
+import org.aion.api.type.core.tx.AionTransaction;
 import org.aion.base.type.Address;
 import org.aion.base.type.Hash256;
 import org.aion.base.util.ByteArrayWrapper;
@@ -112,24 +113,22 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     @Override
     protected TransactionResponseDTO sendTransactionInternal(final SendTransactionDTO dto) {
-        final BigInteger latestTransactionNonce = getLatestTransactionNonce(dto.getFrom());
-        TxArgs txArgs = new TxArgs.TxArgsBuilder()
-                .from(new Address(TypeConverter.toJsonHex(dto.getFrom())))
-                .to(new Address(TypeConverter.toJsonHex(dto.getTo())))
-                .value(dto.getValue())
-                .nonce(latestTransactionNonce)
-                .data(new ByteArrayWrapper(dto.getData()))
-                .nrgPrice(dto.getNrgPrice())
-                .nrgLimit(dto.getNrg())
-                .createTxArgs();
+        final String fromAddress = dto.getFrom().getPublicAddress();
+        final BigInteger latestTransactionNonce = getLatestTransactionNonce(fromAddress);
+        final AionTransaction transaction = new AionTransaction(
+                latestTransactionNonce.toByteArray(),
+                new Address(dto.getTo()),
+                dto.getValue().toByteArray(),
+                dto.getData(),
+                dto.getNrg(),
+                dto.getNrgPrice()
+        );
+        byte[] encodedTransaction = getTransactionSigner(dto.getFrom()).sign(transaction);
         final MsgRsp response;
         lock();
         try {
             ConsoleManager.addLog("Sending transaction", ConsoleManager.LogType.TRANSACTION, ConsoleManager.LogLevel.INFO);
-            response = API.getTx().sendSignedTransaction(
-                    txArgs,
-                    new ByteArrayWrapper((getAccountManager().getAccount(dto.getFrom())).getPrivateKey())
-            ).getObject();
+            response = API.getTx().sendRawTransaction(ByteArrayWrapper.wrap(encodedTransaction)).getObject();
         } finally {
             unLock();
         }
@@ -196,13 +195,15 @@ public class ApiBlockchainConnector extends BlockchainConnector {
             netBest = syncInfo.getNetworkBestBlock();
         } catch (Exception e) {
             log.error("Could not get SyncInfo - sync displays latest block!");
-            chainBest = getLatestBlock().getNumber();
+            final Block latestBlock = getLatestBlock();
+            if (latestBlock != null) {
+                chainBest = latestBlock.getNumber();
+            } else {
+                chainBest = 0;
+            }
             netBest = chainBest;
         }
-        SyncInfoDTO syncInfoDTO = new SyncInfoDTO();
-        syncInfoDTO.setChainBestBlkNumber(chainBest);
-        syncInfoDTO.setNetworkBestBlkNumber(netBest);
-        return syncInfoDTO;
+        return new SyncInfoDTO(chainBest, netBest);
     }
 
     @Override
