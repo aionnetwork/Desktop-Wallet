@@ -43,6 +43,8 @@ public class ImportAccountDialog implements Initializable {
 
     private static final String KEYSTORE_RADIO_BUTTON_ID = "KEYSTORE_RB";
 
+    private static final String LEDGER_RADIO_BUTTON_ID = "LEDGER_RB";
+
 
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
 
@@ -65,6 +67,9 @@ public class ImportAccountDialog implements Initializable {
     private RadioButton keystoreRadioButton;
 
     @FXML
+    private RadioButton ledgerRadioButton;
+
+    @FXML
     private ToggleGroup accountTypeToggleGroup;
 
     @FXML
@@ -74,10 +79,19 @@ public class ImportAccountDialog implements Initializable {
     private VBox importPrivateKeyView;
 
     @FXML
+    private VBox importLedgerView;
+
+    @FXML
     private CheckBox rememberAccount;
 
     @FXML
     private Label validationError;
+
+    @FXML
+    private Button connectLedgerButton;
+
+    @FXML
+    private ProgressBar connectionProgressBar;
 
     private byte[] keystoreFile;
 
@@ -194,6 +208,8 @@ public class ImportAccountDialog implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         privateKeyRadioButton.setUserData(PK_RADIO_BUTTON_ID);
         keystoreRadioButton.setUserData(KEYSTORE_RADIO_BUTTON_ID);
+        ledgerRadioButton.setUserData(LEDGER_RADIO_BUTTON_ID);
+
         accountTypeToggleGroup.selectedToggleProperty().addListener(this::radioButtonChanged);
     }
 
@@ -215,12 +231,24 @@ public class ImportAccountDialog implements Initializable {
                 case PK_RADIO_BUTTON_ID:
                     importPrivateKeyView.setVisible(true);
                     importKeystoreView.setVisible(false);
+                    importLedgerView.setVisible(false);
                     break;
                 case KEYSTORE_RADIO_BUTTON_ID:
                     importPrivateKeyView.setVisible(false);
                     importKeystoreView.setVisible(true);
+                    importLedgerView.setVisible(false);
+                    break;
+                case LEDGER_RADIO_BUTTON_ID:
+                    importPrivateKeyView.setVisible(false);
+                    importKeystoreView.setVisible(false);
+                    importLedgerView.setVisible(true);
                     break;
             }
         }
+    }
+
+    public void connectLedger(final MouseEvent mouseEvent) {
+        connectLedgerButton.setDisable(true);
+
     }
 }

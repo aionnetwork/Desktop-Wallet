@@ -26,6 +26,8 @@
                          onMouseClicked="#resetValidation"/>
             <RadioButton fx:id="privateKeyRadioButton" text="Private key" toggleGroup="$accountTypeToggleGroup"
                          onMouseClicked="#resetValidation"/>
+            <RadioButton fx:id="ledgerRadioButton" text="Ledger" toggleGroup="$accountTypeToggleGroup"
+                         onMouseClicked="#resetValidation"/>
         </VBox>
         <AnchorPane prefHeight="280.0">
             <VBox fx:id="importKeystoreView" alignment="CENTER" spacing="6.0" AnchorPane.topAnchor="0">
@@ -47,6 +49,14 @@
                                prefWidth="275.0" promptText="Password" styleClass="add-account-input-fields"
                                onKeyPressed="#submitOnEnterPressed" onMouseClicked="#resetValidation"/>
             </VBox>
+
+            <VBox fx:id="importLedgerView" alignment="CENTER" spacing="6.0" AnchorPane.topAnchor="0" visible="false">
+                <Label styleClass="create-account-text" text="Ledger import"/>
+                <Button fx:id="connectLedgerButton" text="Connect to ledger" styleClass="add-account-buttons"
+                        onMouseClicked="#connectLedger"/>
+                <ProgressBar fx:id="connectionProgressBar" />
+            </VBox>
+
             <AnchorPane AnchorPane.bottomAnchor="160">
                 <Label fx:id="validationError" text="ERROR" textFill="orangered" visible="false"/>
             </AnchorPane>
@@ -62,6 +72,5 @@
                 </HBox>
             </AnchorPane>
         </AnchorPane>
-
     </VBox>
 </AnchorPane>
