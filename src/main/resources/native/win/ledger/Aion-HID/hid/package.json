@@ -1,0 +1,14 @@
+{
+  "name": "blue-app-aion",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "get:aion-hid": "mocha ./src/aion-hid.js --no-timeouts"
+  },
+  "devDependencies": {
+    "@ledgerhq/hw-transport-node-hid": "^4.12.0",
+    "babel-runtime": "^6.26.0",
+    "mocha": "^5.2.0"
+  }
+}

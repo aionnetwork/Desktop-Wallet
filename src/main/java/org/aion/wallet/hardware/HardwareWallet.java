@@ -1,10 +1,12 @@
 package org.aion.wallet.hardware;
 
+import org.aion.wallet.hardware.ledger.LedgerException;
+
 public interface HardwareWallet {
 
     boolean isConnected();
 
-    byte[] getPublicKey(final int derivationIndex);
+    AionAccountDetails getPublicKey(final int derivationIndex) throws LedgerException;
 
-    byte[] signMessage(final byte[] message);
+    byte[] signMessage(final int derivationIndex, final byte[] message) throws LedgerException;
 }
