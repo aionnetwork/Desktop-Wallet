@@ -24,8 +24,11 @@ import org.aion.base.util.TypeConverter;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.console.ConsoleManager;
 import org.aion.wallet.dto.AccountDTO;
+import org.aion.wallet.dto.AccountType;
 import org.aion.wallet.events.EventPublisher;
 import org.aion.wallet.exception.ValidationException;
+import org.aion.wallet.hardware.HardwareWallet;
+import org.aion.wallet.hardware.HardwareWalletFactory;
 import org.aion.wallet.log.WalletLoggerFactory;
 import org.slf4j.Logger;
 
@@ -45,8 +48,8 @@ public class ImportAccountDialog implements Initializable {
 
     private static final String LEDGER_RADIO_BUTTON_ID = "LEDGER_RB";
 
-
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
+    private final HardwareWallet hardwareWallet = HardwareWalletFactory.getHardwareWallet(AccountType.LEDGER);
     private LedgerAccountListDialog ledgerAccountListDialog;
 
     @FXML
@@ -254,17 +257,22 @@ public class ImportAccountDialog implements Initializable {
         connectLedgerButton.setDisable(true);
         connectLedgerButton.setText("Connecting...");
         connectionProgressBar.setVisible(true);
+        validationError.setVisible(false);
 
-        if(connectToLedger()) {
+        if (connectToLedger()) {
             this.close(mouseEvent);
             ledgerAccountListDialog.open(mouseEvent);
-        }
-        else {
-
+        } else {
+            connectLedgerButton.setDisable(false);
+            connectLedgerButton.setText("Connect to Ledger");
+            connectionProgressBar.setVisible(false);
+            validationError.setText("Could not connect to Ledger!");
+            validationError.setVisible(true);
         }
     }
 
     private boolean connectToLedger() {
-        return true;
+        return hardwareWallet.isConnected();
+//        return true;
     }
 }

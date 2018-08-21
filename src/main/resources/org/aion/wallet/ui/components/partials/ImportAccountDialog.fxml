@@ -52,7 +52,7 @@
 
             <VBox fx:id="importLedgerView" alignment="CENTER" spacing="6.0" AnchorPane.topAnchor="0" visible="false">
                 <Label styleClass="create-account-text" text="Ledger import"/>
-                <Button fx:id="connectLedgerButton" text="Connect to ledger" styleClass="add-account-buttons"
+                <Button fx:id="connectLedgerButton" text="Connect to Ledger" styleClass="add-account-buttons"
                         onMouseClicked="#connectLedger"/>
                 <ProgressBar fx:id="connectionProgressBar" visible="false"/>
             </VBox>
@@ -61,7 +61,7 @@
                 <Label fx:id="validationError" text="ERROR" textFill="orangered" visible="false"/>
             </AnchorPane>
             <AnchorPane AnchorPane.bottomAnchor="135">
-                <CheckBox fx:id="rememberAccount" text="Remember me" />
+                <CheckBox fx:id="rememberAccount" text="Remember me"/>
             </AnchorPane>
             <AnchorPane AnchorPane.bottomAnchor="0">
                 <HBox spacing="10.0">

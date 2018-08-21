@@ -1,15 +1,16 @@
 package org.aion.wallet.ui.components.partials;
 
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Label;
+import javafx.scene.control.RadioButton;
 import javafx.scene.input.InputEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -33,10 +34,36 @@ public class LedgerAccountListDialog implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        for(int i = 0; i < 10; i++) {
-            RadioButton r = new RadioButton("test"+i);
-            ledgerAccountList.getChildren().add(r);
-        }
+        fillLedgerAccountList();
+
+    }
+
+    private void fillLedgerAccountList() {
+        HBox account1 = new HBox();
+        account1.setSpacing(10);
+        account1.setAlignment(Pos.CENTER_LEFT);
+//        account1.setPrefWidth(400);
+        RadioButton r1 = new RadioButton();
+        Label l1 = new Label();
+        l1.setText("0xa096057bc9dfc89759eef9346fd4675370a8f7987424dae571dcb70a10a57176");
+        l1.setPrefWidth(500);
+        Label b1 = new Label();
+        b1.setText("1.09978996 AION");
+        account1.getChildren().addAll(r1, l1, b1);
+
+        HBox account2 = new HBox();
+        account2.setSpacing(10);
+        account2.setAlignment(Pos.CENTER_LEFT);
+//        account2.setPrefWidth(400);
+        RadioButton r2 = new RadioButton();
+        Label l2 = new Label();
+        l2.setText("0xa0326bb6badfa70c3025c90df3404c1700d660f5473aca6dd9fd63f398f10695");
+        l2.setPrefWidth(500);
+        Label b2 = new Label();
+        b2.setText("0 AION");
+        account2.getChildren().addAll(r2, l2, b2);
+
+        ledgerAccountList.getChildren().addAll(account1, account2);
     }
 
     public void open(MouseEvent mouseEvent) {
