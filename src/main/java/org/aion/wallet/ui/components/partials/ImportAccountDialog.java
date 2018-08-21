@@ -47,6 +47,7 @@ public class ImportAccountDialog implements Initializable {
 
 
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
+    private LedgerAccountListDialog ledgerAccountListDialog;
 
     @FXML
     public TextField privateKeyInput;
@@ -206,6 +207,8 @@ public class ImportAccountDialog implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        ledgerAccountListDialog = new LedgerAccountListDialog();
+
         privateKeyRadioButton.setUserData(PK_RADIO_BUTTON_ID);
         keystoreRadioButton.setUserData(KEYSTORE_RADIO_BUTTON_ID);
         ledgerRadioButton.setUserData(LEDGER_RADIO_BUTTON_ID);
@@ -249,6 +252,19 @@ public class ImportAccountDialog implements Initializable {
 
     public void connectLedger(final MouseEvent mouseEvent) {
         connectLedgerButton.setDisable(true);
+        connectLedgerButton.setText("Connecting...");
+        connectionProgressBar.setVisible(true);
 
+        if(connectToLedger()) {
+            this.close(mouseEvent);
+            ledgerAccountListDialog.open(mouseEvent);
+        }
+        else {
+
+        }
+    }
+
+    private boolean connectToLedger() {
+        return true;
     }
 }

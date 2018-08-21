@@ -54,7 +54,7 @@
                 <Label styleClass="create-account-text" text="Ledger import"/>
                 <Button fx:id="connectLedgerButton" text="Connect to ledger" styleClass="add-account-buttons"
                         onMouseClicked="#connectLedger"/>
-                <ProgressBar fx:id="connectionProgressBar" />
+                <ProgressBar fx:id="connectionProgressBar" visible="false"/>
             </VBox>
 
             <AnchorPane AnchorPane.bottomAnchor="160">
