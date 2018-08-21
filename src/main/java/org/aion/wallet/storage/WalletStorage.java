@@ -94,7 +94,7 @@ public class WalletStorage {
     private void ensureExistence(final Path path, final boolean isDir) throws IOException {
         if (!Files.exists(path)) {
             if (isDir) {
-                Files.createDirectory(path);
+                Files.createDirectories(path);
             } else {
                 Files.createFile(path);
             }
@@ -169,9 +169,13 @@ public class WalletStorage {
         return Optional.ofNullable(accountsProperties.getProperty(MASTER_DERIVATIONS_PROP)).map(Integer::parseInt).orElse(0);
     }
 
-    public void incrementMasterAccountDerivations() {
-        accountsProperties.setProperty(MASTER_DERIVATIONS_PROP, getMasterAccountDerivations() + 1 + "");
-        saveSettings();
+    public void incrementMasterAccountDerivations() throws ValidationException {
+        if (hasMasterAccount()) {
+            accountsProperties.setProperty(MASTER_DERIVATIONS_PROP, String.valueOf(getMasterAccountDerivations() + 1));
+            saveSettings();
+        } else {
+            throw new ValidationException("Cannot increment derivation when master account is missing");
+        }
     }
 
     public final LightAppSettings getLightAppSettings(final ApiType type) {
