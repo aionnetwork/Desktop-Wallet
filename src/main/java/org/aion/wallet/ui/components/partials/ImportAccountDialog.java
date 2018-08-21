@@ -29,6 +29,7 @@ import org.aion.wallet.events.EventPublisher;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.hardware.HardwareWallet;
 import org.aion.wallet.hardware.HardwareWalletFactory;
+import org.aion.wallet.hardware.ledger.LedgerWallet;
 import org.aion.wallet.log.WalletLoggerFactory;
 import org.slf4j.Logger;
 
@@ -49,7 +50,7 @@ public class ImportAccountDialog implements Initializable {
     private static final String LEDGER_RADIO_BUTTON_ID = "LEDGER_RB";
 
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
-    private final HardwareWallet hardwareWallet = HardwareWalletFactory.getHardwareWallet(AccountType.LEDGER);
+    private final LedgerWallet hardwareWallet = (LedgerWallet) HardwareWalletFactory.getHardwareWallet(AccountType.LEDGER);
     private LedgerAccountListDialog ledgerAccountListDialog;
 
     @FXML
@@ -273,6 +274,5 @@ public class ImportAccountDialog implements Initializable {
 
     private boolean connectToLedger() {
         return hardwareWallet.isConnected();
-//        return true;
     }
 }
