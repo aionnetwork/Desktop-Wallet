@@ -19,11 +19,20 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import org.aion.api.log.LogEnum;
+import org.aion.base.util.TypeConverter;
+import org.aion.wallet.connector.BlockchainConnector;
+import org.aion.wallet.dto.AccountType;
+import org.aion.wallet.exception.ValidationException;
+import org.aion.wallet.hardware.AionAccountDetails;
+import org.aion.wallet.hardware.HardwareWallet;
+import org.aion.wallet.hardware.HardwareWalletFactory;
+import org.aion.wallet.hardware.ledger.LedgerException;
 import org.aion.wallet.log.WalletLoggerFactory;
 import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class LedgerAccountListDialog implements Initializable {
@@ -64,11 +73,18 @@ public class LedgerAccountListDialog implements Initializable {
 
         ledgerAccountList.getChildren().addAll(account1, account2);
 
-        for(int i = 0; i<10; i++) {
+        for (int i = 0; i < 1; i++) {
             HBox account = new HBox();
             account.setSpacing(10);
             account.setAlignment(Pos.CENTER_LEFT);
-            RadioButton radioButton = new RadioButton();
+            final HardwareWallet hardwareWallet = HardwareWalletFactory.getHardwareWallet(AccountType.LEDGER);
+            String hexAddress = "0x00";
+            try {
+                hexAddress = hardwareWallet.getAccountDetails(i).getAddress();
+            } catch (LedgerException e) {
+                log.error(e.getMessage(), e);
+            }
+            RadioButton radioButton = new RadioButton(TypeConverter.toJsonHex(hexAddress));
             Label address = new Label("");
             address.setPrefWidth(500);
             Label balance = new Label("");
@@ -103,7 +119,18 @@ public class LedgerAccountListDialog implements Initializable {
         popup.show();
     }
 
-    public void close(InputEvent eventSource) {
+    public void close(final InputEvent eventSource) {
         ((Node) eventSource.getSource()).getScene().getWindow().hide();
+    }
+
+    @FXML
+    private void addAccount(final InputEvent eventSource) {
+        try {
+            final String address = HardwareWalletFactory.getHardwareWallet(AccountType.LEDGER).getAccountDetails(0).getAddress();
+            BlockchainConnector.getInstance().importHardwareWallet(0, address, AccountType.LEDGER);
+        } catch (ValidationException | LedgerException e) {
+            e.printStackTrace();
+        }
+        close(eventSource);
     }
 }

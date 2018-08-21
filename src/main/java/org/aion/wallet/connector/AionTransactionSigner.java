@@ -11,8 +11,6 @@ import org.aion.wallet.hardware.HardwareWalletFactory;
 import org.aion.wallet.hardware.ledger.LedgerException;
 import org.aion.wallet.util.CryptoUtils;
 
-import java.io.IOException;
-
 public class AionTransactionSigner {
 
     private final AccountDTO account;

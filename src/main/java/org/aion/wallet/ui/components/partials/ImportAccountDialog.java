@@ -50,7 +50,7 @@ public class ImportAccountDialog implements Initializable {
     private static final String LEDGER_RADIO_BUTTON_ID = "LEDGER_RB";
 
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
-    private final LedgerWallet hardwareWallet = (LedgerWallet) HardwareWalletFactory.getHardwareWallet(AccountType.LEDGER);
+    private final HardwareWallet hardwareWallet = HardwareWalletFactory.getHardwareWallet(AccountType.LEDGER);
     private LedgerAccountListDialog ledgerAccountListDialog;
 
     @FXML

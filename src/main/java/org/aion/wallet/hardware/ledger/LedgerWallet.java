@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigInteger;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 
@@ -50,9 +49,8 @@ public class LedgerWallet implements HardwareWallet {
             if(!Files.exists(Paths.get(System.getProperty("user.dir") + WINDOWS_DRIVER_PATH_HID + "\\node_modules"))) {
                 String[] commands = new String[]{"npm", "install"};
                 processBuilder.directory(new File(System.getProperty("user.dir") + WINDOWS_DRIVER_PATH_HID));
-                Process process = null;
                 try {
-                    process = processBuilder.command(commands).start();
+                    processBuilder.command(commands).start();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -85,14 +83,13 @@ public class LedgerWallet implements HardwareWallet {
     @Override
     public AionAccountDetails getAccountDetails(final int derivationIndex) throws LedgerException {
         String[] commands = getCommandForAccountAddress(derivationIndex);
-        Process process = null;
+        Process process;
         try {
             process = processBuilder.command(commands).start();
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new LedgerException(e);
         }
 
-        assert process != null;
         BufferedReader lineReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
         BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
 
@@ -115,14 +112,14 @@ public class LedgerWallet implements HardwareWallet {
         log.debug("Ledger returned for getPublic address : " + output);
         String[] spaceSplitted = output.toString().split(" ");
 
-        if(OSUtils.isUnix()) {
+        if (OSUtils.isUnix()) {
             if (spaceSplitted.length == 3) {
                 return new AionAccountDetails(spaceSplitted[2].substring(0, 64), spaceSplitted[2].substring(64, 128));
             } else {
                 throw new LedgerException("Error wile communicating with the ledger...");
             }
-        } else if(OSUtils.isWindows()){
-            if(spaceSplitted[9].equals("response") && !spaceSplitted[11].isEmpty()){
+        } else if (OSUtils.isWindows()) {
+            if (spaceSplitted[9].equals("response") && !spaceSplitted[11].isEmpty()) {
                 return new AionAccountDetails(spaceSplitted[11].substring(0, 64), spaceSplitted[11].substring(64, 128));
             } else {
                 throw new LedgerException("Error wile communicating with the ledger...");
@@ -164,16 +161,16 @@ public class LedgerWallet implements HardwareWallet {
         log.debug("Ledger returned for signing command : " + output);
         String[] spaceSplitted = output.toString().split(" ");
 
-        if(OSUtils.isUnix()) {
+        if (OSUtils.isUnix()) {
             if (spaceSplitted.length == 3) {
                 return spaceSplitted[2];
             } else {
                 throw new LedgerException("Error wile communicating with the ledger...");
             }
-        } else if(OSUtils.isWindows()){
-            if(spaceSplitted[9].equals("response") && !spaceSplitted[11].isEmpty()){
+        } else if (OSUtils.isWindows()) {
+            if (spaceSplitted[9].equals("response") && !spaceSplitted[11].isEmpty()) {
                 return spaceSplitted[11];
-            }else {
+            } else {
                 throw new LedgerException("Error wile communicating with the ledger...");
             }
         } else {
@@ -181,7 +178,7 @@ public class LedgerWallet implements HardwareWallet {
         }
     }
 
-    private String getDerivationPathForIndex(int derivationIndex){
+    private String getDerivationPathForIndex(int derivationIndex) {
         BigInteger defaultDerivation = new BigInteger("80000000", 16);
         BigInteger pathIndex = new BigInteger(String.valueOf(derivationIndex));
         return DEFAULT_DERIVATION_PATH + defaultDerivation.or(pathIndex).toString(16);
@@ -189,19 +186,19 @@ public class LedgerWallet implements HardwareWallet {
 
     private String[] getCommandForAccountAddress(int derivationIndex) throws LedgerException {
         //Example of param : e002010015058000002c800001a9800000008000000080000000
-        if(OSUtils.isUnix()) {
+        if (OSUtils.isUnix()) {
             return new String[]{LINUX_DRIVER_PATH, PARAM_KEY +
-                                "e0" + GET_PUBLIC_KEY_INDEX +
-                                DEFAULT_THIRD_AND_FORTH_BYTES_FOR_KEY_GENERATION +
-                                PATH_LENGTH + getDerivationPathForIndex(derivationIndex)};
+                    "e0" + GET_PUBLIC_KEY_INDEX +
+                    DEFAULT_THIRD_AND_FORTH_BYTES_FOR_KEY_GENERATION +
+                    PATH_LENGTH + getDerivationPathForIndex(derivationIndex)};
 
-        } else if(OSUtils.isWindows()){
+        } else if (OSUtils.isWindows()) {
             return new String[]{WINDOWS_DRIVER_PATH, "run",
-                                WINDOWS_AION_HID_KEY , "e0" +
-                                GET_PUBLIC_KEY_INDEX +
-                                DEFAULT_THIRD_AND_FORTH_BYTES_FOR_KEY_GENERATION +
-                                PATH_LENGTH + getDerivationPathForIndex(derivationIndex) ,
-                                WINDOWS_PREFIX_KEY , WINDOWS_DRIVER_PATH_HID};
+                    WINDOWS_AION_HID_KEY, "e0" +
+                    GET_PUBLIC_KEY_INDEX +
+                    DEFAULT_THIRD_AND_FORTH_BYTES_FOR_KEY_GENERATION +
+                    PATH_LENGTH + getDerivationPathForIndex(derivationIndex),
+                    WINDOWS_PREFIX_KEY, WINDOWS_DRIVER_PATH_HID};
         } else {
             throw new LedgerException("Platform not yet supported");
         }
@@ -210,7 +207,7 @@ public class LedgerWallet implements HardwareWallet {
     private String[] getCommandForTransactionSigning(int derivationIndex, final byte[] message) throws LedgerException {
         int length = PATH_LENGTH + message.length;
         //Example of param : e0040000cf058000002c800001a9800000008000000080000000 + message
-        if(OSUtils.isUnix()){
+        if (OSUtils.isUnix()) {
             return new String[]{LINUX_DRIVER_PATH, PARAM_KEY +
                                 "e0" + SIGN_TRANSACTION_INDEX +
                                 DEFAULT_THIRD_AND_FORTH_BYTES_FOR_SIGNING +
