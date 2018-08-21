@@ -25,7 +25,7 @@ public class AionTransactionSigner {
         final AccountType accountType = account.getType();
         switch (accountType) {
             case LOCAL:
-            case IMPORTED:
+            case EXTERNAL:
                 final ECKey ecKey = CryptoUtils.getECKey(account.getPrivateKey());
                 transaction.sign(ecKey);
                 break;

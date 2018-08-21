@@ -20,7 +20,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import org.aion.api.log.LogEnum;
-import org.aion.base.util.Hex;
+import org.aion.base.util.TypeConverter;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.console.ConsoleManager;
 import org.aion.wallet.dto.AccountDTO;
@@ -132,7 +132,7 @@ public class ImportAccountDialog implements Initializable {
         String password = privateKeyPassword.getText();
         String privateKey = privateKeyInput.getText();
         if (password != null && !password.isEmpty() && privateKey != null && !privateKey.isEmpty()) {
-            byte[] raw = Hex.decode(privateKey.startsWith("0x") ? privateKey.substring(2) : privateKey);
+            byte[] raw = TypeConverter.StringHexToByteArray(privateKey);
             if (raw == null) {
                 final String errorMessage = "Invalid private key: " + privateKey;
                 log.error(errorMessage);

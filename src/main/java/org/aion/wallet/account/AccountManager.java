@@ -60,7 +60,7 @@ public class AccountManager {
         this.balanceProvider = balanceProvider;
         this.currencySupplier = currencySupplier;
         for (String address : LocalKeystore.list()) {
-            addressToAccount.put(address, getNewAccount(address));
+            addressToAccount.put(address, getNewImportedAccount(address));
         }
     }
 
@@ -148,6 +148,18 @@ public class AccountManager {
         }
     }
 
+    public AccountDTO importHardwareWallet(final AccountType accountType, final int derivationIndex, final String address) throws ValidationException {
+        AccountDTO account;
+        if (!addressToAccount.keySet().contains(address)) {
+            account = createHardwareWalletAccount(accountType, derivationIndex, address);
+            if (account == null) return null;
+        } else {
+            throw new ValidationException("Account already exists!");
+        }
+        EventPublisher.fireAccountAdded(account);
+        return account;
+    }
+
     private String unlockInternalAccount(final int derivationIndex) throws ValidationException {
         if (root == null) {
             return null;
@@ -189,7 +201,7 @@ public class AccountManager {
             if (!LocalKeystore.exist(address)) {
                 address = LocalKeystore.create(password, key);
                 if (AddressUtils.isValid(address)) {
-                    accountDTO = createImportedAccountFromPrivateKey(address, key.getPrivKeyBytes());
+                    accountDTO = createExternalAccountFromPrivateKey(address, key.getPrivKeyBytes());
                 } else {
                     throw new ValidationException("Failed to save keystore file");
                 }
@@ -198,7 +210,7 @@ public class AccountManager {
             }
         } else {
             if (!addressToAccount.keySet().contains(address)) {
-                accountDTO = createImportedAccountFromPrivateKey(address, key.getPrivKeyBytes());
+                accountDTO = createExternalAccountFromPrivateKey(address, key.getPrivKeyBytes());
             } else {
                 throw new ValidationException("Account already exists!");
             }
@@ -206,7 +218,7 @@ public class AccountManager {
         if (accountDTO == null) {
             throw new ValidationException("Failed to create account");
         }
-        processAccountAdded(accountDTO, fileContent);
+        processExternalAccountAdded(accountDTO, fileContent);
         return accountDTO;
     }
 
@@ -273,10 +285,8 @@ public class AccountManager {
         }
         List<AccountDTO> accounts = new ArrayList<>(filteredAccounts);
         accounts.sort((AccountDTO o1, AccountDTO o2) -> {
-            if (!o1.isImported() && !o2.isImported()) {
-                return o1.getDerivationIndex() - o2.getDerivationIndex();
-            }
-            return o1.isImported() ? 1 : -1;
+            final int order = o1.getType().getOrder() - o2.getType().getOrder();
+            return order == 0 ? o1.getDerivationIndex() - o2.getDerivationIndex() : order;
         });
         return accounts;
     }
@@ -286,7 +296,7 @@ public class AccountManager {
     }
 
     public AccountDTO getAccount(final String address) {
-        return Optional.ofNullable(addressToAccount.get(address)).orElse(getNewAccount(address));
+        return Optional.ofNullable(addressToAccount.get(address)).orElse(getNewImportedAccount(address));
     }
 
     public void updateAccount(final AccountDTO account) {
@@ -294,7 +304,6 @@ public class AccountManager {
     }
 
     public void unlockAccount(final AccountDTO account, final String password) throws ValidationException {
-        isWalletLocked = false;
         final Optional<byte[]> fileContent = Optional.ofNullable(addressToKeystoreContent.get(account.getPublicAddress()));
         final ECKey storedKey;
         if (fileContent.isPresent()) {
@@ -339,8 +348,8 @@ public class AccountManager {
         }
     }
 
-    private AccountDTO createImportedAccountFromPrivateKey(final String address, final byte[] privateKeyBytes) {
-        return createAccountWithPrivateKey(address, privateKeyBytes, AccountType.IMPORTED, -1);
+    private AccountDTO createExternalAccountFromPrivateKey(final String address, final byte[] privateKeyBytes) {
+        return createAccountWithPrivateKey(address, privateKeyBytes, AccountType.EXTERNAL, -1);
     }
 
     private AccountDTO createAccountWithPrivateKey(final String address, final byte[] privateKeyBytes, AccountType accountType, int derivation) {
@@ -359,7 +368,19 @@ public class AccountManager {
         return account;
     }
 
-    private void processAccountAdded(final AccountDTO account, final byte[] keystoreContent) {
+    private AccountDTO createHardwareWalletAccount(final AccountType accountType, final int derivationIndex, final String address) {
+        final AccountDTO account;
+        if (address == null) {
+            log.error("Can't create account with null address");
+            return null;
+        }
+        account = getNewAccount(address, accountType, derivationIndex);
+        account.setActive(true);
+        addressToAccount.put(account.getPublicAddress(), account);
+        return account;
+    }
+
+    private void processExternalAccountAdded(final AccountDTO account, final byte[] keystoreContent) {
         if (account == null || keystoreContent == null) {
             throw new IllegalArgumentException(String.format("account %s ; keystoreContent: %s", account, Arrays.toString(keystoreContent)));
         }
@@ -381,8 +402,8 @@ public class AccountManager {
                 derivation);
     }
 
-    private AccountDTO getNewAccount(final String publicAddress) {
-        return getNewAccount(publicAddress, AccountType.IMPORTED, -1);
+    private AccountDTO getNewImportedAccount(final String publicAddress) {
+        return getNewAccount(publicAddress, AccountType.EXTERNAL, -1);
     }
 
     private void storeAccountName(final String address, final String name) {

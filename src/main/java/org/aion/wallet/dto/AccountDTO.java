@@ -145,7 +145,7 @@ public class AccountDTO {
     }
 
     public boolean isUnlocked() {
-        return privateKey != null;
+        return !EnumSet.of(AccountType.LOCAL, AccountType.EXTERNAL).contains(type) || privateKey != null;
     }
 
 }

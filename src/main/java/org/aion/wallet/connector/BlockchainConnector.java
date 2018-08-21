@@ -7,9 +7,11 @@ import org.aion.wallet.connector.dto.SyncInfoDTO;
 import org.aion.wallet.connector.dto.TransactionDTO;
 import org.aion.wallet.connector.dto.TransactionResponseDTO;
 import org.aion.wallet.dto.AccountDTO;
+import org.aion.wallet.dto.AccountType;
 import org.aion.wallet.dto.LightAppSettings;
 import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
+import org.aion.wallet.hardware.AionAccountDetails;
 import org.aion.wallet.storage.ApiType;
 import org.aion.wallet.storage.WalletStorage;
 import org.aion.wallet.util.ConfigUtils;
@@ -80,8 +82,12 @@ public abstract class BlockchainConnector {
         return accountManager.importKeystore(file, password, shouldKeep);
     }
 
-    public final AccountDTO importPrivateKey(final byte[] raw, final String password, final boolean shouldKeep) throws ValidationException {
-        return accountManager.importPrivateKey(raw, password, shouldKeep);
+    public final AccountDTO importPrivateKey(final byte[] privateKey, final String password, final boolean shouldKeep) throws ValidationException {
+        return accountManager.importPrivateKey(privateKey, password, shouldKeep);
+    }
+
+    public final AccountDTO importHardwareWallet(final int derivationIndex, final String address, final AccountType accountType) throws ValidationException {
+        return accountManager.importHardwareWallet(accountType, derivationIndex, address);
     }
 
     public final void exportAccount(final AccountDTO account, final String password, final String destinationDir) throws ValidationException {
@@ -111,7 +117,6 @@ public abstract class BlockchainConnector {
         }
         return sendTransactionInternal(dto);
     }
-
 
     protected AionTransactionSigner getTransactionSigner(final AccountDTO from) {
         return new AionTransactionSigner(from);
