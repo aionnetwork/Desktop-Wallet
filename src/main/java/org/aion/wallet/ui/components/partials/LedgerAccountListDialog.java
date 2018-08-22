@@ -30,6 +30,7 @@ import org.aion.wallet.hardware.HardwareWallet;
 import org.aion.wallet.hardware.HardwareWalletFactory;
 import org.aion.wallet.hardware.ledger.LedgerException;
 import org.aion.wallet.log.WalletLoggerFactory;
+import org.aion.wallet.util.BalanceUtils;
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -85,7 +86,7 @@ public class LedgerAccountListDialog implements Initializable {
             account.setAlignment(Pos.CENTER_LEFT);
             account.setStyle("-fx-border-color: #ececec; -fx-border-width: 0 0 1 0;");
 
-            AionAccountDetails accountDetails = null;
+            AionAccountDetails accountDetails;
             try {
                 accountDetails = hardwareWallet.getAccountDetails(i);
             } catch (LedgerException e) {
@@ -98,7 +99,9 @@ public class LedgerAccountListDialog implements Initializable {
             address.setPrefWidth(550);
             address.setEditable(false);
             address.getStyleClass().add("copyable-textfield");
-            Label balance = new Label(0 + " AION");
+            Label balance = new Label(
+                    BalanceUtils.formatBalance(blockchainConnector.getBalance(accountDetails.getAddress()))
+                            + " AION");
             balance.getStyleClass().add("copyable-label");
             balance.setPrefWidth(100);
             account.getChildren().addAll(radioButton, address, balance);
