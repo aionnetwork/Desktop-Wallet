@@ -10,5 +10,5 @@ public interface HardwareWallet {
 
     AionAccountDetails getAccountDetails(final int derivationIndex) throws LedgerException, IOException;
 
-    byte[] signMessage(final int derivationIndex, final byte[] message) throws LedgerException, IOException;
+    String signMessage(final int derivationIndex, final byte[] message) throws LedgerException, IOException;
 }

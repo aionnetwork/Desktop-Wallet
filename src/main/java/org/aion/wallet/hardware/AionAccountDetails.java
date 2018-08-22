@@ -1,27 +1,27 @@
 package org.aion.wallet.hardware;
 
 public class AionAccountDetails {
-    private byte[] publicKey;
-    private byte[] address;
+    private String publicKey;
+    private String address;
 
-    public AionAccountDetails(byte[] publicKey, byte[] address) {
+    public AionAccountDetails(String publicKey, String address) {
         this.publicKey = publicKey;
         this.address = address;
     }
 
-    public byte[] getPublicKey() {
+    public String getPublicKey() {
         return publicKey;
     }
 
-    public void setPublicKey(byte[] publicKey) {
+    public void setPublicKey(String publicKey) {
         this.publicKey = publicKey;
     }
 
-    public byte[] getAddress() {
+    public String getAddress() {
         return address;
     }
 
-    public void setAddress(byte[] address) {
+    public void setAddress(String address) {
         this.address = address;
     }
 }
