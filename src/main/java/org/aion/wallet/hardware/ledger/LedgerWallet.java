@@ -10,10 +10,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigInteger;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 public class LedgerWallet implements HardwareWallet {
-    private static final String WINDOWS_DRIVER_PATH = "native/win/ledger/Aion-HID/npm run get:aion-hid";
+    private static final String WINDOWS_DRIVER_PATH = "native\\win\\ledger\\Aion-HID\\npm.cmd";
+    private static final String WINDOWS_DRIVER_PATH_HID = "native\\win\\ledger\\Aion-HID\\hid";
 
     private static final String LINUX_DRIVER_PATH = "native/linux/ledger/Aion-HID";
     private static final String PARAM_KEY = "--param=";
@@ -31,27 +32,36 @@ public class LedgerWallet implements HardwareWallet {
 
     private static String OS = System.getProperty("os.name").toLowerCase();
     private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
+    private ProcessBuilder processBuilder;
+
+    public LedgerWallet(){
+        processBuilder = new ProcessBuilder();
+        Map<String, String> envs = processBuilder.environment();
+        if(isWindows()) {
+            envs.put("Path", System.getProperty("user.dir") + "\\native\\win\\ledger\\Aion-HID\\Aion-HID");
+        }
+    }
 
     @Override
     public boolean isConnected() {
         try {
-            getPublicKey(DERIVATION_INDEX_FOR_CONNECTIVITY_CHECKS);
+            getAccountDetails(DERIVATION_INDEX_FOR_CONNECTIVITY_CHECKS);
         } catch (LedgerException e) {
             log.info("Ledger is not connected...");
+            return false;
+        } catch (IOException e) {
+            e.printStackTrace();
             return false;
         }
         return true;
     }
 
     @Override
-    public AionAccountDetails getPublicKey(final int derivationIndex) throws LedgerException {
-
-        Runtime runtime = Runtime.getRuntime();
+    public AionAccountDetails getAccountDetails(final int derivationIndex) throws LedgerException, IOException {
         String[] commands = getCommandForAccountAddress(derivationIndex);
         Process process = null;
-
         try {
-            process = runtime.exec(commands);
+            process = processBuilder.command(commands).start();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -59,24 +69,40 @@ public class LedgerWallet implements HardwareWallet {
         assert process != null;
         BufferedReader lineReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
-        String output = lineReader.lines().collect(Collectors.joining());
-        log.debug("Ledger returned for getPublic address : " + output);
-        String[] spaceSplitted = output.split(" ");
+        String line;
+        StringBuilder output = new StringBuilder();
+        while((line = lineReader.readLine()) != null)
+        {
+            System.out.println(line);
+            output.append(line);
+        }
 
-        if(spaceSplitted.length == 3){
-            return new AionAccountDetails(spaceSplitted[2].substring(64, 128).getBytes(), spaceSplitted[2].substring(0, 64).getBytes());
+        log.debug("Ledger returned for getPublic address : " + output);
+        String[] spaceSplitted = output.toString().split(" ");
+
+        if(isUnix()) {
+            if (spaceSplitted.length == 3) {
+                return new AionAccountDetails(spaceSplitted[2].substring(64, 128).getBytes(), spaceSplitted[2].substring(0, 64).getBytes());
+            } else {
+                throw new LedgerException("Error wile communicating with the ledger...");
+            }
+        } else if(isWindows()){
+            if(spaceSplitted[9].equals("response") && !spaceSplitted[11].isEmpty()){
+                return new AionAccountDetails(spaceSplitted[11].substring(64, 128).getBytes(), spaceSplitted[11].substring(0, 64).getBytes());
+            } else {
+                throw new LedgerException("Error wile communicating with the ledger...");
+            }
         } else {
-            throw new LedgerException("Error wile communicating with the ledger...");
+            throw new LedgerException("Platform is not supported yet");
         }
     }
 
     @Override
-    public byte[] signMessage(final int derivationIndex, final byte[] message) throws LedgerException {
-        Runtime runtime = Runtime.getRuntime();
+    public byte[] signMessage(final int derivationIndex, final byte[] message) throws LedgerException, IOException {
         String[] commands  = getCommandForTransactionSigning(derivationIndex, message);
         Process process = null;
         try {
-            process = runtime.exec(commands);
+            process = processBuilder.command(commands).start();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -84,14 +110,31 @@ public class LedgerWallet implements HardwareWallet {
         assert process != null;
         BufferedReader lineReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
-        String output = lineReader.lines().collect(Collectors.joining());
-        log.debug("Ledger returned for signing command : " + output);
-        String[] spaceSplitted = output.split(" ");
+        String line;
+        StringBuilder output = new StringBuilder();
+        while((line = lineReader.readLine()) != null)
+        {
+            System.out.println(line);
+            output.append(line);
+        }
 
-        if(spaceSplitted.length == 3){
-            return spaceSplitted[2].getBytes();
+        log.debug("Ledger returned for signing command : " + output);
+        String[] spaceSplitted = output.toString().split(" ");
+
+        if(isUnix()) {
+            if (spaceSplitted.length == 3) {
+                return spaceSplitted[2].getBytes();
+            } else {
+                throw new LedgerException("Error wile communicating with the ledger...");
+            }
+        } else if(isWindows()){
+            if(spaceSplitted[9].equals("response") && !spaceSplitted[11].isEmpty()){
+                return spaceSplitted[11].getBytes();
+            }else {
+                throw new LedgerException("Error wile communicating with the ledger...");
+            }
         } else {
-            throw new LedgerException("Error wile communicating with the ledger...");
+            throw new LedgerException("Platform is not supported yet");
         }
     }
 
@@ -106,7 +149,7 @@ public class LedgerWallet implements HardwareWallet {
         if(isUnix()) {
             return new String[]{LINUX_DRIVER_PATH, PARAM_KEY + "e0" + GET_PUBLIC_KEY_INDEX + "0100" + PATH_LENGTH + getDerivationPathForIndex(derivationIndex)};
         } else if(isWindows()){
-            return new String[]{WINDOWS_DRIVER_PATH, "e0" + GET_PUBLIC_KEY_INDEX + "0100" + PATH_LENGTH + getDerivationPathForIndex(derivationIndex)};
+            return new String[]{WINDOWS_DRIVER_PATH, "run", "get:aion-hid" , "e0" + GET_PUBLIC_KEY_INDEX + "0100" + PATH_LENGTH + getDerivationPathForIndex(derivationIndex) , "--prefix" , WINDOWS_DRIVER_PATH_HID};
         } else {
             throw new LedgerException("Platform not yet supported");
         }
@@ -118,7 +161,7 @@ public class LedgerWallet implements HardwareWallet {
         if(isUnix()){
             return new String[]{LINUX_DRIVER_PATH, PARAM_KEY + "e0" + SIGN_TRANSACTION_INDEX + "0000" + Integer.toHexString(length) + getDerivationPathForIndex(derivationIndex) + new String(message)};
         } else if(isWindows()){
-            return new String[]{WINDOWS_DRIVER_PATH, "e0" + SIGN_TRANSACTION_INDEX + "0000" + Integer.toHexString(length) + getDerivationPathForIndex(derivationIndex) + new String(message)};
+            return new String[]{WINDOWS_DRIVER_PATH, "run", "get:aion-hid" , "e0" + SIGN_TRANSACTION_INDEX + "0000" + Integer.toHexString(length) + getDerivationPathForIndex(derivationIndex) + new String(message) , "--prefix" , WINDOWS_DRIVER_PATH_HID};
         } else {
             throw new LedgerException("Platform not yet supported");
         }

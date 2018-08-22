@@ -10,6 +10,8 @@ import org.aion.wallet.hardware.HardwareWalletFactory;
 import org.aion.wallet.hardware.ledger.LedgerException;
 import org.aion.wallet.util.CryptoUtils;
 
+import java.io.IOException;
+
 public class AionTransactionSigner {
 
     private final AccountDTO account;
@@ -31,10 +33,10 @@ public class AionTransactionSigner {
                 final HardwareWallet wallet = HardwareWalletFactory.getHardwareWallet(accountType);
                 final byte[] publicKey;
                 try {
-                    publicKey = wallet.getPublicKey(account.getDerivationIndex()).getPublicKey();
+                    publicKey = wallet.getAccountDetails(account.getDerivationIndex()).getPublicKey();
                     final byte[] signature = wallet.signMessage(account.getDerivationIndex(), transaction.getRawHash());
                     transaction.setSignature(new Ed25519Signature(publicKey, signature));
-                } catch (LedgerException e) {
+                } catch (LedgerException | IOException e) {
                     e.printStackTrace();
                 }
                 break;
