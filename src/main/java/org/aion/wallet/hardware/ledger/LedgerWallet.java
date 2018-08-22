@@ -38,7 +38,7 @@ public class LedgerWallet implements HardwareWallet {
         processBuilder = new ProcessBuilder();
         Map<String, String> envs = processBuilder.environment();
         if(OSUtils.isWindows()) {
-            envs.put("Path", System.getProperty("user.dir") + "\\native\\win\\ledger\\Aion-HID\\Aion-HID");
+            envs.put("Path", System.getProperty("user.dir") + "\\native\\win\\ledger\\Aion-HID");
         }
     }
 
