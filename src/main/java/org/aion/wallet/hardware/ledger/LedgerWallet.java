@@ -9,14 +9,19 @@ import org.aion.wallet.util.OSUtils;
 import org.slf4j.Logger;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigInteger;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 
 public class LedgerWallet implements HardwareWallet {
     private static final String WINDOWS_DRIVER_PATH = "native\\win\\ledger\\Aion-HID\\npm.cmd";
     private static final String WINDOWS_DRIVER_PATH_HID = "native\\win\\ledger\\Aion-HID\\hid";
+    private static final String WINDOWS_NPM_LOCATION = "\\native\\win\\ledger\\Aion-HID";
     private static final String WINDOWS_PREFIX_KEY = "--prefix";
     private static final String WINDOWS_AION_HID_KEY = "get:aion-hid";
 
@@ -36,11 +41,34 @@ public class LedgerWallet implements HardwareWallet {
     private ProcessBuilder processBuilder;
 
     public LedgerWallet(){
-        processBuilder = new ProcessBuilder();
-        Map<String, String> envs = processBuilder.environment();
-        if(OSUtils.isWindows()) {
-            envs.put("Path", System.getProperty("user.dir") + "\\native\\win\\ledger\\Aion-HID");
+        processBuilder = createProcessBuilder();
+        runNpmInstallIfWindows();
+    }
+
+    private void runNpmInstallIfWindows() {
+        if(OSUtils.isWindows()){
+            if(!Files.exists(Paths.get(System.getProperty("user.dir") + WINDOWS_DRIVER_PATH_HID + "\\node_modules"))) {
+                String[] commands = new String[]{"npm", "install"};
+                processBuilder.directory(new File(System.getProperty("user.dir") + WINDOWS_DRIVER_PATH_HID));
+                Process process = null;
+                try {
+                    process = processBuilder.command(commands).start();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                log.debug("The node_module folder already exists");
+            }
         }
+    }
+
+    private ProcessBuilder createProcessBuilder(){
+        ProcessBuilder tmpBuilder = new ProcessBuilder();
+        Map<String, String> envs = tmpBuilder.environment();
+        if(OSUtils.isWindows()) {
+            envs.put("Path", System.getProperty("user.dir") + WINDOWS_NPM_LOCATION);
+        }
+        return tmpBuilder;
     }
 
     @Override
