@@ -1,6 +1,7 @@
 package org.aion.wallet.connector;
 
 import org.aion.api.type.core.tx.AionTransaction;
+import org.aion.base.util.TypeConverter;
 import org.aion.crypto.ECKey;
 import org.aion.crypto.ed25519.Ed25519Signature;
 import org.aion.wallet.dto.AccountDTO;
@@ -31,12 +32,12 @@ public class AionTransactionSigner {
             case LEDGER:
             case TREZOR:
                 final HardwareWallet wallet = HardwareWalletFactory.getHardwareWallet(accountType);
-                final byte[] publicKey;
+                final String publicKey;
                 try {
                     publicKey = wallet.getAccountDetails(account.getDerivationIndex()).getPublicKey();
-                    final byte[] signature = wallet.signMessage(account.getDerivationIndex(), transaction.getRawHash());
-                    transaction.setSignature(new Ed25519Signature(publicKey, signature));
-                } catch (LedgerException | IOException e) {
+                    final String signature = wallet.signMessage(account.getDerivationIndex(), transaction.getRawHash());
+                    transaction.setSignature(new Ed25519Signature(TypeConverter.StringHexToByteArray(publicKey), TypeConverter.StringHexToByteArray(signature)));
+                } catch (LedgerException e) {
                     e.printStackTrace();
                 }
                 break;

@@ -1,6 +1,7 @@
 package org.aion.wallet.hardware.ledger;
 
 import org.aion.api.log.LogEnum;
+import org.aion.base.util.TypeConverter;
 import org.aion.wallet.hardware.AionAccountDetails;
 import org.aion.wallet.hardware.HardwareWallet;
 import org.aion.wallet.log.WalletLoggerFactory;
@@ -47,17 +48,14 @@ public class LedgerWallet implements HardwareWallet {
         try {
             getAccountDetails(DERIVATION_INDEX_FOR_CONNECTIVITY_CHECKS);
         } catch (LedgerException e) {
-            log.info("Ledger is not connected...");
-            return false;
-        } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             return false;
         }
         return true;
     }
 
     @Override
-    public AionAccountDetails getAccountDetails(final int derivationIndex) throws LedgerException, IOException {
+    public AionAccountDetails getAccountDetails(final int derivationIndex) throws LedgerException {
         String[] commands = getCommandForAccountAddress(derivationIndex);
         Process process = null;
         try {
@@ -72,14 +70,17 @@ public class LedgerWallet implements HardwareWallet {
 
         String line;
         StringBuilder output = new StringBuilder();
-        while((line = lineReader.readLine()) != null)
-        {
-            output.append(line);
-        }
 
-        while((line = errorReader.readLine()) != null)
-        {
-            output.append(line);
+        try {
+            while ((line = lineReader.readLine()) != null) {
+                output.append(line);
+            }
+
+            while ((line = errorReader.readLine()) != null) {
+                output.append(line);
+            }
+        } catch (IOException e) {
+            throw new LedgerException(e);
         }
 
 
@@ -104,7 +105,7 @@ public class LedgerWallet implements HardwareWallet {
     }
 
     @Override
-    public String signMessage(final int derivationIndex, final byte[] message) throws LedgerException, IOException {
+    public String signMessage(final int derivationIndex, final byte[] message) throws LedgerException {
         String[] commands  = getCommandForTransactionSigning(derivationIndex, message);
         Process process = null;
         try {
@@ -119,14 +120,17 @@ public class LedgerWallet implements HardwareWallet {
 
         String line;
         StringBuilder output = new StringBuilder();
-        while((line = lineReader.readLine()) != null)
-        {
-            output.append(line);
-        }
 
-        while((line = errorReader.readLine()) != null)
-        {
-            output.append(line);
+        try {
+            while ((line = lineReader.readLine()) != null) {
+                output.append(line);
+            }
+
+            while ((line = errorReader.readLine()) != null) {
+                output.append(line);
+            }
+        } catch (IOException e) {
+            throw new LedgerException(e);
         }
 
         log.debug("Ledger returned for signing command : " + output);
@@ -176,7 +180,7 @@ public class LedgerWallet implements HardwareWallet {
     }
 
     private String[] getCommandForTransactionSigning(int derivationIndex, final byte[] message) throws LedgerException {
-        int length = PATH_LENGTH + message.length/2;
+        int length = PATH_LENGTH + message.length;
         //Example of param : e0040000cf058000002c800001a9800000008000000080000000 + message
         if(OSUtils.isUnix()){
             return new String[]{LINUX_DRIVER_PATH, PARAM_KEY +
@@ -189,7 +193,7 @@ public class LedgerWallet implements HardwareWallet {
             return new String[]{WINDOWS_DRIVER_PATH, "run", WINDOWS_AION_HID_KEY ,
                                 "e0" + SIGN_TRANSACTION_INDEX + DEFAULT_THIRD_AND_FORTH_BYTES_FOR_SIGNING +
                                 Integer.toHexString(length) + getDerivationPathForIndex(derivationIndex) +
-                                new String(message) , "--prefix" , WINDOWS_DRIVER_PATH_HID};
+                                TypeConverter.toJsonHex(message).substring(2), "--prefix", WINDOWS_DRIVER_PATH_HID};
         } else {
             throw new LedgerException("Platform not yet supported");
         }
