@@ -121,11 +121,18 @@ public class ImportAccountDialog implements Initializable {
         } else if (importPrivateKeyView.isVisible()) {
             account = getAccountFromPrivateKey(shouldKeep);
         }
+        else if(importLedgerView.isVisible()) {
+            account = getAccountFromLedger(shouldKeep);
+        }
 
         if (account != null) {
             EventPublisher.fireAccountChanged(account);
             this.close(eventSource);
         }
+    }
+
+    private AccountDTO getAccountFromLedger(boolean shouldKeep) {
+        return null;
     }
 
     private AccountDTO getAccountFromKeyStore(final boolean shouldKeep) {
@@ -273,6 +280,11 @@ public class ImportAccountDialog implements Initializable {
     }
 
     private boolean connectToLedger() {
-        return hardwareWallet.isConnected();
+        try {
+            return hardwareWallet.isConnected();
+        }
+        catch (Exception e) {
+            return false;
+        }
     }
 }

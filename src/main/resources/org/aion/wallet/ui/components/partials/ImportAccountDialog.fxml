@@ -50,11 +50,13 @@
                                onKeyPressed="#submitOnEnterPressed" onMouseClicked="#resetValidation"/>
             </VBox>
 
-            <VBox fx:id="importLedgerView" alignment="CENTER" spacing="6.0" AnchorPane.topAnchor="0" visible="false">
+            <VBox fx:id="importLedgerView" alignment="CENTER" spacing="6.0" AnchorPane.topAnchor="0"
+                  style="-fx-padding: 0 0 0 25;" visible="false">
                 <Label styleClass="create-account-text" text="Ledger import"/>
                 <Button fx:id="connectLedgerButton" text="Connect to Ledger" styleClass="add-account-buttons"
+                        prefWidth="250"
                         onMouseClicked="#connectLedger"/>
-                <ProgressBar fx:id="connectionProgressBar" visible="false"/>
+                <ProgressBar fx:id="connectionProgressBar" visible="false" prefWidth="250"/>
             </VBox>
 
             <AnchorPane AnchorPane.bottomAnchor="160">

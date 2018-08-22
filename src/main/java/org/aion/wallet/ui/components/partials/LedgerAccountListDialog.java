@@ -35,7 +35,6 @@ public class LedgerAccountListDialog implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         fillLedgerAccountList();
-
     }
 
     private void fillLedgerAccountList() {
@@ -64,6 +63,18 @@ public class LedgerAccountListDialog implements Initializable {
         account2.getChildren().addAll(r2, l2, b2);
 
         ledgerAccountList.getChildren().addAll(account1, account2);
+
+        for(int i = 0; i<10; i++) {
+            HBox account = new HBox();
+            account.setSpacing(10);
+            account.setAlignment(Pos.CENTER_LEFT);
+            RadioButton radioButton = new RadioButton();
+            Label address = new Label("");
+            address.setPrefWidth(500);
+            Label balance = new Label("");
+            account.getChildren().addAll(radioButton, address, balance);
+            ledgerAccountList.getChildren().add(account);
+        }
     }
 
     public void open(MouseEvent mouseEvent) {
