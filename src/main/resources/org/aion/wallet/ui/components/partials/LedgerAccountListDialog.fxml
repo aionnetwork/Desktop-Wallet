@@ -7,17 +7,20 @@
 <?import javafx.scene.layout.*?>
 <?import java.net.URL?>
 <?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.control.ToggleGroup?>
 <AnchorPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="org.aion.wallet.ui.components.partials.LedgerAccountListDialog"
-            prefHeight="550.0" prefWidth="700.0"
+            prefHeight="550.0" prefWidth="750.0"
             styleClass="anchor-pane">
 
     <stylesheets>
         <URL value="@dialog.css"/>
     </stylesheets>
-
-    <VBox style="-fx-padding: 25 25 0 25;" alignment="CENTER">
+    <fx:define>
+        <ToggleGroup fx:id="ledgerAccountsToggleGroup"/>
+    </fx:define>
+    <VBox style="-fx-padding: 25 0 0 25;" alignment="CENTER">
         <VBox alignment="CENTER_LEFT">
             <ImageView fitHeight="50.0" pickOnBounds="true" preserveRatio="true">
                 <Image url="@../icons/ledger_logo.png"/>

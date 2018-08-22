@@ -114,13 +114,13 @@ public class LedgerWallet implements HardwareWallet {
 
         if (OSUtils.isUnix()) {
             if (spaceSplitted.length == 3) {
-                return new AionAccountDetails(spaceSplitted[2].substring(0, 64), spaceSplitted[2].substring(64, 128));
+                return new AionAccountDetails(spaceSplitted[2].substring(0, 64), spaceSplitted[2].substring(64, 128), derivationIndex);
             } else {
                 throw new LedgerException("Error wile communicating with the ledger...");
             }
         } else if (OSUtils.isWindows()) {
             if (spaceSplitted[9].equals("response") && !spaceSplitted[11].isEmpty()) {
-                return new AionAccountDetails(spaceSplitted[11].substring(0, 64), spaceSplitted[11].substring(64, 128));
+                return new AionAccountDetails(spaceSplitted[11].substring(0, 64), spaceSplitted[11].substring(64, 128), derivationIndex);
             } else {
                 throw new LedgerException("Error wile communicating with the ledger...");
             }

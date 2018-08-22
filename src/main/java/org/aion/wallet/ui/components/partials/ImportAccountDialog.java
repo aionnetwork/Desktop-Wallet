@@ -1,5 +1,6 @@
 package org.aion.wallet.ui.components.partials;
 
+import com.google.common.eventbus.Subscribe;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -25,11 +26,12 @@ import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.console.ConsoleManager;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.dto.AccountType;
+import org.aion.wallet.events.EventBusFactory;
 import org.aion.wallet.events.EventPublisher;
+import org.aion.wallet.events.UiMessageEvent;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.hardware.HardwareWallet;
 import org.aion.wallet.hardware.HardwareWalletFactory;
-import org.aion.wallet.hardware.ledger.LedgerWallet;
 import org.aion.wallet.log.WalletLoggerFactory;
 import org.slf4j.Logger;
 
@@ -225,6 +227,8 @@ public class ImportAccountDialog implements Initializable {
         ledgerRadioButton.setUserData(LEDGER_RADIO_BUTTON_ID);
 
         accountTypeToggleGroup.selectedToggleProperty().addListener(this::radioButtonChanged);
+
+        registerEventBusConsumer();
     }
 
     @FXML
@@ -234,6 +238,12 @@ public class ImportAccountDialog implements Initializable {
         }
     }
 
+    @Subscribe
+    private void handleLedgerConnected(UiMessageEvent event) {
+        if (UiMessageEvent.Type.LEDGER_ACCOUNT_SELECTED.equals(event.getType())) {
+            this.close(event.getEventSource());
+        }
+    }
 
     public void resetValidation() {
         validationError.setVisible(false);
@@ -267,8 +277,8 @@ public class ImportAccountDialog implements Initializable {
         connectionProgressBar.setVisible(true);
         validationError.setVisible(false);
         if (connectToLedger()) {
-            this.close(mouseEvent);
             ledgerAccountListDialog.open(mouseEvent);
+            this.close(mouseEvent);
         } else {
             connectLedgerButton.setDisable(false);
             connectLedgerButton.setText("Connect to Ledger");
@@ -285,5 +295,10 @@ public class ImportAccountDialog implements Initializable {
         catch (Exception e) {
             return false;
         }
+
+    }
+
+    private void registerEventBusConsumer() {
+        EventBusFactory.getBus(UiMessageEvent.ID).register(this);
     }
 }
