@@ -19,7 +19,7 @@ import java.util.Map;
 
 public class LedgerWallet implements HardwareWallet {
     private static final String WINDOWS_DRIVER_PATH = "native\\win\\ledger\\Aion-HID\\npm.cmd";
-    private static final String WINDOWS_DRIVER_PATH_HID = "native\\win\\ledger\\Aion-HID\\hid";
+    private static final String WINDOWS_DRIVER_PATH_HID = "\\native\\win\\ledger\\Aion-HID\\hid";
     private static final String WINDOWS_NPM_LOCATION = "\\native\\win\\ledger\\Aion-HID";
     private static final String WINDOWS_PREFIX_KEY = "--prefix";
     private static final String WINDOWS_AION_HID_KEY = "get:aion-hid";
@@ -47,10 +47,15 @@ public class LedgerWallet implements HardwareWallet {
     private void runNpmInstallIfWindows() {
         if(OSUtils.isWindows()){
             if(!Files.exists(Paths.get(System.getProperty("user.dir") + WINDOWS_DRIVER_PATH_HID + "\\node_modules"))) {
-                String[] commands = new String[]{"npm", "install"};
+                String[] commands = new String[]{System.getProperty("user.dir") + WINDOWS_NPM_LOCATION + "\\npm.cmd", "install"};
                 processBuilder.directory(new File(System.getProperty("user.dir") + WINDOWS_DRIVER_PATH_HID));
                 try {
-                    processBuilder.command(commands).start();
+                    Process process = processBuilder.command(commands).start();
+                    BufferedReader lineReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                    String line;
+                    while ((line = lineReader.readLine()) != null) {
+                        System.out.println(line);
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -64,7 +69,8 @@ public class LedgerWallet implements HardwareWallet {
         ProcessBuilder tmpBuilder = new ProcessBuilder();
         Map<String, String> envs = tmpBuilder.environment();
         if(OSUtils.isWindows()) {
-            envs.put("Path", System.getProperty("user.dir") + WINDOWS_NPM_LOCATION);
+            String path = envs.get("Path");
+            envs.put("Path", path + File.pathSeparator + System.getProperty("user.dir") + WINDOWS_NPM_LOCATION);
         }
         return tmpBuilder;
     }
@@ -85,7 +91,7 @@ public class LedgerWallet implements HardwareWallet {
         String[] commands = getCommandForAccountAddress(derivationIndex);
         Process process;
         try {
-            process = processBuilder.command(commands).start();
+            process = createProcessBuilder().command(commands).start();
         } catch (IOException e) {
             throw new LedgerException(e);
         }
@@ -193,12 +199,12 @@ public class LedgerWallet implements HardwareWallet {
                     PATH_LENGTH + getDerivationPathForIndex(derivationIndex)};
 
         } else if (OSUtils.isWindows()) {
-            return new String[]{WINDOWS_DRIVER_PATH, "run",
+            return new String[]{System.getProperty("user.dir") + File.separator + WINDOWS_DRIVER_PATH, "run",
                     WINDOWS_AION_HID_KEY, "e0" +
                     GET_PUBLIC_KEY_INDEX +
                     DEFAULT_THIRD_AND_FORTH_BYTES_FOR_KEY_GENERATION +
                     PATH_LENGTH + getDerivationPathForIndex(derivationIndex),
-                    WINDOWS_PREFIX_KEY, WINDOWS_DRIVER_PATH_HID};
+                    WINDOWS_PREFIX_KEY, System.getProperty("user.dir") + File.separator + WINDOWS_DRIVER_PATH_HID};
         } else {
             throw new LedgerException("Platform not yet supported");
         }
@@ -215,10 +221,10 @@ public class LedgerWallet implements HardwareWallet {
                                 getDerivationPathForIndex(derivationIndex) + new String(message)};
 
         } else if(OSUtils.isWindows()){
-            return new String[]{WINDOWS_DRIVER_PATH, "run", WINDOWS_AION_HID_KEY ,
+            return new String[]{System.getProperty("user.dir") + File.separator + WINDOWS_DRIVER_PATH, "run", WINDOWS_AION_HID_KEY ,
                                 "e0" + SIGN_TRANSACTION_INDEX + DEFAULT_THIRD_AND_FORTH_BYTES_FOR_SIGNING +
                                 Integer.toHexString(length) + getDerivationPathForIndex(derivationIndex) +
-                                TypeConverter.toJsonHex(message).substring(2), "--prefix", WINDOWS_DRIVER_PATH_HID};
+                                TypeConverter.toJsonHex(message).substring(2), "--prefix", System.getProperty("user.dir") + File.separator + WINDOWS_DRIVER_PATH_HID};
         } else {
             throw new LedgerException("Platform not yet supported");
         }

@@ -20,6 +20,8 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import org.aion.api.log.LogEnum;
 import org.aion.wallet.connector.BlockchainConnector;
+import org.aion.wallet.console.ConsoleManager;
+import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.dto.AccountType;
 import org.aion.wallet.events.EventBusFactory;
 import org.aion.wallet.events.EventPublisher;
@@ -151,9 +153,11 @@ public class LedgerAccountListDialog implements Initializable {
                     && ledgerAccountsToggleGroup.getSelectedToggle().getUserData() != null) {
                 AionAccountDetails accountDetails = (AionAccountDetails) ledgerAccountsToggleGroup.getSelectedToggle
                         ().getUserData();
-                BlockchainConnector.getInstance().importHardwareWallet(accountDetails.getDerivationIndex(),
+                AccountDTO account = BlockchainConnector.getInstance().importHardwareWallet(accountDetails.getDerivationIndex(),
                         accountDetails.getAddress(), AccountType.LEDGER);
                 EventPublisher.fireLedgerAccountSelected(eventSource);
+                EventPublisher.fireAccountChanged(account);
+                ConsoleManager.addLog("Addded accunt : " + accountDetails.getAddress(), ConsoleManager.LogType.ACCOUNT);
             }
         } catch (ValidationException e) {
             e.printStackTrace();

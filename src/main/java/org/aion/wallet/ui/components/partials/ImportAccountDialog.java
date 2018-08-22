@@ -253,16 +253,19 @@ public class ImportAccountDialog implements Initializable {
         if (accountTypeToggleGroup.getSelectedToggle() != null) {
             switch ((String) accountTypeToggleGroup.getSelectedToggle().getUserData()) {
                 case PK_RADIO_BUTTON_ID:
+                    rememberAccount.setVisible(true);
                     importPrivateKeyView.setVisible(true);
                     importKeystoreView.setVisible(false);
                     importLedgerView.setVisible(false);
                     break;
                 case KEYSTORE_RADIO_BUTTON_ID:
+                    rememberAccount.setVisible(true);
                     importPrivateKeyView.setVisible(false);
                     importKeystoreView.setVisible(true);
                     importLedgerView.setVisible(false);
                     break;
                 case LEDGER_RADIO_BUTTON_ID:
+                    rememberAccount.setVisible(false);
                     importPrivateKeyView.setVisible(false);
                     importKeystoreView.setVisible(false);
                     importLedgerView.setVisible(true);

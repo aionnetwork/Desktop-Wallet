@@ -128,7 +128,7 @@
         <delete dir="${dir.mod}/updated"/>
     </target>
 
-    <target name="build_standalone" depends="get_version_from_git">
+    <target name="build_standalone">
         <mkdir dir="${out.main}"/>
         <mkdir dir="${dir.pack}"/>
         <condition property="parent.exists">
@@ -152,7 +152,7 @@
             <fileset dir="${res.main}" id="**"/>
         </copy>
         <jar
-                destfile="aion_ui${suffix}.jar"
+                destfile="aion_ui.jar"
                 filesetmanifest="mergewithoutmain"
                 basedir="${out.main}"
                 excludes="native/">
@@ -162,13 +162,13 @@
             </manifest>
         </jar>
         <move includeemptydirs="false" todir="${dir.pack}">
-            <file file="aion_ui${suffix}.jar"/>
+            <file file="aion_ui.jar"/>
         </move>
     </target>
 
     <target name="pack" depends="build_standalone">
         <mkdir dir="${dir.pack}"/>
-        <zip destfile="${dir.pack}/aion_ui${suffix}.zip">
+        <zip destfile="${dir.pack}/aion_ui.zip">
             <zipfileset dir="${dir.lib}" filemode="755" prefix="${project.name}/lib">
                 <include name="*.jar"/>
             </zipfileset>
@@ -184,6 +184,7 @@
             <zipfileset dir="${res.main}/native" filemode="755" prefix="${project.name}/native"/>
             <zipfileset dir="${dir.script}" filemode="755" prefix="${project.name}">
                 <include name="aion_ui.sh"/>
+                <include name="aion_ui.bat"/>
                 <include name="*.exe"/>
             </zipfileset>
         </zip>
