@@ -68,6 +68,7 @@ public class LedgerWallet implements HardwareWallet {
 
         assert process != null;
         BufferedReader lineReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
 
         String line;
         StringBuilder output = new StringBuilder();
@@ -75,6 +76,12 @@ public class LedgerWallet implements HardwareWallet {
         {
             output.append(line);
         }
+
+        while((line = errorReader.readLine()) != null)
+        {
+            output.append(line);
+        }
+
 
         log.debug("Ledger returned for getPublic address : " + output);
         String[] spaceSplitted = output.toString().split(" ");
@@ -108,10 +115,16 @@ public class LedgerWallet implements HardwareWallet {
 
         assert process != null;
         BufferedReader lineReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
 
         String line;
         StringBuilder output = new StringBuilder();
         while((line = lineReader.readLine()) != null)
+        {
+            output.append(line);
+        }
+
+        while((line = errorReader.readLine()) != null)
         {
             output.append(line);
         }
