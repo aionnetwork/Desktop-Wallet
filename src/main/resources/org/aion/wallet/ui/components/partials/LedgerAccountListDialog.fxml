@@ -6,6 +6,7 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 <?import java.net.URL?>
+<?import javafx.scene.control.ProgressBar?>
 <AnchorPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="org.aion.wallet.ui.components.partials.LedgerAccountListDialog"
@@ -24,12 +25,14 @@
         </VBox>
         <VBox fx:id="ledgerAccountList" alignment="CENTER_LEFT" spacing="6.0">
             <Label styleClass="main-text" text="Please select the address you would like to import"/>
+            <ProgressBar fx:id="loadingLedgerAccountsProgressBar" visible="false" prefWidth="250"/>
         </VBox>
     </VBox>
 
     <AnchorPane AnchorPane.bottomAnchor="10" AnchorPane.rightAnchor="10">
         <HBox spacing="10.0">
-            <Button prefHeight="50.0" prefWidth="130.0" styleClass="add-account-buttons" text="Continue" onMouseClicked="#addAccount"/>
+            <Button prefHeight="50.0" prefWidth="130.0" styleClass="default-button" text="Continue"
+                    onMouseClicked="#addAccount"/>
             <Button prefHeight="50.0" prefWidth="130.0" styleClass="cancel-button" text="Close" onMouseClicked="#close"/>
         </HBox>
     </AnchorPane>

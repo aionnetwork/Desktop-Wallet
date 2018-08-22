@@ -266,7 +266,6 @@ public class ImportAccountDialog implements Initializable {
         connectLedgerButton.setText("Connecting...");
         connectionProgressBar.setVisible(true);
         validationError.setVisible(false);
-
         if (connectToLedger()) {
             this.close(mouseEvent);
             ledgerAccountListDialog.open(mouseEvent);

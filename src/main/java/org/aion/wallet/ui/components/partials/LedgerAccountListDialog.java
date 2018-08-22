@@ -7,7 +7,9 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.RadioButton;
+import javafx.scene.control.TextField;
 import javafx.scene.input.InputEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
@@ -28,6 +30,7 @@ import org.aion.wallet.hardware.HardwareWallet;
 import org.aion.wallet.hardware.HardwareWalletFactory;
 import org.aion.wallet.hardware.ledger.LedgerException;
 import org.aion.wallet.log.WalletLoggerFactory;
+import org.aion.wallet.util.BalanceUtils;
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -37,9 +40,13 @@ import java.util.ResourceBundle;
 
 public class LedgerAccountListDialog implements Initializable {
     private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
+    private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
 
     @FXML
     private VBox ledgerAccountList;
+
+    @FXML
+    private ProgressBar loadingLedgerAccountsProgressBar;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -47,33 +54,9 @@ public class LedgerAccountListDialog implements Initializable {
     }
 
     private void fillLedgerAccountList() {
-        HBox account1 = new HBox();
-        account1.setSpacing(10);
-        account1.setAlignment(Pos.CENTER_LEFT);
-//        account1.setPrefWidth(400);
-        RadioButton r1 = new RadioButton();
-        Label l1 = new Label();
-        l1.setText("0xa096057bc9dfc89759eef9346fd4675370a8f7987424dae571dcb70a10a57176");
-        l1.setPrefWidth(500);
-        Label b1 = new Label();
-        b1.setText("1.09978996 AION");
-        account1.getChildren().addAll(r1, l1, b1);
+        loadingLedgerAccountsProgressBar.setVisible(true);
 
-        HBox account2 = new HBox();
-        account2.setSpacing(10);
-        account2.setAlignment(Pos.CENTER_LEFT);
-//        account2.setPrefWidth(400);
-        RadioButton r2 = new RadioButton();
-        Label l2 = new Label();
-        l2.setText("0xa0326bb6badfa70c3025c90df3404c1700d660f5473aca6dd9fd63f398f10695");
-        l2.setPrefWidth(500);
-        Label b2 = new Label();
-        b2.setText("0 AION");
-        account2.getChildren().addAll(r2, l2, b2);
-
-        ledgerAccountList.getChildren().addAll(account1, account2);
-
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < 10; i++) {
             HBox account = new HBox();
             account.setSpacing(10);
             account.setAlignment(Pos.CENTER_LEFT);
@@ -84,13 +67,19 @@ public class LedgerAccountListDialog implements Initializable {
             } catch (LedgerException e) {
                 log.error(e.getMessage(), e);
             }
-            RadioButton radioButton = new RadioButton(TypeConverter.toJsonHex(hexAddress));
-            Label address = new Label("");
-            address.setPrefWidth(500);
-            Label balance = new Label("");
+            RadioButton radioButton = new RadioButton();
+            TextField address = new TextField(TypeConverter.toJsonHex(hexAddress));
+            address.setPrefWidth(575);
+            address.setEditable(false);
+            address.getStyleClass().add("copyable-textfield");
+            Label balance = new Label(BalanceUtils.formatBalance(blockchainConnector.getBalance(hexAddress))
+                    + " AION");
+            balance.getStyleClass().add("copyable-label");
             account.getChildren().addAll(radioButton, address, balance);
+
             ledgerAccountList.getChildren().add(account);
         }
+        loadingLedgerAccountsProgressBar.setVisible(false);
     }
 
     public void open(MouseEvent mouseEvent) {
