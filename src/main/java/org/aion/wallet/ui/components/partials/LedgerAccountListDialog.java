@@ -38,6 +38,8 @@ import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collections;
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class LedgerAccountListDialog implements Initializable {
@@ -100,18 +102,19 @@ public class LedgerAccountListDialog implements Initializable {
     private void generateLedgerAddresses(final int startIndex, final int stopIndex) throws ValidationException {
         currentDerivationIndex = stopIndex;
         final HardwareWallet hardwareWallet = HardwareWalletFactory.getHardwareWallet(AccountType.LEDGER);
-        for (int i = startIndex; i < stopIndex; i++) {
+        List<AionAccountDetails> aionAccountDetails = Collections.emptyList();
+        try {
+             aionAccountDetails = hardwareWallet.getMultipleAccountDetails(startIndex, stopIndex);
+        } catch (LedgerException e) {
+            log.error(e.getMessage(), e);
+        }
+
+        for (AionAccountDetails accountDetails : aionAccountDetails) {
             HBox account = new HBox();
             account.setSpacing(5);
             account.setAlignment(Pos.CENTER_LEFT);
             account.setStyle("-fx-border-color: #ececec; -fx-border-width: 0 0 1 0;");
-
-            AionAccountDetails accountDetails;
-            try {
-                accountDetails = hardwareWallet.getAccountDetails(i);
-            } catch (LedgerException e) {
-                throw new ValidationException(e);
-            }
+            
             RadioButton radioButton = new RadioButton();
             radioButton.setUserData(accountDetails);
             radioButton.setToggleGroup(ledgerAccountsToggleGroup);

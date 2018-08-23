@@ -153,6 +153,9 @@ public class LedgerWallet implements HardwareWallet {
                 //invalidate the cache
                 accountCache = new HashMap<>();
             }
+        } else {
+            AionAccountDetails aionAccountDetails = getAccountDetails(derivationIndexStart);
+            accounts.add(aionAccountDetails);
         }
 
         for(int i=derivationIndexStart+1;i<derivationIndexEnd;i++){
