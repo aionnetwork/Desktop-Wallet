@@ -15,6 +15,9 @@ import java.io.InputStreamReader;
 import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 public class LedgerWallet implements HardwareWallet {
@@ -37,9 +40,11 @@ public class LedgerWallet implements HardwareWallet {
     private static final String DEFAULT_THIRD_AND_FORTH_BYTES_FOR_KEY_GENERATION = "0100";
 
     private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
+    private static Map<Integer, AionAccountDetails> accountCache;
     private ProcessBuilder processBuilder;
 
     public LedgerWallet(){
+        accountCache = new HashMap<>();
         processBuilder = createProcessBuilder();
         runNpmInstallIfWindows();
     }
@@ -133,6 +138,34 @@ public class LedgerWallet implements HardwareWallet {
         } else {
             throw new LedgerException("Platform is not supported yet");
         }
+    }
+
+    @Override
+    public List<AionAccountDetails> getMultipleAccountDetails(int derivationIndexStart, int derivationIndexEnd) throws LedgerException {
+        List<AionAccountDetails> accounts = new LinkedList<>();
+        //check first derivation if we have the value in the cache
+        if(accountCache.containsKey(derivationIndexStart)){
+            //check if the fist key matches
+            AionAccountDetails aionAccountDetails = getAccountDetails(derivationIndexStart);
+            AionAccountDetails existingAionAccountDetails = accountCache.get(derivationIndexStart);
+            accounts.add(aionAccountDetails);
+            if(!aionAccountDetails.equals(existingAionAccountDetails)){
+                //invalidate the cache
+                accountCache = new HashMap<>();
+            }
+        }
+
+        for(int i=derivationIndexStart+1;i<derivationIndexEnd;i++){
+            if(accountCache.containsKey(i)){
+                accounts.add(accountCache.get(i));
+            } else {
+                AionAccountDetails tmp = getAccountDetails(i);
+                accounts.add(tmp);
+                accountCache.put(i, tmp);
+            }
+        }
+
+        return accounts;
     }
 
     @Override

@@ -25,4 +25,8 @@ public class AionAccountDetails {
     public int getDerivationIndex() {
         return derivationIndex;
     }
+
+    public boolean equals(AionAccountDetails obj){
+        return obj.getAddress().equals(address) && obj.getPublicKey().equals(publicKey);
+    }
 }
