@@ -49,9 +49,9 @@ Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: 
 
 [Run]
 Filename: "{tmp}\unzip.exe"; Parameters: """{tmp}\Aion-HID.zip"" ""-d"" ""{app}\native\win\ledger""";
-;Filename: "{tmp}\wget.exe"; Parameters: """-nc"" ""--no-check-certificate"" ""--no-cookies"" ""--header"" ""Cookie: oraclelicense=accept-securebackup-cookie"" ""http://download.oracle.com/otn-pub/java/jdk/10.0.2+13/19aef61b38124481863b1413dce1855f/jre-10.0.2_windows-x64_bin.exe""  ""-O"" ""{tmp}\java.exe""";
-;Filename: "{tmp}\tar.exe"; Parameters: """xzf"" ""{tmp}\java.tar.gz""";
-;Filename: "{tmp}\java.exe";
+Filename: "{tmp}\wget.exe"; Parameters: """-nc"" ""--no-check-certificate"" ""--no-cookies"" ""--header"" ""Cookie: oraclelicense=accept-securebackup-cookie"" ""http://download.oracle.com/otn-pub/java/jdk/10.0.2+13/19aef61b38124481863b1413dce1855f/jre-10.0.2_windows-x64_bin.exe""  ""-O"" ""{tmp}\java.exe""";
+Filename: "{tmp}\tar.exe"; Parameters: """xzf"" ""{tmp}\java.tar.gz""";
+Filename: "{tmp}\java.exe";
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
 
 

@@ -15,10 +15,7 @@ import java.io.InputStreamReader;
 import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class LedgerWallet implements HardwareWallet {
     private static final String WINDOWS_DRIVER_PATH = "native\\win\\ledger\\Aion-HID\\npm.cmd";
@@ -59,7 +56,7 @@ public class LedgerWallet implements HardwareWallet {
                     BufferedReader lineReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
                     String line;
                     while ((line = lineReader.readLine()) != null) {
-                        System.out.println(line);
+                        log.info(line);
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -130,8 +127,10 @@ public class LedgerWallet implements HardwareWallet {
                 throw new LedgerException("Error wile communicating with the ledger...");
             }
         } else if (OSUtils.isWindows()) {
-            if (spaceSplitted[9].equals("response") && !spaceSplitted[11].isEmpty()) {
-                return new AionAccountDetails(spaceSplitted[11].substring(0, 64), spaceSplitted[11].substring(64, 128), derivationIndex);
+            List<String> strings = Arrays.asList(spaceSplitted);
+            int indexResponse = strings.indexOf("response");
+            if (spaceSplitted[indexResponse].equals("response") && !spaceSplitted[indexResponse + 2].isEmpty()) {
+                return new AionAccountDetails(spaceSplitted[indexResponse + 2].substring(0, 64), spaceSplitted[indexResponse + 2].substring(64, 128), derivationIndex);
             } else {
                 throw new LedgerException("Error wile communicating with the ledger...");
             }
@@ -210,8 +209,10 @@ public class LedgerWallet implements HardwareWallet {
                 throw new LedgerException("Error wile communicating with the ledger...");
             }
         } else if (OSUtils.isWindows()) {
-            if (spaceSplitted[9].equals("response") && !spaceSplitted[11].isEmpty()) {
-                return spaceSplitted[11];
+            List<String> strings = Arrays.asList(spaceSplitted);
+            int indexResponse = strings.indexOf("response");
+            if (spaceSplitted[indexResponse].equals("response") && !spaceSplitted[indexResponse + 2].isEmpty()) {
+                return spaceSplitted[indexResponse + 2];
             } else {
                 throw new LedgerException("Error wile communicating with the ledger...");
             }
