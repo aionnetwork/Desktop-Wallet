@@ -1,6 +1,7 @@
 package org.aion.wallet.ui.components.partials;
 
 import com.google.common.eventbus.Subscribe;
+import javafx.beans.Observable;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -42,7 +43,7 @@ import java.util.ResourceBundle;
 public class LedgerAccountListDialog implements Initializable {
     private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
-    private String selectedAddress;
+    private int currentDerivationIndex;
 
     @FXML
     private VBox ledgerAccountList;
@@ -53,13 +54,24 @@ public class LedgerAccountListDialog implements Initializable {
     @FXML
     private ToggleGroup ledgerAccountsToggleGroup;
 
+    @FXML
+    private Button ledgerContinueButton;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         registerEventBusConsumer();
+        ledgerContinueButton.setDisable(true);
+        ledgerAccountsToggleGroup.selectedToggleProperty().addListener(this::ledgerAccountChanged);
         try {
             fillLedgerAccountList();
         } catch (ValidationException e) {
             log.error(e.getMessage(), e);
+        }
+    }
+
+    private void ledgerAccountChanged(final Observable observable) {
+        if(ledgerAccountsToggleGroup.getSelectedToggle() != null) {
+            ledgerContinueButton.setDisable(false);
         }
     }
 
@@ -81,8 +93,14 @@ public class LedgerAccountListDialog implements Initializable {
     private void fillLedgerAccountList() throws ValidationException {
         loadingLedgerAccountsProgressBar.setVisible(true);
 
+        generateLedgerAddresses(0, 5);
+        loadingLedgerAccountsProgressBar.setVisible(false);
+    }
+
+    private void generateLedgerAddresses(final int startIndex, final int stopIndex) throws ValidationException {
+        currentDerivationIndex = stopIndex;
         final HardwareWallet hardwareWallet = HardwareWalletFactory.getHardwareWallet(AccountType.LEDGER);
-        for (int i = 0; i < 5; i++) {
+        for (int i = startIndex; i < stopIndex; i++) {
             HBox account = new HBox();
             account.setSpacing(5);
             account.setAlignment(Pos.CENTER_LEFT);
@@ -110,7 +128,6 @@ public class LedgerAccountListDialog implements Initializable {
 
             ledgerAccountList.getChildren().add(account);
         }
-        loadingLedgerAccountsProgressBar.setVisible(false);
     }
 
     public void open(MouseEvent mouseEvent) {
@@ -157,11 +174,22 @@ public class LedgerAccountListDialog implements Initializable {
                         accountDetails.getAddress(), AccountType.LEDGER);
                 EventPublisher.fireLedgerAccountSelected(eventSource);
                 EventPublisher.fireAccountChanged(account);
-                ConsoleManager.addLog("Addded accunt : " + accountDetails.getAddress(), ConsoleManager.LogType.ACCOUNT);
+                ConsoleManager.addLog("Added account : " + accountDetails.getAddress(), ConsoleManager.LogType
+                        .ACCOUNT);
+                close(eventSource);
             }
         } catch (ValidationException e) {
             e.printStackTrace();
         }
-        close(eventSource);
+    }
+
+    public void nextAddresses(final MouseEvent mouseEvent) {
+        ledgerContinueButton.setDisable(true);
+        ledgerAccountList.getChildren().clear();
+        try {
+            generateLedgerAddresses(currentDerivationIndex, currentDerivationIndex + 5);
+        } catch (ValidationException e) {
+            log.error(e.getMessage(), e);
+        }
     }
 }
