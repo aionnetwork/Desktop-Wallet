@@ -255,7 +255,7 @@ public class LedgerWallet implements HardwareWallet {
                                 "e0" + SIGN_TRANSACTION_INDEX +
                                 DEFAULT_THIRD_AND_FORTH_BYTES_FOR_SIGNING +
                                 Integer.toHexString(length) +
-                                getDerivationPathForIndex(derivationIndex) + new String(message)};
+                                getDerivationPathForIndex(derivationIndex) + TypeConverter.toJsonHex(message).substring(2)};
 
         } else if(OSUtils.isWindows()){
             return new String[]{System.getProperty("user.dir") + File.separator + WINDOWS_DRIVER_PATH, "run", WINDOWS_AION_HID_KEY ,

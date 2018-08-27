@@ -143,6 +143,7 @@ public class ImportAccountDialog implements Initializable {
             try {
                 AccountDTO dto = blockchainConnector.importKeystoreFile(keystoreFile, password, shouldKeep);
                 ConsoleManager.addLog("Keystore imported", ConsoleManager.LogType.ACCOUNT);
+
                 return dto;
             } catch (final ValidationException e) {
                 ConsoleManager.addLog("Keystore could not be imported", ConsoleManager.LogType.ACCOUNT, ConsoleManager.LogLevel.WARNING);

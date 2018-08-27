@@ -182,7 +182,10 @@ public class LedgerAccountListDialog implements Initializable {
                 close(eventSource);
             }
         } catch (ValidationException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
+            if(e.getMessage().equals("Account already exists!")) {
+                close(eventSource);
+            }
         }
     }
 

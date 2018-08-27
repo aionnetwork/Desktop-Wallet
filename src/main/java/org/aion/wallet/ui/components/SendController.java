@@ -114,6 +114,7 @@ public class SendController extends AbstractController {
                 break;
             case TRANSACTION_FINISHED:
                 setDefaults();
+                refreshAccountBalance();
                 break;
             default:
         }
