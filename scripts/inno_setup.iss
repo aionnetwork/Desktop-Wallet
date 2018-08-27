@@ -24,8 +24,8 @@ DisableProgramGroupPage=yes
 OutputBaseFilename=AionWalletSetup
 Compression=lzma
 SolidCompression=yes
-PrivilegesRequired=admin
-
+;PrivilegesRequired=admin
+SignTool=signtool $p
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -34,12 +34,13 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "C:\Projects\aion_ui\pack\aion_ui\*"; DestDir: "{app}"; Excludes: "unzip.exe, cygwin1.dll, cygintl-8.dll, cygiconv-2.dll, cygbz2-1.dll, libintl-2.dll, libiconv-2.dll, gzip.exe, wget.exe, tar.exe, *.zip"; Flags: ignoreversion recursesubdirs createallsubdirs;
+Source: "C:\Projects\aion_ui\pack\aion_ui\*"; DestDir: "{app}"; Excludes: "cert.pfx, unzip.exe, cygwin1.dll, cygintl-8.dll, wget.exe, tar.exe, *.zip"; Flags: ignoreversion recursesubdirs createallsubdirs;
 Source: "C:\Projects\aion_ui\pack\aion_ui\unzip.exe"; DestDir: "{tmp}"; Flags: ignoreversion
+Source: "C:\Projects\aion_ui\pack\aion_ui\cert.pfx"; DestDir: "{tmp}"; Flags: ignoreversion
 Source: "C:\Projects\aion_ui\pack\aion_ui\*.dll"; DestDir: "{tmp}"; Flags: ignoreversion
 Source: "C:\Projects\aion_ui\pack\aion_ui\wget.exe"; DestDir: "{tmp}"; Flags: ignoreversion
-Source: "C:\Projects\aion_ui\pack\aion_ui\gzip.exe"; DestDir: "{tmp}"; Flags: ignoreversion
-Source: "C:\Projects\aion_ui\pack\aion_ui\tar.exe"; DestDir: "{tmp}"; Flags: ignoreversion
+;Source: "C:\Projects\aion_ui\pack\aion_ui\gzip.exe"; DestDir: "{tmp}"; Flags: ignoreversion
+;Source: "C:\Projects\aion_ui\pack\aion_ui\tar.exe"; DestDir: "{tmp}"; Flags: ignoreversion
 Source: "C:\Projects\aion_ui\pack\aion_ui\native\win\ledger\Aion-HID.zip"; DestDir: "{tmp}";  Flags: deleteafterinstall
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
@@ -48,13 +49,13 @@ Name: "{commonprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]
+Filename: "certutil.exe"; Parameters: "-addstore ""TrustedPublisher"" {tmp}\cert.pfx"; StatusMsg: "Adding trusted publisher..."
 Filename: "{tmp}\unzip.exe"; Parameters: """{tmp}\Aion-HID.zip"" ""-d"" ""{app}\native\win\ledger""";
 Filename: "{tmp}\wget.exe"; Parameters: """-nc"" ""--no-check-certificate"" ""--no-cookies"" ""--header"" ""Cookie: oraclelicense=accept-securebackup-cookie"" ""http://download.oracle.com/otn-pub/java/jdk/10.0.2+13/19aef61b38124481863b1413dce1855f/jre-10.0.2_windows-x64_bin.exe""  ""-O"" ""{tmp}\java.exe""";
-Filename: "{tmp}\tar.exe"; Parameters: """xzf"" ""{tmp}\java.tar.gz""";
 Filename: "{tmp}\java.exe";
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
 
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}\native*"
-Type: filesandordirs; Name: "{app}\"
+Type: filesandordirs; Name: "{app}"

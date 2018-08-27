@@ -187,7 +187,6 @@
                 <property name="native.source" value="${res.main}/native/linux"/>
                 <property name="native.dest" value="${project.name}/native/linux"/>
                 <property name="launcher" value="aion_ui.sh"/>
-                <property name="additional" value=""/>
             </then>
             <elseif>
                 <os family="windows"/>
@@ -195,7 +194,6 @@
                     <property name="native.source" value="${res.main}/native/win"/>
                     <property name="native.dest" value="${project.name}/native/win"/>
                     <property name="launcher" value="*.exe"/>
-                    <property name="additional" value="*.dll"/>
                 </then>
             </elseif>
         </if>
@@ -220,7 +218,7 @@
             </zipfileset>
             <zipfileset dir="${dir.script}" filemode="755" prefix="${project.name}">
                 <include name="${launcher}"/>
-                <include name="${additional}"/>
+                <include name="${libs}"/>
             </zipfileset>
         </zip>
         <if>
@@ -231,6 +229,11 @@
                 <copy file="${dir.script}/wget.exe" todir="${dir.pack}/aion_ui"/>
                 <copy file="${dir.script}/tar.exe" todir="${dir.pack}/aion_ui"/>
                 <copy file="${dir.script}/gzip.exe" todir="${dir.pack}/aion_ui"/>
+                <copy todir="${dir.pack}/aion_ui" overwrite="true" verbose="true">
+                    <fileset dir="${dir.script}">
+                        <filename regex="\/*.dll|\/*.pfx"/>
+                    </fileset>
+                </copy>
             </then>
         </if>
     </target>
