@@ -1,13 +1,17 @@
 package org.aion.wallet.connector;
 
 import org.aion.api.type.core.tx.AionTransaction;
+import org.aion.base.util.TypeConverter;
 import org.aion.crypto.ECKey;
 import org.aion.crypto.ed25519.Ed25519Signature;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.dto.AccountType;
 import org.aion.wallet.hardware.HardwareWallet;
 import org.aion.wallet.hardware.HardwareWalletFactory;
+import org.aion.wallet.hardware.ledger.LedgerException;
 import org.aion.wallet.util.CryptoUtils;
+
+import java.io.IOException;
 
 public class AionTransactionSigner {
 
@@ -28,9 +32,14 @@ public class AionTransactionSigner {
             case LEDGER:
             case TREZOR:
                 final HardwareWallet wallet = HardwareWalletFactory.getHardwareWallet(accountType);
-                final byte[] publicKey = wallet.getPublicKey(account.getDerivationIndex());
-                final byte[] signature = wallet.signMessage(transaction.getRawHash());
-                transaction.setSignature(new Ed25519Signature(publicKey, signature));
+                final String publicKey;
+                try {
+                    publicKey = wallet.getAccountDetails(account.getDerivationIndex()).getPublicKey();
+                    final String signature = wallet.signMessage(account.getDerivationIndex(), transaction.getRawHash());
+                    transaction.setSignature(new Ed25519Signature(TypeConverter.StringHexToByteArray(publicKey), TypeConverter.StringHexToByteArray(signature)));
+                } catch (LedgerException e) {
+                    e.printStackTrace();
+                }
                 break;
             default:
                 throw new IllegalArgumentException("Unsupported account type for transaction signing: " + accountType.getDisplayString());
