@@ -193,7 +193,6 @@
                 <then>
                     <property name="native.source" value="${res.main}/native/win"/>
                     <property name="native.dest" value="${project.name}/native/win"/>
-                    <property name="launcher" value="*.exe"/>
                 </then>
             </elseif>
         </if>
@@ -227,13 +226,22 @@
                 <unzip src="${dir.pack}/aion_ui.zip" dest="${dir.pack}"/>
                 <copy file="${dir.script}/unzip.exe" todir="${dir.pack}/aion_ui"/>
                 <copy file="${dir.script}/wget.exe" todir="${dir.pack}/aion_ui"/>
-                <copy file="${dir.script}/tar.exe" todir="${dir.pack}/aion_ui"/>
-                <copy file="${dir.script}/gzip.exe" todir="${dir.pack}/aion_ui"/>
                 <copy todir="${dir.pack}/aion_ui" overwrite="true" verbose="true">
                     <fileset dir="${dir.script}">
                         <filename regex="\/*.dll|\/*.pfx"/>
                     </fileset>
                 </copy>
+                <exec executable="${dir.script}/bat2exe.exe">
+                    <arg value="/bat"/>
+                    <arg value="${dir.script}\aion_ui.bat"/>
+                    <arg value="/exe"/>
+                    <arg value="${dir.pack}\aion_ui\AionWallet.exe"/>
+                    <arg value="/icon"/>
+                    <arg value="${res.main}\org\aion\wallet\ui\components\icons\aion_icon_IR4_icon.ico"/>
+                    <arg value="/x64"/>
+                    <arg value="/invisible"/>
+                    <arg value="/overwrite"/>
+                </exec>
             </then>
         </if>
     </target>

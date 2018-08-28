@@ -31,7 +31,10 @@
 ::
 ::
 ::978f952a14a936cc963da21a135fa983
-ECHO OFF
+
+REM This file is used to generate an executable file with the bat2exe tool
+
+@ECHO OFF
 set CLASSPATH="%cd%\mod\*;%cd%\lib\*"
 set STORAGE_DIR="%USERPROFILE%\.aion"
 
