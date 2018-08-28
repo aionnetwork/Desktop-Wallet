@@ -213,7 +213,7 @@
                 <include name="blake2b/**"/>
                 <include name="sodium/**"/>
                 <include name="zmq/**"/>
-                <include name="ledger/Aion-HID.zip"/>
+                <include name="ledger/**"/>
             </zipfileset>
             <zipfileset dir="${dir.script}" filemode="755" prefix="${project.name}">
                 <include name="${launcher}"/>
