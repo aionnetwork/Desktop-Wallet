@@ -1,11 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project basedir="." default="build_standalone" name="aion ui"
          xmlns:if="ant:if" xmlns:unless="ant:unless">
-    <taskdef resource="net/sf/antcontrib/antcontrib.properties">
-        <classpath>
-            <pathelement location="${ant.home}/lib/ant-contrib-0.6.jar"/>
-        </classpath>
-    </taskdef>
 
     <condition property="isWindows" value="true" else="false">
         <os family="windows"/>
@@ -31,6 +26,12 @@
     <property name="out.main" value="./build/main"/>
     <property name="out.test" value="./build/test"/>
     <property name="test.report.dir" value="./build/report"/>
+
+    <taskdef resource="net/sf/antcontrib/antcontrib.properties">
+        <classpath>
+            <pathelement location="${dir.lib}/ant-contrib-0.6.jar"/>
+        </classpath>
+    </taskdef>
 
     <macrodef name="git">
         <attribute name="command"/>
@@ -213,7 +214,7 @@
                 <include name="blake2b/**"/>
                 <include name="sodium/**"/>
                 <include name="zmq/**"/>
-                <include name="ledger/Aion-HID.zip"/>
+                <include name="ledger/**"/>
             </zipfileset>
             <zipfileset dir="${dir.script}" filemode="755" prefix="${project.name}">
                 <include name="${launcher}"/>
