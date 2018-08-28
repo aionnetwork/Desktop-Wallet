@@ -1,6 +1,7 @@
 package org.aion.wallet.connector;
 
 import org.aion.api.type.core.tx.AionTransaction;
+import org.aion.base.util.TimeInstant;
 import org.aion.base.util.TypeConverter;
 import org.aion.crypto.ECKey;
 import org.aion.crypto.ed25519.Ed25519Signature;
@@ -10,8 +11,6 @@ import org.aion.wallet.hardware.HardwareWallet;
 import org.aion.wallet.hardware.HardwareWalletFactory;
 import org.aion.wallet.hardware.ledger.LedgerException;
 import org.aion.wallet.util.CryptoUtils;
-
-import java.io.IOException;
 
 public class AionTransactionSigner {
 
@@ -35,7 +34,8 @@ public class AionTransactionSigner {
                 final String publicKey;
                 try {
                     publicKey = wallet.getAccountDetails(account.getDerivationIndex()).getPublicKey();
-                    final String signature = wallet.signMessage(account.getDerivationIndex(), transaction.getRawHash());
+                    transaction.setTimeStamp(TimeInstant.now().toEpochMicro());
+                    final String signature = wallet.signMessage(account.getDerivationIndex(), transaction.getEncodedRaw());
                     transaction.setSignature(new Ed25519Signature(TypeConverter.StringHexToByteArray(publicKey), TypeConverter.StringHexToByteArray(signature)));
                 } catch (LedgerException e) {
                     e.printStackTrace();

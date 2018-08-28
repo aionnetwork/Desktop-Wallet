@@ -13,8 +13,11 @@ import org.aion.wallet.connector.dto.SendTransactionDTO;
 import org.aion.wallet.connector.dto.TransactionResponseDTO;
 import org.aion.wallet.console.ConsoleManager;
 import org.aion.wallet.dto.AccountDTO;
+import org.aion.wallet.dto.AccountType;
 import org.aion.wallet.events.*;
 import org.aion.wallet.exception.ValidationException;
+import org.aion.wallet.hardware.HardwareWallet;
+import org.aion.wallet.hardware.HardwareWalletFactory;
 import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.ui.components.partials.TransactionResubmissionDialog;
 import org.aion.wallet.util.*;
@@ -111,6 +114,7 @@ public class SendController extends AbstractController {
                 break;
             case TRANSACTION_FINISHED:
                 setDefaults();
+                refreshAccountBalance();
                 break;
             default:
         }
@@ -276,6 +280,13 @@ public class SendController extends AbstractController {
     }
 
     private SendTransactionDTO mapFormData() throws ValidationException {
+
+        if(account.getType().equals(AccountType.LEDGER)) {
+            HardwareWallet hardwareWallet = HardwareWalletFactory.getHardwareWallet(AccountType.LEDGER);
+            if(!hardwareWallet.isConnected()) {
+                throw new ValidationException("Could not connect to Ledger!");
+            }
+        }
 
         if (!AddressUtils.isValid(toInput.getText())) {
             throw new ValidationException("Address is not a valid AION address!");

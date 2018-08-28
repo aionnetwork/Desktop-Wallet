@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<?import java.net.URL?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.control.ToggleGroup?>
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="org.aion.wallet.ui.components.partials.LedgerAccountListDialog"
+            prefHeight="550.0" prefWidth="775.0"
+            styleClass="anchor-pane">
+
+    <stylesheets>
+        <URL value="@dialog.css"/>
+        <URL value="@../contentPane.css"/>
+    </stylesheets>
+    <fx:define>
+        <ToggleGroup fx:id="ledgerAccountsToggleGroup"/>
+    </fx:define>
+    <VBox style="-fx-padding: 25 0 0 25;" alignment="CENTER">
+        <VBox alignment="CENTER_LEFT">
+            <ImageView fitHeight="50.0" pickOnBounds="true" preserveRatio="true">
+                <Image url="@../icons/ledger_logo.png"/>
+            </ImageView>
+        </VBox>
+        <VBox alignment="CENTER_LEFT" spacing="6.0">
+            <Label styleClass="main-text" text="Please select the address you would like to import"/>
+            <ProgressBar fx:id="loadingLedgerAccountsProgressBar" visible="false" prefWidth="250"/>
+        </VBox>
+        <VBox fx:id="ledgerAccountList" alignment="CENTER_LEFT" spacing="6.0">
+
+        </VBox>
+    </VBox>
+
+    <AnchorPane AnchorPane.bottomAnchor="200" AnchorPane.rightAnchor="30">
+        <Label text="Next" styleClass="link-style-paragraph-text" onMouseClicked="#nextAddresses"/>
+    </AnchorPane>
+
+    <AnchorPane AnchorPane.bottomAnchor="10" AnchorPane.rightAnchor="10">
+        <HBox spacing="10.0">
+            <Button fx:id="ledgerContinueButton" prefHeight="50.0" prefWidth="130.0" styleClass="default-button"
+                    text="Continue" onMouseClicked="#addAccount"/>
+            <Button prefHeight="50.0" prefWidth="130.0" styleClass="cancel-button" text="Close" onMouseClicked="#close"/>
+        </HBox>
+    </AnchorPane>
+</AnchorPane>

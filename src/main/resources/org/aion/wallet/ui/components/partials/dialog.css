@@ -32,6 +32,22 @@
     -fx-font-size: 14px;
 }
 
+.default-button {
+    -fx-background-color: #4221cc;
+    -fx-background-radius: 0,0,0,0;
+    -fx-text-fill: white;
+    -fx-font-family: 'Open Sans Bold';
+    -fx-font-size: 18px;
+}
+
+.cancel-button {
+    -fx-background-color: #eae9fb;
+    -fx-background-radius: 0,0,0,0;
+    -fx-text-fill: #4221cc;
+    -fx-font-family: 'Open Sans Bold';
+    -fx-font-size: 18px;
+}
+
 .error-input-fields {
     -fx-text-box-border: red ;
     -fx-focus-color: red ;
@@ -60,4 +76,19 @@
     -fx-border-color: #ececec;
     -fx-border-style: solid inside;
     -fx-border-width: 0 0 1 0;
+}
+
+.copyable-label, .copyable-label:focused {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0px;
+    -fx-text-fill: BLACK;
+    -fx-display-caret: false;
+}
+
+.copyable-textfield {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0px;
+    -fx-text-fill: BLACK;
+    -fx-text-alignment: CENTER;
+    -fx-display-caret: false;
 }

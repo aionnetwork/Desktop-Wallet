@@ -16,7 +16,11 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import org.aion.wallet.dto.AccountDTO;
+import org.aion.wallet.dto.AccountType;
 import org.aion.wallet.events.EventPublisher;
+import org.aion.wallet.hardware.HardwareWallet;
+import org.aion.wallet.hardware.HardwareWalletFactory;
+import org.aion.wallet.ui.components.partials.LedgerDisconnectedDialog;
 import org.aion.wallet.ui.components.partials.SaveKeystoreDialog;
 import org.aion.wallet.ui.components.partials.UnlockAccountDialog;
 import org.aion.wallet.util.BalanceUtils;
@@ -50,6 +54,8 @@ public class AccountCellItem extends ListCell<AccountDTO> {
     private final UnlockAccountDialog accountUnlockDialog = new UnlockAccountDialog();
 
     private final SaveKeystoreDialog saveKeystoreDialog = new SaveKeystoreDialog();
+
+    private final LedgerDisconnectedDialog ledgerDisconnected = new LedgerDisconnectedDialog();
 
     @FXML
     private TextField importedLabel;
@@ -144,6 +150,8 @@ public class AccountCellItem extends ListCell<AccountDTO> {
                 Tooltip.install(accountSelectButton, CONNECT_ACCOUNT_TOOLTIP);
             }
 
+            accountExportButton.setVisible(!item.getType().equals(AccountType.LEDGER));
+
             setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
         }
     }
@@ -155,6 +163,13 @@ public class AccountCellItem extends ListCell<AccountDTO> {
             accountUnlockDialog.open(mouseEvent);
             EventPublisher.fireAccountUnlocked(modifiedAccount);
         } else {
+            if (modifiedAccount.getType().equals(AccountType.LEDGER)) {
+                HardwareWallet hardwareWallet = HardwareWalletFactory.getHardwareWallet(AccountType.LEDGER);
+                if (!hardwareWallet.isConnected()) {
+                    ledgerDisconnected.open(mouseEvent);
+                    return;
+                }
+            }
             modifiedAccount.setActive(true);
             EventPublisher.fireAccountChanged(modifiedAccount);
         }
@@ -178,7 +193,7 @@ public class AccountCellItem extends ListCell<AccountDTO> {
     }
 
     @FXML
-    public void onExportClicked(final MouseEvent mouseEvent){
+    public void onExportClicked(final MouseEvent mouseEvent) {
         final AccountDTO account = getItem();
         if (!account.isUnlocked()) {
             accountUnlockDialog.open(mouseEvent);

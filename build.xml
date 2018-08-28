@@ -1,6 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project basedir="." default="build_standalone" name="aion ui"
          xmlns:if="ant:if" xmlns:unless="ant:unless">
+    <taskdef resource="net/sf/antcontrib/antcontrib.properties">
+        <classpath>
+            <pathelement location="${ant.home}/lib/ant-contrib-0.6.jar"/>
+        </classpath>
+    </taskdef>
+
+    <condition property="isWindows" value="true" else="false">
+        <os family="windows"/>
+    </condition>
+
+    <condition property="isLinux" value="true" else="false">
+        <os family="unix"/>
+    </condition>
     <property name="parent.mod" value="../mod"/>
     <property name="project.name" value="aion_ui"/>
     <property name="dir.lib" value="./lib"/>
@@ -128,7 +141,7 @@
         <delete dir="${dir.mod}/updated"/>
     </target>
 
-    <target name="build_standalone" depends="get_version_from_git">
+    <target name="build_standalone">
         <mkdir dir="${out.main}"/>
         <mkdir dir="${dir.pack}"/>
         <condition property="parent.exists">
@@ -152,7 +165,7 @@
             <fileset dir="${res.main}" id="**"/>
         </copy>
         <jar
-                destfile="aion_ui${suffix}.jar"
+                destfile="aion_ui.jar"
                 filesetmanifest="mergewithoutmain"
                 basedir="${out.main}"
                 excludes="native/">
@@ -162,13 +175,28 @@
             </manifest>
         </jar>
         <move includeemptydirs="false" todir="${dir.pack}">
-            <file file="aion_ui${suffix}.jar"/>
+            <file file="aion_ui.jar"/>
         </move>
     </target>
 
     <target name="pack" depends="build_standalone">
         <mkdir dir="${dir.pack}"/>
-        <zip destfile="${dir.pack}/aion_ui${suffix}.zip">
+        <if>
+            <os family="unix"/>
+            <then>
+                <property name="native.source" value="${res.main}/native/linux"/>
+                <property name="native.dest" value="${project.name}/native/linux"/>
+                <property name="launcher" value="aion_ui.sh"/>
+            </then>
+            <elseif>
+                <os family="windows"/>
+                <then>
+                    <property name="native.source" value="${res.main}/native/win"/>
+                    <property name="native.dest" value="${project.name}/native/win"/>
+                </then>
+            </elseif>
+        </if>
+        <zip destfile="${dir.pack}/aion_ui.zip">
             <zipfileset dir="${dir.lib}" filemode="755" prefix="${project.name}/lib">
                 <include name="*.jar"/>
             </zipfileset>
@@ -181,12 +209,40 @@
             <zipfileset dir="${dir.cfg}" filemode="755" prefix="${project.name}/config">
                 <include name="*.xml"/>
             </zipfileset>
-            <zipfileset dir="${res.main}/native" filemode="755" prefix="${project.name}/native"/>
+            <zipfileset dir="${native.source}" filemode="755" prefix="${native.dest}">
+                <include name="blake2b/**"/>
+                <include name="sodium/**"/>
+                <include name="zmq/**"/>
+                <include name="ledger/Aion-HID.zip"/>
+            </zipfileset>
             <zipfileset dir="${dir.script}" filemode="755" prefix="${project.name}">
-                <include name="aion_ui.sh"/>
-                <include name="*.exe"/>
+                <include name="${launcher}"/>
+                <include name="${libs}"/>
             </zipfileset>
         </zip>
+        <if>
+            <os family="windows"/>
+            <then>
+                <unzip src="${dir.pack}/aion_ui.zip" dest="${dir.pack}"/>
+                <copy file="${dir.script}/unzip.exe" todir="${dir.pack}/aion_ui"/>
+                <copy file="${dir.script}/wget.exe" todir="${dir.pack}/aion_ui"/>
+                <copy todir="${dir.pack}/aion_ui" overwrite="true" verbose="true">
+                    <fileset dir="${dir.script}">
+                        <filename regex="\/*.dll|\/*.pfx"/>
+                    </fileset>
+                </copy>
+                <exec executable="${dir.script}/bat2exe.exe">
+                    <arg value="/bat"/>
+                    <arg value="${dir.script}\aion_ui.bat"/>
+                    <arg value="/exe"/>
+                    <arg value="${dir.pack}\aion_ui\AionWallet.exe"/>
+                    <arg value="/icon"/>
+                    <arg value="${res.main}\org\aion\wallet\ui\components\icons\aion_icon_IR4_icon.ico"/>
+                    <arg value="/x64"/>
+                    <arg value="/invisible"/>
+                    <arg value="/overwrite"/>
+                </exec>
+            </then>
+        </if>
     </target>
-
 </project>

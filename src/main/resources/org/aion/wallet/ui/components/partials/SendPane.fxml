@@ -30,7 +30,7 @@
                 <Label fx:id="txStatusLabel"/>
                 <HBox>
                     <Button fx:id="sendButton" prefWidth="400.0" mnemonicParsing="false"
-                            onMouseClicked="#onSendAionClicked" text="Generate transaction" disable="true"
+                            onMouseClicked="#onSendAionClicked" text="Generate transaction"
                             styleClass="button"/>
                 </HBox>
                 <Label fx:id="timedoutTransactionsLabel" onMouseClicked="#onTimedoutTransactionsClick" />

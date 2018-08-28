@@ -14,13 +14,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigInteger;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Map;
+import java.util.*;
 
 public class LedgerWallet implements HardwareWallet {
     private static final String WINDOWS_DRIVER_PATH = "native\\win\\ledger\\Aion-HID\\npm.cmd";
-    private static final String WINDOWS_DRIVER_PATH_HID = "native\\win\\ledger\\Aion-HID\\hid";
+    private static final String WINDOWS_DRIVER_PATH_HID = "\\native\\win\\ledger\\Aion-HID\\hid";
     private static final String WINDOWS_NPM_LOCATION = "\\native\\win\\ledger\\Aion-HID";
     private static final String WINDOWS_PREFIX_KEY = "--prefix";
     private static final String WINDOWS_AION_HID_KEY = "get:aion-hid";
@@ -38,9 +37,11 @@ public class LedgerWallet implements HardwareWallet {
     private static final String DEFAULT_THIRD_AND_FORTH_BYTES_FOR_KEY_GENERATION = "0100";
 
     private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
+    private static Map<Integer, AionAccountDetails> accountCache;
     private ProcessBuilder processBuilder;
 
     public LedgerWallet(){
+        accountCache = new HashMap<>();
         processBuilder = createProcessBuilder();
         runNpmInstallIfWindows();
     }
@@ -48,11 +49,15 @@ public class LedgerWallet implements HardwareWallet {
     private void runNpmInstallIfWindows() {
         if(OSUtils.isWindows()){
             if(!Files.exists(Paths.get(System.getProperty("user.dir") + WINDOWS_DRIVER_PATH_HID + "\\node_modules"))) {
-                String[] commands = new String[]{"npm", "install"};
+                String[] commands = new String[]{System.getProperty("user.dir") + WINDOWS_NPM_LOCATION + "\\npm.cmd", "install"};
                 processBuilder.directory(new File(System.getProperty("user.dir") + WINDOWS_DRIVER_PATH_HID));
-                Process process = null;
                 try {
-                    process = processBuilder.command(commands).start();
+                    Process process = processBuilder.command(commands).start();
+                    BufferedReader lineReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                    String line;
+                    while ((line = lineReader.readLine()) != null) {
+                        log.info(line);
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -66,7 +71,8 @@ public class LedgerWallet implements HardwareWallet {
         ProcessBuilder tmpBuilder = new ProcessBuilder();
         Map<String, String> envs = tmpBuilder.environment();
         if(OSUtils.isWindows()) {
-            envs.put("Path", System.getProperty("user.dir") + WINDOWS_NPM_LOCATION);
+            String path = envs.get("Path");
+            envs.put("Path", path + File.pathSeparator + System.getProperty("user.dir") + WINDOWS_NPM_LOCATION);
         }
         return tmpBuilder;
     }
@@ -85,14 +91,13 @@ public class LedgerWallet implements HardwareWallet {
     @Override
     public AionAccountDetails getAccountDetails(final int derivationIndex) throws LedgerException {
         String[] commands = getCommandForAccountAddress(derivationIndex);
-        Process process = null;
+        Process process;
         try {
-            process = processBuilder.command(commands).start();
+            process = createProcessBuilder().command(commands).start();
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new LedgerException(e);
         }
 
-        assert process != null;
         BufferedReader lineReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
         BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
 
@@ -115,21 +120,54 @@ public class LedgerWallet implements HardwareWallet {
         log.debug("Ledger returned for getPublic address : " + output);
         String[] spaceSplitted = output.toString().split(" ");
 
-        if(OSUtils.isUnix()) {
+        if (OSUtils.isUnix()) {
             if (spaceSplitted.length == 3) {
-                return new AionAccountDetails(spaceSplitted[2].substring(0, 64), spaceSplitted[2].substring(64, 128));
+                return new AionAccountDetails(spaceSplitted[2].substring(0, 64), spaceSplitted[2].substring(64, 128), derivationIndex);
             } else {
                 throw new LedgerException("Error wile communicating with the ledger...");
             }
-        } else if(OSUtils.isWindows()){
-            if(spaceSplitted[9].equals("response") && !spaceSplitted[11].isEmpty()){
-                return new AionAccountDetails(spaceSplitted[11].substring(0, 64), spaceSplitted[11].substring(64, 128));
+        } else if (OSUtils.isWindows()) {
+            List<String> strings = Arrays.asList(spaceSplitted);
+            int indexResponse = strings.indexOf("response");
+            if (spaceSplitted[indexResponse].equals("response") && !spaceSplitted[indexResponse + 2].isEmpty()) {
+                return new AionAccountDetails(spaceSplitted[indexResponse + 2].substring(0, 64), spaceSplitted[indexResponse + 2].substring(64, 128), derivationIndex);
             } else {
                 throw new LedgerException("Error wile communicating with the ledger...");
             }
         } else {
             throw new LedgerException("Platform is not supported yet");
         }
+    }
+
+    @Override
+    public List<AionAccountDetails> getMultipleAccountDetails(int derivationIndexStart, int derivationIndexEnd) throws LedgerException {
+        List<AionAccountDetails> accounts = new LinkedList<>();
+        //check first derivation if we have the value in the cache
+        if(accountCache.containsKey(derivationIndexStart)){
+            //check if the fist key matches
+            AionAccountDetails aionAccountDetails = getAccountDetails(derivationIndexStart);
+            AionAccountDetails existingAionAccountDetails = accountCache.get(derivationIndexStart);
+            accounts.add(aionAccountDetails);
+            if(!aionAccountDetails.equals(existingAionAccountDetails)){
+                //invalidate the cache
+                accountCache = new HashMap<>();
+            }
+        } else {
+            AionAccountDetails aionAccountDetails = getAccountDetails(derivationIndexStart);
+            accounts.add(aionAccountDetails);
+        }
+
+        for(int i=derivationIndexStart+1;i<derivationIndexEnd;i++){
+            if(accountCache.containsKey(i)){
+                accounts.add(accountCache.get(i));
+            } else {
+                AionAccountDetails tmp = getAccountDetails(i);
+                accounts.add(tmp);
+                accountCache.put(i, tmp);
+            }
+        }
+
+        return accounts;
     }
 
     @Override
@@ -164,16 +202,18 @@ public class LedgerWallet implements HardwareWallet {
         log.debug("Ledger returned for signing command : " + output);
         String[] spaceSplitted = output.toString().split(" ");
 
-        if(OSUtils.isUnix()) {
+        if (OSUtils.isUnix()) {
             if (spaceSplitted.length == 3) {
                 return spaceSplitted[2];
             } else {
                 throw new LedgerException("Error wile communicating with the ledger...");
             }
-        } else if(OSUtils.isWindows()){
-            if(spaceSplitted[9].equals("response") && !spaceSplitted[11].isEmpty()){
-                return spaceSplitted[11];
-            }else {
+        } else if (OSUtils.isWindows()) {
+            List<String> strings = Arrays.asList(spaceSplitted);
+            int indexResponse = strings.indexOf("response");
+            if (spaceSplitted[indexResponse].equals("response") && !spaceSplitted[indexResponse + 2].isEmpty()) {
+                return spaceSplitted[indexResponse + 2];
+            } else {
                 throw new LedgerException("Error wile communicating with the ledger...");
             }
         } else {
@@ -181,7 +221,7 @@ public class LedgerWallet implements HardwareWallet {
         }
     }
 
-    private String getDerivationPathForIndex(int derivationIndex){
+    private String getDerivationPathForIndex(int derivationIndex) {
         BigInteger defaultDerivation = new BigInteger("80000000", 16);
         BigInteger pathIndex = new BigInteger(String.valueOf(derivationIndex));
         return DEFAULT_DERIVATION_PATH + defaultDerivation.or(pathIndex).toString(16);
@@ -189,19 +229,19 @@ public class LedgerWallet implements HardwareWallet {
 
     private String[] getCommandForAccountAddress(int derivationIndex) throws LedgerException {
         //Example of param : e002010015058000002c800001a9800000008000000080000000
-        if(OSUtils.isUnix()) {
+        if (OSUtils.isUnix()) {
             return new String[]{LINUX_DRIVER_PATH, PARAM_KEY +
-                                "e0" + GET_PUBLIC_KEY_INDEX +
-                                DEFAULT_THIRD_AND_FORTH_BYTES_FOR_KEY_GENERATION +
-                                PATH_LENGTH + getDerivationPathForIndex(derivationIndex)};
+                    "e0" + GET_PUBLIC_KEY_INDEX +
+                    DEFAULT_THIRD_AND_FORTH_BYTES_FOR_KEY_GENERATION +
+                    PATH_LENGTH + getDerivationPathForIndex(derivationIndex)};
 
-        } else if(OSUtils.isWindows()){
-            return new String[]{WINDOWS_DRIVER_PATH, "run",
-                                WINDOWS_AION_HID_KEY , "e0" +
-                                GET_PUBLIC_KEY_INDEX +
-                                DEFAULT_THIRD_AND_FORTH_BYTES_FOR_KEY_GENERATION +
-                                PATH_LENGTH + getDerivationPathForIndex(derivationIndex) ,
-                                WINDOWS_PREFIX_KEY , WINDOWS_DRIVER_PATH_HID};
+        } else if (OSUtils.isWindows()) {
+            return new String[]{System.getProperty("user.dir") + File.separator + WINDOWS_DRIVER_PATH, "run",
+                    WINDOWS_AION_HID_KEY, "e0" +
+                    GET_PUBLIC_KEY_INDEX +
+                    DEFAULT_THIRD_AND_FORTH_BYTES_FOR_KEY_GENERATION +
+                    PATH_LENGTH + getDerivationPathForIndex(derivationIndex),
+                    WINDOWS_PREFIX_KEY, System.getProperty("user.dir") + File.separator + WINDOWS_DRIVER_PATH_HID};
         } else {
             throw new LedgerException("Platform not yet supported");
         }
@@ -210,18 +250,18 @@ public class LedgerWallet implements HardwareWallet {
     private String[] getCommandForTransactionSigning(int derivationIndex, final byte[] message) throws LedgerException {
         int length = PATH_LENGTH + message.length;
         //Example of param : e0040000cf058000002c800001a9800000008000000080000000 + message
-        if(OSUtils.isUnix()){
+        if (OSUtils.isUnix()) {
             return new String[]{LINUX_DRIVER_PATH, PARAM_KEY +
                                 "e0" + SIGN_TRANSACTION_INDEX +
                                 DEFAULT_THIRD_AND_FORTH_BYTES_FOR_SIGNING +
                                 Integer.toHexString(length) +
-                                getDerivationPathForIndex(derivationIndex) + new String(message)};
+                                getDerivationPathForIndex(derivationIndex) + TypeConverter.toJsonHex(message).substring(2)};
 
         } else if(OSUtils.isWindows()){
-            return new String[]{WINDOWS_DRIVER_PATH, "run", WINDOWS_AION_HID_KEY ,
+            return new String[]{System.getProperty("user.dir") + File.separator + WINDOWS_DRIVER_PATH, "run", WINDOWS_AION_HID_KEY ,
                                 "e0" + SIGN_TRANSACTION_INDEX + DEFAULT_THIRD_AND_FORTH_BYTES_FOR_SIGNING +
                                 Integer.toHexString(length) + getDerivationPathForIndex(derivationIndex) +
-                                TypeConverter.toJsonHex(message).substring(2), "--prefix", WINDOWS_DRIVER_PATH_HID};
+                                TypeConverter.toJsonHex(message).substring(2), "--prefix", System.getProperty("user.dir") + File.separator + WINDOWS_DRIVER_PATH_HID};
         } else {
             throw new LedgerException("Platform not yet supported");
         }
