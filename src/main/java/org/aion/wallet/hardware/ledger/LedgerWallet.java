@@ -25,7 +25,7 @@ public class LedgerWallet implements HardwareWallet {
     private static final String WINDOWS_PREFIX_KEY = "--prefix";
     private static final String WINDOWS_AION_HID_KEY = "get:aion-hid";
 
-    private static final String MAC_DRIVER_LOCATION = "/native/mac/hid";
+    private static final String MAC_DRIVER_LOCATION = "/native/mac/ledger/hid";
 
     private static final String LINUX_DRIVER_PATH = "native/linux/ledger/Aion-HID";
     private static final String PARAM_KEY = "--param=";
