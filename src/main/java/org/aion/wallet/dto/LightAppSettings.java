@@ -7,7 +7,7 @@ import java.util.Optional;
 import java.util.Properties;
 
 public class LightAppSettings {
-    private static final Integer DEFAULT_LOCK_TIMEOUT = 3;
+    private static final String DEFAULT_LOCK_TIMEOUT = "3";
     private static final String DEFAULT_LOCK_TIMEOUT_MEASUREMENT_UNIT = "minutes";
 
     private static final String ADDRESS = ".address";
@@ -25,15 +25,15 @@ public class LightAppSettings {
     private final String address;
     private final String port;
     private final String protocol;
-    private final Integer lockTimeout;
     private final String lockTimeoutMeasurementUnit;
+    private final int lockTimeout;
 
     public LightAppSettings(final Properties lightSettingsProps, final ApiType type) {
         this.type = type;
         address = Optional.ofNullable(lightSettingsProps.getProperty(type + ADDRESS)).orElse(DEFAULT_IP);
         port = Optional.ofNullable(lightSettingsProps.getProperty(type + PORT)).orElse(DEFAULT_PORT);
         protocol = Optional.ofNullable(lightSettingsProps.getProperty(type + PROTOCOL)).orElse(DEFAULT_PROTOCOL);
-        lockTimeout = Integer.parseInt(Optional.ofNullable(lightSettingsProps.getProperty(ACCOUNTS + LOCK_TIMEOUT)).orElse(DEFAULT_LOCK_TIMEOUT.toString()));
+        lockTimeout = Integer.parseInt(Optional.ofNullable(lightSettingsProps.getProperty(ACCOUNTS + LOCK_TIMEOUT)).orElse(DEFAULT_LOCK_TIMEOUT));
         lockTimeoutMeasurementUnit = Optional.ofNullable(lightSettingsProps.getProperty(ACCOUNTS + LOCK_TIMEOUT_MEASUREMENT_UNIT)).orElse(DEFAULT_LOCK_TIMEOUT_MEASUREMENT_UNIT);
     }
 
@@ -62,7 +62,7 @@ public class LightAppSettings {
         return type;
     }
 
-    public Integer getUnlockTimeout() {
+    public int getLockTimeout() {
         return lockTimeout;
     }
 
@@ -75,7 +75,7 @@ public class LightAppSettings {
         properties.setProperty(type + ADDRESS, address);
         properties.setProperty(type + PORT, port);
         properties.setProperty(type + PROTOCOL, protocol);
-        properties.setProperty(ACCOUNTS + LOCK_TIMEOUT, lockTimeout.toString());
+        properties.setProperty(ACCOUNTS + LOCK_TIMEOUT, String.valueOf(lockTimeout));
         properties.setProperty(ACCOUNTS + LOCK_TIMEOUT_MEASUREMENT_UNIT, lockTimeoutMeasurementUnit);
         return properties;
     }

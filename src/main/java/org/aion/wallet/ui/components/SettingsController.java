@@ -32,7 +32,8 @@ public class SettingsController extends AbstractController {
     @FXML
     private TextField timeout;
     @FXML
-    private ComboBox timeoutMeasurementUnit;
+    private ComboBox<String> timeoutMeasurementUnit;
+
     private LightAppSettings settings;
 
     @Override
@@ -100,7 +101,7 @@ public class SettingsController extends AbstractController {
         settings = blockchainConnector.getSettings();
         address.setText(settings.getAddress());
         port.setText(settings.getPort());
-        timeout.setText(settings.getUnlockTimeout().toString());
+        timeout.setText(String.valueOf(settings.getLockTimeout()));
         timeoutMeasurementUnit.setItems(getTimeoutMeasurementUnits());
         setInitialMeasurementUnit(settings.getLockTimeoutMeasurementUnit());
         displayNotification("", false);
@@ -122,7 +123,7 @@ public class SettingsController extends AbstractController {
         timeoutMeasurementUnit.getSelectionModel().select(initialIndex);
     }
 
-    private ObservableList getTimeoutMeasurementUnits() {
+    private ObservableList<String> getTimeoutMeasurementUnits() {
         return FXCollections.observableArrayList(
                 "seconds",
                 "minutes",

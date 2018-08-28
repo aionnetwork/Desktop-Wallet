@@ -125,7 +125,7 @@ public class MainWindow extends Application {
         if (SettingsEvent.Type.CHANGED.equals(event.getType())) {
             final LightAppSettings settings = event.getSettings();
             if (settings != null) {
-                lockDelayDuration = Duration.seconds(computeDelay(settings.getUnlockTimeout(), settings.getLockTimeoutMeasurementUnit()));
+                lockDelayDuration = Duration.seconds(computeDelay(settings.getLockTimeout(), settings.getLockTimeoutMeasurementUnit()));
                 registerIdleMonitor();
             }
         }
