@@ -206,7 +206,7 @@
                 <then>
                     <property name="native.source" value="${res.main}/native/linux"/>
                     <property name="native.dest" value="${project.name}/native/linux"/>
-                    <property name="launcher" value=""/>
+                    <property name="launcher" value="aion_ui.sh"/>
                 </then>
             </elseif>
         </if>
