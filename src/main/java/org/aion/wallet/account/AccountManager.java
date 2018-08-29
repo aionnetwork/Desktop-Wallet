@@ -62,6 +62,7 @@ public class AccountManager {
         for (String address : LocalKeystore.list()) {
             addressToAccount.put(address, getNewImportedAccount(address));
         }
+        CryptoUtils.preloadNatives();
     }
 
     public String createMasterAccount(final String password, final String name) throws ValidationException {

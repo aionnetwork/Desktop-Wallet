@@ -64,11 +64,7 @@ public class LedgerAccountListDialog implements Initializable {
         registerEventBusConsumer();
         ledgerContinueButton.setDisable(true);
         ledgerAccountsToggleGroup.selectedToggleProperty().addListener(this::ledgerAccountChanged);
-        try {
-            fillLedgerAccountList();
-        } catch (ValidationException e) {
-            log.error(e.getMessage(), e);
-        }
+        fillLedgerAccountList();
     }
 
     private void ledgerAccountChanged(final Observable observable) {
@@ -80,11 +76,7 @@ public class LedgerAccountListDialog implements Initializable {
     @Subscribe
     private void handleLedgerConnected(UiMessageEvent event) {
         if (UiMessageEvent.Type.LEDGER_CONNECTED.equals(event.getType())) {
-            try {
-                fillLedgerAccountList();
-            } catch (ValidationException e) {
-                log.error(e.getMessage(), e);
-            }
+            fillLedgerAccountList();
         }
     }
 
@@ -92,14 +84,14 @@ public class LedgerAccountListDialog implements Initializable {
         EventBusFactory.getBus(UiMessageEvent.ID).register(this);
     }
 
-    private void fillLedgerAccountList() throws ValidationException {
+    private void fillLedgerAccountList() {
         loadingLedgerAccountsProgressBar.setVisible(true);
 
         generateLedgerAddresses(0, 5);
         loadingLedgerAccountsProgressBar.setVisible(false);
     }
 
-    private void generateLedgerAddresses(final int startIndex, final int stopIndex) throws ValidationException {
+    private void generateLedgerAddresses(final int startIndex, final int stopIndex) {
         currentDerivationIndex = stopIndex;
         final HardwareWallet hardwareWallet = HardwareWalletFactory.getHardwareWallet(AccountType.LEDGER);
         List<AionAccountDetails> aionAccountDetails = Collections.emptyList();
@@ -189,13 +181,9 @@ public class LedgerAccountListDialog implements Initializable {
         }
     }
 
-    public void nextAddresses(final MouseEvent mouseEvent) {
+    public void nextAddresses() {
         ledgerContinueButton.setDisable(true);
         ledgerAccountList.getChildren().clear();
-        try {
-            generateLedgerAddresses(currentDerivationIndex, currentDerivationIndex + 5);
-        } catch (ValidationException e) {
-            log.error(e.getMessage(), e);
-        }
+        generateLedgerAddresses(currentDerivationIndex, currentDerivationIndex + 5);
     }
 }
