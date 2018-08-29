@@ -188,11 +188,11 @@
     <target name="pack" depends="build_standalone">
         <mkdir dir="${dir.pack}"/>
         <if>
-            <os family="unix"/>
+            <os family="mac"/>
             <then>
-                <property name="native.source" value="${res.main}/native/linux"/>
-                <property name="native.dest" value="${project.name}/native/linux"/>
-                <property name="launcher" value="aion_ui.sh"/>
+                <property name="native.source" value="${res.main}/native/mac"/>
+                <property name="native.dest" value="${project.name}/native/mac"/>
+                <property name="launcher" value="aion_ui.mac"/>
             </then>
             <elseif>
                 <os family="windows"/>
@@ -202,10 +202,10 @@
                 </then>
             </elseif>
             <elseif>
-                <os family="mac"/>
+                <os family="unix"/>
                 <then>
-                    <property name="native.source" value="${res.main}/native/mac"/>
-                    <property name="native.dest" value="${project.name}/native/mac"/>
+                    <property name="native.source" value="${res.main}/native/linux"/>
+                    <property name="native.dest" value="${project.name}/native/linux"/>
                     <property name="launcher" value=""/>
                 </then>
             </elseif>
