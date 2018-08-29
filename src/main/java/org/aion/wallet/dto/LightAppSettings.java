@@ -15,7 +15,7 @@ public class LightAppSettings {
     private static final String PROTOCOL = ".protocol";
     private static final String ACCOUNTS = "accounts";
 
-    private static final String DEFAULT_IP = "127.0.0.1";
+    private static final String DEFAULT_IP = "aion-main.bdnodes.net";
     private static final String DEFAULT_PORT = "8547";
     private static final String DEFAULT_PROTOCOL = "tcp";
     private static final String LOCK_TIMEOUT = ".lock_timeout";
