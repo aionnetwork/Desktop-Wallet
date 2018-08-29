@@ -102,30 +102,26 @@ public class LedgerWallet implements HardwareWallet {
 
     @Override
     public List<AionAccountDetails> getMultipleAccountDetails(final int derivationIndexStart, final int derivationIndexEnd) throws LedgerException {
-        List<AionAccountDetails> accounts = new LinkedList<>();
-        //check first derivation if we have the value in the cache
+        final List<AionAccountDetails> accounts = new LinkedList<>();
+        final AionAccountDetails newAccountDetails = getAccountDetails(derivationIndexStart);
+
         if (accountCache.containsKey(derivationIndexStart)) {
-            //check if the fist key matches
-            AionAccountDetails aionAccountDetails = getAccountDetails(derivationIndexStart);
-            AionAccountDetails existingAionAccountDetails = accountCache.get(derivationIndexStart);
-            accounts.add(aionAccountDetails);
-            if (!aionAccountDetails.equals(existingAionAccountDetails)) {
+            final AionAccountDetails existingAionAccountDetails = accountCache.get(derivationIndexStart);
+            if (!newAccountDetails.equals(existingAionAccountDetails)) {
                 //invalidate the cache
                 accountCache.clear();
+                accountCache.put(derivationIndexStart, newAccountDetails);
             }
-        } else {
-            AionAccountDetails aionAccountDetails = getAccountDetails(derivationIndexStart);
-            accounts.add(aionAccountDetails);
         }
 
-        for (int i = derivationIndexStart + 1; i < derivationIndexEnd; i++) {
-            if (accountCache.containsKey(i)) {
-                accounts.add(accountCache.get(i));
-            } else {
-                AionAccountDetails tmp = getAccountDetails(i);
-                accounts.add(tmp);
-                accountCache.put(i, tmp);
+        accounts.add(newAccountDetails);
+
+        //keep one extra derivation for cache checking on next level
+        for (int i = derivationIndexStart + 1; i <= derivationIndexEnd; i++) {
+            if (!accountCache.containsKey(i)) {
+                accountCache.put(i, getAccountDetails(i));
             }
+            accounts.add(accountCache.get(i));
         }
 
         return accounts;
