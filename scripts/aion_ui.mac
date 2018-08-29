@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SCRIPT_PATH=$(dirname $(realpath $0))
+SCRIPT_PATH=$(dirname $0)
 
 cd ${SCRIPT_PATH}
 
@@ -15,6 +15,11 @@ if [ ! -f ${JAVA_INSTALL}/bin/java  ] || [ $({JAVA_INSTALL}/bin/java -version 2>
 
    rm jre-10.0.2_osx-x64_bin.tar.gz
 fi
+
+if [ ! -d ${SCRIPT_PATH}/native/mac/ledger/hid ]
+ then
+  unzip ${SCRIPT_PATH}/native/mac/ledger/hid.zip -d ${SCRIPT_PATH}/native/mac/ledger/
+ fi
 
 MOD_DIR=${SCRIPT_PATH}/mod/*
 LIB_DIR=${SCRIPT_PATH}/lib/*
