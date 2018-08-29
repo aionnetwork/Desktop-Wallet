@@ -327,11 +327,11 @@ public class AccountManager {
     }
 
     public void addTimedOutTransaction(final SendTransactionDTO transaction) {
-        addressToAccount.get(transaction.getFrom()).addTimedOutTransaction(transaction);
+        addressToAccount.get(transaction.getFrom().getPublicAddress()).addTimedOutTransaction(transaction);
     }
 
     public void removeTimedOutTransaction(final SendTransactionDTO transaction) {
-        addressToAccount.get(transaction.getFrom()).removeTimedOutTransaction(transaction);
+        addressToAccount.get(transaction.getFrom().getPublicAddress()).removeTimedOutTransaction(transaction);
     }
 
     public void lockAll() {
