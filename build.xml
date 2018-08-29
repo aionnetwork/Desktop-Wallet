@@ -213,6 +213,7 @@
         <zip destfile="${dir.pack}/aion_ui.zip">
             <zipfileset dir="${dir.lib}" filemode="755" prefix="${project.name}/lib">
                 <include name="*.jar"/>
+                <exclude name="ant-contrib-0.6.jar"/>
             </zipfileset>
             <zipfileset dir="${dir.mod}" filemode="755" prefix="${project.name}/mod">
                 <include name="*.jar"/>
