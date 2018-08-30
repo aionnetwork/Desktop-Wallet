@@ -1,6 +1,8 @@
 package org.aion.wallet.hardware.ledger;
 
-public class LedgerException extends Exception {
+import org.aion.wallet.hardware.HardwareWalletException;
+
+public class LedgerException extends HardwareWalletException {
 
     public LedgerException(final Exception cause) {
         super(cause);

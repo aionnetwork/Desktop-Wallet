@@ -5,6 +5,7 @@ import org.aion.base.util.Hex;
 import org.aion.wallet.events.EventPublisher;
 import org.aion.wallet.hardware.AionAccountDetails;
 import org.aion.wallet.hardware.HardwareWallet;
+import org.aion.wallet.hardware.HardwareWalletException;
 import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.util.CryptoUtils;
 import org.aion.wallet.util.OSUtils;
@@ -92,8 +93,7 @@ public class LedgerWallet implements HardwareWallet {
     }
 
     private void installNpmIfRequired() {
-        OSUtils.executeForOs(WINDOWS_NPM_INSTALLER, MAC_NPM_INSTALLER, p -> {
-        }, processBuilder);
+        OSUtils.executeForOs(WINDOWS_NPM_INSTALLER, MAC_NPM_INSTALLER, p -> {}, processBuilder);
     }
 
     @Override
@@ -104,7 +104,7 @@ public class LedgerWallet implements HardwareWallet {
                 accountCache.clear();
             }
             accountCache.put(FIRST_INDEX, firstAccount);
-        } catch (LedgerException e) {
+        } catch (HardwareWalletException e) {
             log.error(e.getMessage(), e);
             return false;
         }
@@ -117,10 +117,9 @@ public class LedgerWallet implements HardwareWallet {
         final String output = getProcessOutputForCommand(commands);
         log.info("Ledger returned for getPublic address : " + output);
         final String response = getResponse(output);
-        if (response.length() != 2 * HEX_KEY_SIZE) {
-            throw new LedgerException("Could not get proper account details: " + response);
-        }
-        return new AionAccountDetails(response.substring(0, HEX_KEY_SIZE), response.substring(HEX_KEY_SIZE, 2 * HEX_KEY_SIZE), derivationIndex);
+        final String pubKeyHex = response.substring(0, HEX_KEY_SIZE);
+        final String addressHex = response.substring(HEX_KEY_SIZE, 2 * HEX_KEY_SIZE);
+        return new AionAccountDetails(pubKeyHex, addressHex, derivationIndex);
     }
 
     @Override
@@ -148,18 +147,16 @@ public class LedgerWallet implements HardwareWallet {
         }
         backgroundExecutor.submit(() -> {
             try {
-                for (int i = derivationIndexEnd; i < derivationIndexEnd + (derivationIndexEnd - derivationIndexStart)
-                        ; i++) {
+                for (int i = derivationIndexEnd; i < derivationIndexEnd + (derivationIndexEnd - derivationIndexStart); i++) {
                     if (!accountCache.containsKey(i)) {
                         accountCache.put(i, getAccountDetails(i));
                     }
                 }
                 EventPublisher.fireAccountsRecovered(accountCache.values().stream().map(AionAccountDetails::getAddress).collect(Collectors.toSet()));
-            } catch (LedgerException e) {
+            } catch (HardwareWalletException e) {
                 log.error("Could not preload next accounts: " + e.getMessage(), e);
             }
         });
-
         return accounts;
     }
 
@@ -176,10 +173,10 @@ public class LedgerWallet implements HardwareWallet {
         List<String> strings = Arrays.asList(outputWords);
         int indexResponse = OSUtils.getForOs(s -> s.indexOf(RESPONSE), s -> s.indexOf(RESPONSE), s -> 0, strings);
         final String result = outputWords[indexResponse + 2];
-        if (!result.isEmpty()) {
+        if (!result.isEmpty() && result.length() != 2 * HEX_KEY_SIZE) {
             return result;
         } else {
-            throw new LedgerException("Error wile communicating with the ledger...");
+            throw new LedgerException("Error wile communicating with the ledger..." + result);
         }
     }
 

@@ -18,6 +18,7 @@ import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.dto.LightAppSettings;
 import org.aion.wallet.events.*;
 import org.aion.wallet.exception.NotFoundException;
+import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.storage.ApiType;
 import org.aion.wallet.util.AionConstants;
@@ -116,7 +117,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     }
 
     @Override
-    protected TransactionResponseDTO sendTransactionInternal(final SendTransactionDTO dto) {
+    protected TransactionResponseDTO sendTransactionInternal(final SendTransactionDTO dto) throws ValidationException {
         final String fromAddress = dto.getFrom().getPublicAddress();
         final BigInteger latestTransactionNonce = getLatestTransactionNonce(fromAddress);
         final AionTransaction transaction = new AionTransaction(

@@ -1,5 +1,6 @@
 package org.aion.wallet.connector;
 
+import org.aion.api.log.LogEnum;
 import org.aion.api.type.core.tx.AionTransaction;
 import org.aion.base.util.TimeInstant;
 import org.aion.base.util.TypeConverter;
@@ -7,12 +8,17 @@ import org.aion.crypto.ECKey;
 import org.aion.crypto.ed25519.Ed25519Signature;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.dto.AccountType;
+import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.hardware.HardwareWallet;
+import org.aion.wallet.hardware.HardwareWalletException;
 import org.aion.wallet.hardware.HardwareWalletFactory;
-import org.aion.wallet.hardware.ledger.LedgerException;
+import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.util.CryptoUtils;
+import org.slf4j.Logger;
 
 public class AionTransactionSigner {
+
+    private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
 
     private final AccountDTO account;
 
@@ -20,7 +26,7 @@ public class AionTransactionSigner {
         account = from;
     }
 
-    public byte[] sign(final AionTransaction transaction) {
+    public byte[] sign(final AionTransaction transaction) throws ValidationException {
         final AccountType accountType = account.getType();
         switch (accountType) {
             case LOCAL:
@@ -32,13 +38,20 @@ public class AionTransactionSigner {
             case TREZOR:
                 final HardwareWallet wallet = HardwareWalletFactory.getHardwareWallet(accountType);
                 final String publicKey;
+                transaction.setTimeStamp(TimeInstant.now().toEpochMicro());
                 try {
                     publicKey = wallet.getAccountDetails(account.getDerivationIndex()).getPublicKey();
-                    transaction.setTimeStamp(TimeInstant.now().toEpochMicro());
-                    final String signature = wallet.signMessage(account.getDerivationIndex(), transaction.getEncodedRaw());
+                } catch (HardwareWalletException e) {
+                    log.error(e.getMessage(), e);
+                    throw new ValidationException(accountType.getDisplayString() + " is not responding. Reconnect!");
+                }
+                final String signature;
+                try {
+                    signature = wallet.signMessage(account.getDerivationIndex(), transaction.getEncodedRaw());
                     transaction.setSignature(new Ed25519Signature(TypeConverter.StringHexToByteArray(publicKey), TypeConverter.StringHexToByteArray(signature)));
-                } catch (LedgerException e) {
-                    e.printStackTrace();
+                } catch (HardwareWalletException e) {
+                    log.error(e.getMessage(), e);
+                    throw new ValidationException(accountType.getDisplayString() + " transaction declined by user");
                 }
                 break;
             default:

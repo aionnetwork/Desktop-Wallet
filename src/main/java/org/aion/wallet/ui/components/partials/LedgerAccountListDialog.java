@@ -30,8 +30,8 @@ import org.aion.wallet.events.UiMessageEvent;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.hardware.AionAccountDetails;
 import org.aion.wallet.hardware.HardwareWallet;
+import org.aion.wallet.hardware.HardwareWalletException;
 import org.aion.wallet.hardware.HardwareWalletFactory;
-import org.aion.wallet.hardware.ledger.LedgerException;
 import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.util.BalanceUtils;
 import org.slf4j.Logger;
@@ -97,7 +97,7 @@ public class LedgerAccountListDialog implements Initializable {
         List<AionAccountDetails> aionAccountDetails = Collections.emptyList();
         try {
              aionAccountDetails = hardwareWallet.getMultipleAccountDetails(startIndex, stopIndex);
-        } catch (LedgerException e) {
+        } catch (HardwareWalletException e) {
             log.error(e.getMessage(), e);
         }
 
