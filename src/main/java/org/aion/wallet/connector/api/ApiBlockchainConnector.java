@@ -198,7 +198,6 @@ public class ApiBlockchainConnector extends BlockchainConnector {
             chainBest = syncInfo.getChainBestBlock();
             netBest = syncInfo.getNetworkBestBlock();
         } catch (Exception e) {
-            log.error("Could not get SyncInfo - sync displays latest block!");
             final Block latestBlock = getLatestBlock();
             if (latestBlock != null) {
                 chainBest = latestBlock.getNumber();

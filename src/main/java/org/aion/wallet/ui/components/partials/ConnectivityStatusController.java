@@ -4,8 +4,8 @@ import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import org.aion.wallet.connector.BlockchainConnector;
-import org.aion.wallet.ui.components.AbstractController;
 import org.aion.wallet.events.RefreshEvent;
+import org.aion.wallet.ui.components.AbstractController;
 
 import java.net.URL;
 import java.util.EnumSet;
@@ -28,7 +28,7 @@ public class ConnectivityStatusController extends AbstractController {
 
     @Override
     protected final void refreshView(final RefreshEvent event) {
-        if (EnumSet.of(RefreshEvent.Type.TIMER, RefreshEvent.Type.CONNECTED).contains(event.getType())) {
+        if (EnumSet.of(RefreshEvent.Type.TIMER, RefreshEvent.Type.CONNECTED, RefreshEvent.Type.DISCONNECTED).contains(event.getType())) {
             final Task<Boolean> getConnectedStatusTask = getApiTask(o -> blockchainConnector.getConnectionStatus(), null);
             runApiTask(
                     getConnectedStatusTask,

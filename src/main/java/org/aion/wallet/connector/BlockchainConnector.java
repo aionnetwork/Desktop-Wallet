@@ -9,6 +9,7 @@ import org.aion.wallet.connector.dto.TransactionResponseDTO;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.dto.AccountType;
 import org.aion.wallet.dto.LightAppSettings;
+import org.aion.wallet.events.EventPublisher;
 import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.storage.ApiType;
@@ -149,11 +150,15 @@ public abstract class BlockchainConnector {
 
     public void lockAll() {
         connectionLocked = true;
+        EventPublisher.fireConnectionBroken();
         accountManager.lockAll();
     }
 
     public void unlockConnection() {
-        connectionLocked = false;
+        if (connectionLocked){
+            connectionLocked = false;
+            EventPublisher.fireConnectionEstablished();
+        }
     }
 
     protected final boolean isConnectionUnLocked() {
