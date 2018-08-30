@@ -46,15 +46,15 @@ public class EventPublisher {
 
     public static void fireAccountLocked(final AccountDTO account) {
         if (account != null) {
-            EventBusFactory.getBus(AbstractAccountEvent.ID).post(new AccountEvent(AbstractAccountEvent.Type.LOCKED,
-                    account));
+            EventBusFactory.getBus(AbstractAccountEvent.ID)
+                    .post(new AccountEvent(AbstractAccountEvent.Type.LOCKED, account));
         }
     }
 
     public static void fireAccountsRecovered(final Set<String> addresses) {
         if (addresses != null && !addresses.isEmpty()) {
-            EventBusFactory.getBus(AbstractAccountEvent.ID).post(new AccountListEvent(AbstractAccountEvent.Type
-                    .RECOVERED, addresses));
+            EventBusFactory.getBus(AbstractAccountEvent.ID)
+                    .post(new AccountListEvent(AbstractAccountEvent.Type.RECOVERED, addresses));
         }
     }
 
@@ -79,8 +79,8 @@ public class EventPublisher {
     }
 
     public static void fireTransactionResubmited(final SendTransactionDTO transaction) {
-        EventBusFactory.getBus(TransactionEvent.ID).post(new TransactionEvent(TransactionEvent.Type.RESUBMIT,
-                transaction));
+        EventBusFactory.getBus(TransactionEvent.ID)
+                .post(new TransactionEvent(TransactionEvent.Type.RESUBMIT, transaction));
     }
 
     public static void fireLedgerConnected() {
@@ -88,7 +88,7 @@ public class EventPublisher {
     }
 
     public static void fireLedgerAccountSelected(final InputEvent eventSource) {
-        EventBusFactory.getBus(UiMessageEvent.ID).post(new UiMessageEvent(UiMessageEvent.Type
-                .LEDGER_ACCOUNT_SELECTED, eventSource));
+        EventBusFactory.getBus(UiMessageEvent.ID)
+                .post(new UiMessageEvent(UiMessageEvent.Type.LEDGER_ACCOUNT_SELECTED, eventSource));
     }
 }

@@ -18,6 +18,8 @@ import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.dto.AccountType;
 import org.aion.wallet.events.EventPublisher;
 import org.aion.wallet.exception.ValidationException;
+import org.aion.wallet.hardware.HardwareWallet;
+import org.aion.wallet.hardware.HardwareWalletFactory;
 import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.storage.LocalKeystore;
 import org.aion.wallet.storage.WalletStorage;
@@ -306,21 +308,31 @@ public class AccountManager {
     }
 
     public void unlockAccount(final AccountDTO account, final String password) throws ValidationException {
-        final Optional<byte[]> fileContent = Optional.ofNullable(addressToKeystoreContent.get(account.getPublicAddress()));
-        final ECKey storedKey;
-        if (fileContent.isPresent()) {
-            storedKey = KeystoreFormat.fromKeystore(fileContent.get(), password);
-        } else {
-            storedKey = LocalKeystore.getKey(account.getPublicAddress(), password);
-        }
+        isWalletLocked = false;
+        if (EnumSet.of(AccountType.LOCAL, AccountType.EXTERNAL).contains(account.getType())) {
+            final Optional<byte[]> fileContent = Optional.ofNullable(addressToKeystoreContent.get(account.getPublicAddress()));
+            final ECKey storedKey;
+            if (fileContent.isPresent()) {
+                storedKey = KeystoreFormat.fromKeystore(fileContent.get(), password);
+            } else {
+                storedKey = LocalKeystore.getKey(account.getPublicAddress(), password);
+            }
 
-        if (storedKey != null) {
-            account.setActive(true);
-            account.setPrivateKey(storedKey.getPrivKeyBytes());
-            EventPublisher.fireAccountChanged(account);
+            if (storedKey != null) {
+                account.setPrivateKey(storedKey.getPrivKeyBytes());
+            } else {
+                throw new ValidationException("The password is incorrect!");
+            }
         } else {
-            throw new ValidationException("The password is incorrect!");
+            if (account.getType().equals(AccountType.LEDGER)) {
+                HardwareWallet hardwareWallet = HardwareWalletFactory.getHardwareWallet(AccountType.LEDGER);
+                if (!hardwareWallet.isConnected()) {
+                    throw new ValidationException("Can't unlock, " + account.getType().getDisplayString() + " wallet disconnected");
+                }
+            }
         }
+        account.setActive(true);
+        EventPublisher.fireAccountChanged(account);
 
     }
 
