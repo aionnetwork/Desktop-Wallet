@@ -52,6 +52,8 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     private String connectionString;
 
+    private long startingBlock;
+
     public ApiBlockchainConnector() {
         backgroundExecutor = Executors.newFixedThreadPool(getCores());
         connect(getConnectionString());
@@ -79,6 +81,8 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         }
         connectionFuture = backgroundExecutor.submit(() -> {
             API.connect(newConnectionString, true);
+            final Block latestBlock = getLatestBlock();
+            startingBlock = Math.max(0, latestBlock.getNumber() - 30 * BLOCK_BATCH_SIZE);
             EventPublisher.fireConnectionEstablished();
             processTransactionsOnReconnect();
         });
@@ -309,7 +313,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         }
     }
 
-    private BlockDTO getOldestSafeBlock(final Set<String> addresses, final Consumer<Iterator<String>> nullSafeBlockFilter) {
+    private BlockDTO getOldestSafeBlock(final Set<String> addresses, final Consumer<Iterator<String>> safeBlockFilter) {
         BlockDTO oldestSafeBlock = null;
         final Iterator<String> addressIterator = addresses.iterator();
         while (addressIterator.hasNext()) {
@@ -320,7 +324,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
                     oldestSafeBlock = lastSafeBlock;
                 }
             } else {
-                nullSafeBlockFilter.accept(addressIterator);
+                safeBlockFilter.accept(addressIterator);
             }
         }
         return oldestSafeBlock;
@@ -330,11 +334,11 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         if (API.isConnected()) {
             if (!addresses.isEmpty()) {
                 final long latest = getLatestBlock().getNumber();
-                final long previousSafe = lastSafeBlock != null ? lastSafeBlock.getNumber() : 0;
+                final long previousSafe = lastSafeBlock != null ? lastSafeBlock.getNumber() : startingBlock;
                 log.debug("Processing transactions from block: {} to block: {}, for addresses: {}", previousSafe, latest, addresses);
-                if (previousSafe > 0) {
+                if (previousSafe > startingBlock) {
                     final Block lastSupposedSafe = getBlock(previousSafe);
-                    if (!Arrays.equals(lastSafeBlock.getHash(), (lastSupposedSafe.getHash().toBytes()))) {
+                    if (lastSafeBlock == null || !Arrays.equals(lastSafeBlock.getHash(), (lastSupposedSafe.getHash().toBytes()))) {
                         EventPublisher.fireFatalErrorEncountered("A re-organization happened too far back. Please restart Wallet!");
                     }
                     removeTransactionsFromBlock(addresses, previousSafe);
