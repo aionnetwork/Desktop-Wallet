@@ -38,6 +38,10 @@
         </classpath>
     </taskdef>
 
+    <taskdef name="bundleapp"
+             classname="com.oracle.appbundler.AppBundlerTask"
+             classpath="${dir.lib}/appbundler-1.0ea.jar" />
+
     <macrodef name="git">
         <attribute name="command"/>
         <attribute name="options"/>
@@ -260,7 +264,20 @@
             <elseif>
                 <os family="mac"/>
                 <then>
-                    <!--pack application for mac-->
+                    <unzip src="${dir.pack}/aion_ui.zip" dest="${dir.pack}"/>
+                    <unzip src="${dir.pack}/aion_ui/native/mac/ledger/hid.zip" dest="${dir.pack}/aion_ui/native/mac/ledger/"/>
+                    <bundleapp outputdirectory="."
+                               name="AionWallet"
+                               displayname="AionWallet"
+                               identifier="AionWallet"
+                               mainclassname="org.aion.wallet.WalletApplication">
+                        <classpath dir="${dir.pack}/aion_ui/lib" />
+                        <classpath dir="${dir.pack}/aion_ui/mod" />
+                        <!--<runtime dir="/Users/robertgabrielbalas/IdeaProjects/aion_ui/pack/jre-10.0.2.jre/Contents/Home" />-->
+                        <!--<classpath dir="${dir.pack}/aion_ui/native" />-->
+                        <!--<classpath dir="${dir.pack}/aion_ui/config" />-->
+                        <!--<librarypath dir="${dir.pack}/aion_ui/mod"/>-->
+                    </bundleapp>
                 </then>
             </elseif>
         </if>
