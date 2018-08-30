@@ -34,8 +34,10 @@ public class LedgerWallet implements HardwareWallet {
     private static final String RUN_CMD = "run";
     private static final String NPM_AION_HID_KEY = "get:aion-hid";
 
-    private static final String WINDOWS_DRIVER_PATH = USER_DIR + File.separator + "native\\win\\ledger\\Aion-HID\\npm.cmd";
-    private static final String WINDOWS_DRIVER_PATH_HID = USER_DIR + File.separator + "native\\win\\ledger\\Aion-HID\\hid";
+    private static final String WINDOWS_DRIVER_PATH = USER_DIR + File.separator + "native\\win\\ledger\\Aion-HID\\npm" +
+            ".cmd";
+    private static final String WINDOWS_DRIVER_PATH_HID = USER_DIR + File.separator +
+            "native\\win\\ledger\\Aion-HID\\hid";
     private static final String WINDOWS_NPM_LOCATION = USER_DIR + File.separator + "native\\win\\ledger\\Aion-HID";
     private static final String WINDOWS_PREFIX_KEY = "--prefix";
 
@@ -67,7 +69,8 @@ public class LedgerWallet implements HardwareWallet {
 
     private ProcessBuilder createProcessBuilder() {
         ProcessBuilder tmpBuilder = new ProcessBuilder();
-        OSUtils.executeForOs(this::updateProcessBuilderForWindows, this::updateProcessBuilderForMac, p -> {}, tmpBuilder);
+        OSUtils.executeForOs(this::updateProcessBuilderForWindows, this::updateProcessBuilderForMac, p -> {
+        }, tmpBuilder);
         return tmpBuilder;
     }
 
@@ -82,7 +85,8 @@ public class LedgerWallet implements HardwareWallet {
     }
 
     private void installNpmIfRequired() {
-        OSUtils.executeForOs(WINDOWS_NPM_INSTALLER, MAC_NPM_INSTALLER, p -> {}, processBuilder);
+        OSUtils.executeForOs(WINDOWS_NPM_INSTALLER, MAC_NPM_INSTALLER, p -> {
+        }, processBuilder);
     }
 
     @Override
@@ -110,7 +114,8 @@ public class LedgerWallet implements HardwareWallet {
     }
 
     @Override
-    public List<AionAccountDetails> getMultipleAccountDetails(final int derivationIndexStart, final int derivationIndexEnd) throws LedgerException {
+    public List<AionAccountDetails> getMultipleAccountDetails(final int derivationIndexStart, final int
+            derivationIndexEnd) throws LedgerException {
         final List<AionAccountDetails> accounts = new LinkedList<>();
         final AionAccountDetails newAccountDetails = getAccountDetails(derivationIndexStart);
 
@@ -133,7 +138,8 @@ public class LedgerWallet implements HardwareWallet {
         }
         backgroundExecutor.submit(() -> {
             try {
-                for (int i = derivationIndexEnd; i < derivationIndexEnd + (derivationIndexEnd - derivationIndexStart); i++) {
+                for (int i = derivationIndexEnd; i < derivationIndexEnd + (derivationIndexEnd - derivationIndexStart)
+                        ; i++) {
                     if (!accountCache.containsKey(i)) {
                         accountCache.put(i, getAccountDetails(i));
                     }
@@ -157,9 +163,9 @@ public class LedgerWallet implements HardwareWallet {
     private String getResponse(final String output) throws LedgerException {
         String[] outputWords = output.split(SPACE);
         List<String> strings = Arrays.asList(outputWords);
-        int indexResponse = strings.indexOf(RESPONSE);
+        int indexResponse = OSUtils.getForOs(s -> s.indexOf(RESPONSE), s -> s.indexOf(RESPONSE), s -> 0, strings);
         final String result = outputWords[indexResponse + 2];
-        if (outputWords[indexResponse].equals(RESPONSE) && !result.isEmpty()) {
+        if (!result.isEmpty()) {
             return result;
         } else {
             throw new LedgerException("Error wile communicating with the ledger...");
@@ -196,7 +202,8 @@ public class LedgerWallet implements HardwareWallet {
 
     private String[] getCommandForAccountDetails(final int derivationIndex) {
         //Example of command : e002010015058000002c800001a9800000008000000080000000
-        return OSUtils.getForOs(this::getWinAccDetails, this::getMacAccDetails, this::getLinuxAccDetails, derivationIndex);
+        return OSUtils.getForOs(this::getWinAccDetails, this::getMacAccDetails, this::getLinuxAccDetails,
+                derivationIndex);
     }
 
     private String[] getWinAccDetails(final int derivationIndex) {
@@ -241,7 +248,8 @@ public class LedgerWallet implements HardwareWallet {
     private String[] getCommandForTransactionSigning(final int derivationIndex, final byte[] message) {
         final MessageWrapper wrapper = new MessageWrapper(message, derivationIndex);
         //Example of param : e0040000cf058000002c800001a9800000008000000080000000 + message
-        return OSUtils.getForOs(this::getWinSignedMessage, this::getMacSignedMessage, this::getLinuxSignedMessage, wrapper);
+        return OSUtils.getForOs(this::getWinSignedMessage, this::getMacSignedMessage, this::getLinuxSignedMessage,
+                wrapper);
     }
 
     private String[] getWinSignedMessage(final MessageWrapper wrapper) {
@@ -303,7 +311,8 @@ public class LedgerWallet implements HardwareWallet {
                 processBuilder.directory(new File(WINDOWS_DRIVER_PATH_HID));
                 try {
                     Process process = processBuilder.command(commands).start();
-                    final BufferedReader lineReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                    final BufferedReader lineReader = new BufferedReader(new InputStreamReader(process.getInputStream
+                            ()));
                     String line;
                     while ((line = lineReader.readLine()) != null) {
                         log.info(line);
@@ -327,8 +336,10 @@ public class LedgerWallet implements HardwareWallet {
                 processBuilder.directory(new File(MAC_DRIVER_LOCATION));
                 try {
                     Process process = processBuilder.command(commands).start();
-                    final BufferedReader lineReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                    final BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+                    final BufferedReader lineReader = new BufferedReader(new InputStreamReader(process.getInputStream
+                            ()));
+                    final BufferedReader errorReader = new BufferedReader(new InputStreamReader(process
+                            .getErrorStream()));
                     String line;
                     while ((line = lineReader.readLine()) != null) {
                         log.info(line);
