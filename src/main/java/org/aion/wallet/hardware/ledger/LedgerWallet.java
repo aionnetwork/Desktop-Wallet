@@ -16,6 +16,9 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
 public class LedgerWallet implements HardwareWallet {
@@ -53,8 +56,10 @@ public class LedgerWallet implements HardwareWallet {
     private static final WindowsNpmInstaller WINDOWS_NPM_INSTALLER = new WindowsNpmInstaller();
     private static final MacNpmInstaller MAC_NPM_INSTALLER = new MacNpmInstaller();
 
-    private final Map<Integer, AionAccountDetails> accountCache = new HashMap<>();
+    private final Map<Integer, AionAccountDetails> accountCache = new ConcurrentHashMap<>();
     private final ProcessBuilder processBuilder = createProcessBuilder();
+
+    private final ExecutorService backgroundExecutor = Executors.newSingleThreadExecutor();
 
     public LedgerWallet() {
         installNpmIfRequired();
@@ -83,7 +88,11 @@ public class LedgerWallet implements HardwareWallet {
     @Override
     public boolean isConnected() {
         try {
-            getAccountDetails(FIRST_INDEX);
+            final AionAccountDetails firstAccount = getAccountDetails(FIRST_INDEX);
+            if (accountCache.containsKey(FIRST_INDEX) && !firstAccount.equals(accountCache.get(FIRST_INDEX))) {
+                accountCache.clear();
+            }
+            accountCache.put(FIRST_INDEX, firstAccount);
         } catch (LedgerException e) {
             log.error(e.getMessage(), e);
             return false;
@@ -116,13 +125,23 @@ public class LedgerWallet implements HardwareWallet {
 
         accounts.add(newAccountDetails);
 
-        //keep one extra derivation for cache checking on next level
-        for (int i = derivationIndexStart + 1; i <= derivationIndexEnd; i++) {
+        for (int i = derivationIndexStart + 1; i < derivationIndexEnd; i++) {
             if (!accountCache.containsKey(i)) {
                 accountCache.put(i, getAccountDetails(i));
             }
             accounts.add(accountCache.get(i));
         }
+        backgroundExecutor.submit(() -> {
+            try {
+                for (int i = derivationIndexEnd; i < derivationIndexEnd + (derivationIndexEnd - derivationIndexStart); i++) {
+                    if (!accountCache.containsKey(i)) {
+                        accountCache.put(i, getAccountDetails(i));
+                    }
+                }
+            } catch (LedgerException e) {
+                log.error("Could not preload next accounts: " + e.getMessage(), e);
+            }
+        });
 
         return accounts;
     }
