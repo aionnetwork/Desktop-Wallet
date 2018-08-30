@@ -15,7 +15,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -54,6 +57,8 @@ public class LedgerWallet implements HardwareWallet {
     private static final String DEFAULT_THIRD_AND_FORTH_BYTES_FOR_KEY_GENERATION = "0100";
     private static final String DEFAULT_THIRD_AND_FORTH_BYTES_FOR_SIGNING = "0000";
     private static final String DEFAULT_DERIVATION_PATH = "058000002c800001a98000000080000000";
+
+    private static final int HEX_KEY_SIZE = 64;
 
     private static final WindowsNpmInstaller WINDOWS_NPM_INSTALLER = new WindowsNpmInstaller();
     private static final MacNpmInstaller MAC_NPM_INSTALLER = new MacNpmInstaller();
@@ -108,9 +113,12 @@ public class LedgerWallet implements HardwareWallet {
     public AionAccountDetails getAccountDetails(final int derivationIndex) throws LedgerException {
         final String[] commands = getCommandForAccountDetails(derivationIndex);
         final String output = getProcessOutputForCommand(commands);
-        log.debug("Ledger returned for getPublic address : " + output);
+        log.info("Ledger returned for getPublic address : " + output);
         final String response = getResponse(output);
-        return new AionAccountDetails(response.substring(0, 64), response.substring(64, 128), derivationIndex);
+        if (response.length() != 2 * HEX_KEY_SIZE) {
+            throw new LedgerException("Could not get proper account details: " + response);
+        }
+        return new AionAccountDetails(response.substring(0, HEX_KEY_SIZE), response.substring(HEX_KEY_SIZE, 2 * HEX_KEY_SIZE), derivationIndex);
     }
 
     @Override
