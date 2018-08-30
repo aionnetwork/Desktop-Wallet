@@ -272,7 +272,8 @@ public class AccountManager {
     }
 
     public BlockDTO getLastSafeBlock(final String address) {
-        return addressToAccount.get(address).getLastSafeBlock();
+        final AccountDTO accountDTO = addressToAccount.get(address);
+        return accountDTO != null ? accountDTO.getLastSafeBlock() : null;
     }
 
     public void updateLastSafeBlock(final String address, final BlockDTO lastCheckedBlock) {

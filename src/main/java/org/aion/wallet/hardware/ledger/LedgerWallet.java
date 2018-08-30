@@ -2,6 +2,7 @@ package org.aion.wallet.hardware.ledger;
 
 import org.aion.api.log.LogEnum;
 import org.aion.base.util.Hex;
+import org.aion.wallet.events.EventPublisher;
 import org.aion.wallet.hardware.AionAccountDetails;
 import org.aion.wallet.hardware.HardwareWallet;
 import org.aion.wallet.log.WalletLoggerFactory;
@@ -23,6 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class LedgerWallet implements HardwareWallet {
 
@@ -152,6 +154,7 @@ public class LedgerWallet implements HardwareWallet {
                         accountCache.put(i, getAccountDetails(i));
                     }
                 }
+                EventPublisher.fireAccountsRecovered(accountCache.values().stream().map(AionAccountDetails::getAddress).collect(Collectors.toSet()));
             } catch (LedgerException e) {
                 log.error("Could not preload next accounts: " + e.getMessage(), e);
             }
