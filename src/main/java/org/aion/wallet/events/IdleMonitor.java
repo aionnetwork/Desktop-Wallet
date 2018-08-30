@@ -15,11 +15,11 @@ public class IdleMonitor {
 
     private final EventHandler<Event> userEventHandler;
 
-    public IdleMonitor(Duration idleTime, Runnable notifier) {
-        idleTimeline = new Timeline(new KeyFrame(idleTime, e -> notifier.run()));
+    public IdleMonitor(final Duration idleTime, final Runnable lockRun, final Runnable unlockRun) {
+        idleTimeline = new Timeline(new KeyFrame(idleTime, e -> lockRun.run()));
         idleTimeline.setCycleCount(Animation.INDEFINITE);
 
-        userEventHandler = e -> notIdle();
+        userEventHandler = e -> notIdle(unlockRun);
 
         startMonitoring();
     }
@@ -40,8 +40,9 @@ public class IdleMonitor {
         idleTimeline.stop();
     }
 
-    private void notIdle() {
+    private void notIdle(final Runnable unlockRun) {
         if (idleTimeline.getStatus() == Animation.Status.RUNNING) {
+            unlockRun.run();
             idleTimeline.playFromStart();
         }
     }

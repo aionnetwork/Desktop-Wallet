@@ -11,7 +11,6 @@ import org.aion.wallet.dto.AccountType;
 import org.aion.wallet.dto.LightAppSettings;
 import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
-import org.aion.wallet.hardware.AionAccountDetails;
 import org.aion.wallet.storage.ApiType;
 import org.aion.wallet.storage.WalletStorage;
 import org.aion.wallet.util.ConfigUtils;
@@ -33,6 +32,8 @@ public abstract class BlockchainConnector {
     private final ReentrantLock lock = new ReentrantLock();
 
     private final AccountManager accountManager;
+
+    private boolean connectionLocked = false;
 
     protected BlockchainConnector() {
         this.accountManager = new AccountManager(this::getBalance, this::getCurrency);
@@ -147,7 +148,16 @@ public abstract class BlockchainConnector {
     }
 
     public void lockAll() {
+        connectionLocked = true;
         accountManager.lockAll();
+    }
+
+    public void unlockConnection() {
+        connectionLocked = false;
+    }
+
+    protected final boolean isConnectionUnLocked() {
+        return !connectionLocked;
     }
 
     public final AccountManager getAccountManager() {

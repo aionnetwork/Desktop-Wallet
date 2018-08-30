@@ -42,6 +42,7 @@ public class MainWindow extends Application {
     private static final String AION_LOGO = "components/icons/aion-icon.png";
     private static final String AION_UI_DIR = System.getProperty("user.dir");
     private static final String AION_EXECUTABLE = "aion_ui.sh";
+    private static final BlockchainConnector CONNECTOR = BlockchainConnector.getInstance();
 
     private final Map<HeaderPaneButtonEvent.Type, Node> panes = new HashMap<>();
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
@@ -51,7 +52,7 @@ public class MainWindow extends Application {
     private Stage stage;
     private Scene scene;
     private IdleMonitor idleMonitor;
-    private Duration lockDelayDuration = Duration.seconds(60);
+    private Duration lockDelayDuration;
 
     @Override
     public void start(final Stage stage) throws IOException {
@@ -86,13 +87,18 @@ public class MainWindow extends Application {
                 3 * AionConstants.BLOCK_MINING_TIME_MILLIS,
                 TimeUnit.MILLISECONDS
         );
+        final LightAppSettings settings = CONNECTOR.getSettings();
+        lockDelayDuration = Duration.seconds(
+                computeDelay(settings.getLockTimeout(),
+                        settings.getLockTimeoutMeasurementUnit())
+        );
         registerIdleMonitor();
 
         fatalErrorDialog = new FatalErrorDialog();
     }
 
 
-    private long computeDelay(int lockTimeOut, String lockTimeOutMeasurementUnit) {
+    private long computeDelay(final int lockTimeOut, final String lockTimeOutMeasurementUnit) {
         if (lockTimeOutMeasurementUnit == null) {
             return 60;
         }
@@ -116,7 +122,7 @@ public class MainWindow extends Application {
             idleMonitor.stopMonitoring();
             idleMonitor = null;
         }
-        idleMonitor = new IdleMonitor(lockDelayDuration, BlockchainConnector.getInstance()::lockAll);
+        idleMonitor = new IdleMonitor(lockDelayDuration, CONNECTOR::lockAll, CONNECTOR::unlockConnection);
         idleMonitor.register(scene, Event.ANY);
     }
 

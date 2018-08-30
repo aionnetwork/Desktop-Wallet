@@ -7,7 +7,7 @@ import java.util.Optional;
 import java.util.Properties;
 
 public class LightAppSettings {
-    private static final String DEFAULT_LOCK_TIMEOUT = "3";
+    private static final String DEFAULT_LOCK_TIMEOUT = "1";
     private static final String DEFAULT_LOCK_TIMEOUT_MEASUREMENT_UNIT = "minutes";
 
     private static final String ADDRESS = ".address";

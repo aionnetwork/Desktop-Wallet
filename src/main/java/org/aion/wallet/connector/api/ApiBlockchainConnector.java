@@ -100,7 +100,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         lock();
         final BigInteger balance;
         try {
-            if (API.isConnected()) {
+            if (isConnectionUnLocked() && API.isConnected()) {
                 balance = API.getChain().getBalance(new Address(address)).getObject();
             } else {
                 balance = null;
@@ -169,10 +169,12 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     @Override
     public boolean getConnectionStatus() {
-        final boolean connected;
+        boolean connected = false;
         lock();
         try {
-            connected = API.isConnected();
+            if (isConnectionUnLocked()) {
+                connected = API.isConnected();
+            }
         } finally {
             unLock();
         }
@@ -183,11 +185,13 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     public SyncInfoDTO getSyncInfo() {
         long chainBest;
         long netBest;
-        SyncInfo syncInfo;
+        SyncInfo syncInfo = null;
         try {
             lock();
             try {
-                syncInfo = API.getNet().syncInfo().getObject();
+                if (isConnectionUnLocked()) {
+                    syncInfo = API.getNet().syncInfo().getObject();
+                }
             } finally {
                 unLock();
             }
@@ -211,7 +215,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         final int size;
         lock();
         try {
-            if (API.isConnected()) {
+            if (isConnectionUnLocked() && API.isConnected()) {
                 size = ((List) API.getNet().getActiveNodes().getObject()).size();
             } else {
                 size = 0;
@@ -409,7 +413,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         final Block block;
         lock();
         try {
-            if (API.isConnected()) {
+            if (isConnectionUnLocked() && API.isConnected()) {
                 final long latest = API.getChain().blockNumber().getObject();
                 block = API.getChain().getBlockByNumber(latest).getObject();
             } else {
