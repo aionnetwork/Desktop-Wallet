@@ -337,7 +337,8 @@ public class AccountManager {
     }
 
     public List<SendTransactionDTO> getTimedOutTransactions(final String accountAddress) {
-        return addressToAccount.get(accountAddress).getTimedOutTransactions();
+        final AccountDTO accountDTO = addressToAccount.get(accountAddress);
+        return accountDTO == null ? Collections.emptyList() : accountDTO.getTimedOutTransactions();
     }
 
     public void addTimedOutTransaction(final SendTransactionDTO transaction) {

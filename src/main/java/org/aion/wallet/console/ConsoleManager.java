@@ -55,6 +55,7 @@ public class ConsoleManager {
 
     public enum LogLevel {
         INFO,
-        WARNING
+        WARNING,
+        ERROR
     }
 }

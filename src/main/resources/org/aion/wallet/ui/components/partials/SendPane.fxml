@@ -33,7 +33,7 @@
                             onMouseClicked="#onSendAionClicked" text="Generate transaction"
                             styleClass="button"/>
                 </HBox>
-                <Label fx:id="timedoutTransactionsLabel" onMouseClicked="#onTimedoutTransactionsClick" />
+                <Label fx:id="timedOutTransactionsLabel" onMouseClicked="#onTimedoutTransactionsClick" />
             </VBox>
         </HBox>
     </VBox>

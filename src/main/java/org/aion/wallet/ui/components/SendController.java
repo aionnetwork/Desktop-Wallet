@@ -13,11 +13,8 @@ import org.aion.wallet.connector.dto.SendTransactionDTO;
 import org.aion.wallet.connector.dto.TransactionResponseDTO;
 import org.aion.wallet.console.ConsoleManager;
 import org.aion.wallet.dto.AccountDTO;
-import org.aion.wallet.dto.AccountType;
 import org.aion.wallet.events.*;
 import org.aion.wallet.exception.ValidationException;
-import org.aion.wallet.hardware.HardwareWallet;
-import org.aion.wallet.hardware.HardwareWalletFactory;
 import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.ui.components.partials.TransactionResubmissionDialog;
 import org.aion.wallet.util.*;
@@ -62,7 +59,7 @@ public class SendController extends AbstractController {
     @FXML
     private Button sendButton;
     @FXML
-    private Label timedoutTransactionsLabel;
+    private Label timedOutTransactionsLabel;
 
     private AccountDTO account;
 
@@ -178,12 +175,17 @@ public class SendController extends AbstractController {
     }
 
     private void displayStatus(final String message, final boolean isError) {
+        final ConsoleManager.LogLevel logLevel;
         if (isError) {
             txStatusLabel.getStyleClass().add(ERROR_STYLE);
+            logLevel = ConsoleManager.LogLevel.ERROR;
+
         } else {
             txStatusLabel.getStyleClass().removeAll(ERROR_STYLE);
+            logLevel = ConsoleManager.LogLevel.INFO;
         }
         txStatusLabel.setText(message);
+        ConsoleManager.addLog(message, ConsoleManager.LogType.TRANSACTION, logLevel);
     }
 
     private TransactionResponseDTO sendTransaction(final SendTransactionDTO sendTransactionDTO) {
@@ -209,9 +211,9 @@ public class SendController extends AbstractController {
         if(account != null) {
             final List<SendTransactionDTO> timedoutTransactions = blockchainConnector.getAccountManager().getTimedOutTransactions(account.getPublicAddress());
             if(!timedoutTransactions.isEmpty()) {
-                timedoutTransactionsLabel.setVisible(true);
-                timedoutTransactionsLabel.getStyleClass().add("warning-link-style");
-                timedoutTransactionsLabel.setText("You have transactions that require your attention!");
+                timedOutTransactionsLabel.setVisible(true);
+                timedOutTransactionsLabel.getStyleClass().add("warning-link-style");
+                timedOutTransactionsLabel.setText("You have transactions that require your attention!");
             }
         }
     }
@@ -254,7 +256,7 @@ public class SendController extends AbstractController {
         nrgPriceInput.setText(String.valueOf(sendTransaction.getNrgPrice()));
         valueInput.setText(BalanceUtils.formatBalance(sendTransaction.getValue()));
         txStatusLabel.setText("");
-        timedoutTransactionsLabel.setVisible(false);
+        timedOutTransactionsLabel.setVisible(false);
         transactionToResubmit = sendTransaction;
     }
 
@@ -281,13 +283,6 @@ public class SendController extends AbstractController {
     }
 
     private SendTransactionDTO mapFormData() throws ValidationException {
-
-        if(account.getType().equals(AccountType.LEDGER)) {
-            HardwareWallet hardwareWallet = HardwareWalletFactory.getHardwareWallet(AccountType.LEDGER);
-            if(!hardwareWallet.isConnected()) {
-                throw new ValidationException("Could not connect to Ledger!");
-            }
-        }
 
         if (!AddressUtils.isValid(toInput.getText())) {
             throw new ValidationException("Address is not a valid AION address!");

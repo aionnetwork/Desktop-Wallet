@@ -105,6 +105,9 @@ public class ImportAccountDialog implements Initializable {
     @FXML
     private ProgressBar connectionProgressBar;
 
+    @FXML
+    private Button importButton;
+
 
     public void uploadKeystoreFile() throws IOException {
         resetValidation();
@@ -126,19 +129,14 @@ public class ImportAccountDialog implements Initializable {
             account = getAccountFromKeyStore(shouldKeep);
         } else if (importPrivateKeyView.isVisible()) {
             account = getAccountFromPrivateKey(shouldKeep);
-        }
-        else if(importLedgerView.isVisible()) {
-            account = getAccountFromLedger(shouldKeep);
+        } else if (importLedgerView.isVisible()) {
+            //ignore
         }
 
         if (account != null) {
             EventPublisher.fireAccountChanged(account);
             this.close(eventSource);
         }
-    }
-
-    private AccountDTO getAccountFromLedger(boolean shouldKeep) {
-        return null;
     }
 
     private AccountDTO getAccountFromKeyStore(final boolean shouldKeep) {
@@ -262,14 +260,17 @@ public class ImportAccountDialog implements Initializable {
                     importPrivateKeyView.setVisible(true);
                     importKeystoreView.setVisible(false);
                     importLedgerView.setVisible(false);
+                    importButton.setVisible(true);
                     break;
                 case KEYSTORE_RADIO_BUTTON_ID:
                     rememberAccount.setVisible(true);
                     importPrivateKeyView.setVisible(false);
                     importKeystoreView.setVisible(true);
                     importLedgerView.setVisible(false);
+                    importButton.setVisible(true);
                     break;
                 case LEDGER_RADIO_BUTTON_ID:
+                    importButton.setVisible(false);
                     backgroundExecutor.submit(() -> {
                         if (!connectToLedger()) {
                             Platform.runLater(() -> {

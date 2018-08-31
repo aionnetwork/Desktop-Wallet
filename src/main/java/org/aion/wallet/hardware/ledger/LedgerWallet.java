@@ -115,7 +115,7 @@ public class LedgerWallet implements HardwareWallet {
     public AionAccountDetails getAccountDetails(final int derivationIndex) throws LedgerException {
         final String[] commands = getCommandForAccountDetails(derivationIndex);
         final String output = getProcessOutputForCommand(commands);
-        log.info("Ledger returned for getPublic address : " + output);
+        log.debug("Ledger returned for getPublic address : " + output);
         final String response = getResponse(output);
         final String pubKeyHex = response.substring(0, HEX_KEY_SIZE);
         final String addressHex = response.substring(HEX_KEY_SIZE, 2 * HEX_KEY_SIZE);
@@ -173,7 +173,7 @@ public class LedgerWallet implements HardwareWallet {
         List<String> strings = Arrays.asList(outputWords);
         int indexResponse = OSUtils.getForOs(s -> s.indexOf(RESPONSE), s -> s.indexOf(RESPONSE), s -> 0, strings);
         final String result = outputWords[indexResponse + 2];
-        if (!result.isEmpty() && result.length() != 2 * HEX_KEY_SIZE) {
+        if (!result.isEmpty() && result.length() == 2 * HEX_KEY_SIZE) {
             return result;
         } else {
             throw new LedgerException("Error wile communicating with the ledger..." + result);

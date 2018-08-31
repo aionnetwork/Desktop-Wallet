@@ -168,13 +168,12 @@ public class AccountCellItem extends ListCell<AccountDTO> {
         } else {
             try {
                 BlockchainConnector.getInstance().unlockAccount(modifiedAccount, "");
+                modifiedAccount.setActive(true);
+                EventPublisher.fireAccountChanged(modifiedAccount);
             } catch (ValidationException e) {
                 ledgerDisconnected.open(mouseEvent);
-                ConsoleManager.addLog(e.getMessage(), ConsoleManager.LogType.ACCOUNT, ConsoleManager.LogLevel.WARNING);
+                ConsoleManager.addLog(e.getMessage(), ConsoleManager.LogType.ACCOUNT, ConsoleManager.LogLevel.ERROR);
             }
-
-            modifiedAccount.setActive(true);
-            EventPublisher.fireAccountChanged(modifiedAccount);
         }
     }
 
