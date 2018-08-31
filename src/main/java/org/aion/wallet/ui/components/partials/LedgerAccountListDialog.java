@@ -30,8 +30,8 @@ import org.aion.wallet.events.UiMessageEvent;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.hardware.AionAccountDetails;
 import org.aion.wallet.hardware.HardwareWallet;
+import org.aion.wallet.hardware.HardwareWalletException;
 import org.aion.wallet.hardware.HardwareWalletFactory;
-import org.aion.wallet.hardware.ledger.LedgerException;
 import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.util.BalanceUtils;
 import org.slf4j.Logger;
@@ -64,11 +64,7 @@ public class LedgerAccountListDialog implements Initializable {
         registerEventBusConsumer();
         ledgerContinueButton.setDisable(true);
         ledgerAccountsToggleGroup.selectedToggleProperty().addListener(this::ledgerAccountChanged);
-        try {
-            fillLedgerAccountList();
-        } catch (ValidationException e) {
-            log.error(e.getMessage(), e);
-        }
+        fillLedgerAccountList();
     }
 
     private void ledgerAccountChanged(final Observable observable) {
@@ -80,11 +76,7 @@ public class LedgerAccountListDialog implements Initializable {
     @Subscribe
     private void handleLedgerConnected(UiMessageEvent event) {
         if (UiMessageEvent.Type.LEDGER_CONNECTED.equals(event.getType())) {
-            try {
-                fillLedgerAccountList();
-            } catch (ValidationException e) {
-                log.error(e.getMessage(), e);
-            }
+            fillLedgerAccountList();
         }
     }
 
@@ -92,20 +84,20 @@ public class LedgerAccountListDialog implements Initializable {
         EventBusFactory.getBus(UiMessageEvent.ID).register(this);
     }
 
-    private void fillLedgerAccountList() throws ValidationException {
+    private void fillLedgerAccountList() {
         loadingLedgerAccountsProgressBar.setVisible(true);
 
         generateLedgerAddresses(0, 5);
         loadingLedgerAccountsProgressBar.setVisible(false);
     }
 
-    private void generateLedgerAddresses(final int startIndex, final int stopIndex) throws ValidationException {
+    private void generateLedgerAddresses(final int startIndex, final int stopIndex) {
         currentDerivationIndex = stopIndex;
         final HardwareWallet hardwareWallet = HardwareWalletFactory.getHardwareWallet(AccountType.LEDGER);
         List<AionAccountDetails> aionAccountDetails = Collections.emptyList();
         try {
              aionAccountDetails = hardwareWallet.getMultipleAccountDetails(startIndex, stopIndex);
-        } catch (LedgerException e) {
+        } catch (HardwareWalletException e) {
             log.error(e.getMessage(), e);
         }
 
@@ -189,13 +181,9 @@ public class LedgerAccountListDialog implements Initializable {
         }
     }
 
-    public void nextAddresses(final MouseEvent mouseEvent) {
+    public void nextAddresses() {
         ledgerContinueButton.setDisable(true);
         ledgerAccountList.getChildren().clear();
-        try {
-            generateLedgerAddresses(currentDerivationIndex, currentDerivationIndex + 5);
-        } catch (ValidationException e) {
-            log.error(e.getMessage(), e);
-        }
+        generateLedgerAddresses(currentDerivationIndex, currentDerivationIndex + 5);
     }
 }

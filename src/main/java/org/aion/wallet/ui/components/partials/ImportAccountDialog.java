@@ -1,6 +1,7 @@
 package org.aion.wallet.ui.components.partials;
 
 import com.google.common.eventbus.Subscribe;
+import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -40,6 +41,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.util.ResourceBundle;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ImportAccountDialog implements Initializable {
 
@@ -53,7 +56,9 @@ public class ImportAccountDialog implements Initializable {
 
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
     private final HardwareWallet hardwareWallet = HardwareWalletFactory.getHardwareWallet(AccountType.LEDGER);
+    private final ExecutorService backgroundExecutor = Executors.newSingleThreadExecutor();
     private LedgerAccountListDialog ledgerAccountListDialog;
+    private byte[] keystoreFile;
 
     @FXML
     public TextField privateKeyInput;
@@ -100,7 +105,9 @@ public class ImportAccountDialog implements Initializable {
     @FXML
     private ProgressBar connectionProgressBar;
 
-    private byte[] keystoreFile;
+    @FXML
+    private Button importButton;
+
 
     public void uploadKeystoreFile() throws IOException {
         resetValidation();
@@ -122,19 +129,14 @@ public class ImportAccountDialog implements Initializable {
             account = getAccountFromKeyStore(shouldKeep);
         } else if (importPrivateKeyView.isVisible()) {
             account = getAccountFromPrivateKey(shouldKeep);
-        }
-        else if(importLedgerView.isVisible()) {
-            account = getAccountFromLedger(shouldKeep);
+        } else if (importLedgerView.isVisible()) {
+            //ignore
         }
 
         if (account != null) {
             EventPublisher.fireAccountChanged(account);
             this.close(eventSource);
         }
-    }
-
-    private AccountDTO getAccountFromLedger(boolean shouldKeep) {
-        return null;
     }
 
     private AccountDTO getAccountFromKeyStore(final boolean shouldKeep) {
@@ -258,14 +260,25 @@ public class ImportAccountDialog implements Initializable {
                     importPrivateKeyView.setVisible(true);
                     importKeystoreView.setVisible(false);
                     importLedgerView.setVisible(false);
+                    importButton.setVisible(true);
                     break;
                 case KEYSTORE_RADIO_BUTTON_ID:
                     rememberAccount.setVisible(true);
                     importPrivateKeyView.setVisible(false);
                     importKeystoreView.setVisible(true);
                     importLedgerView.setVisible(false);
+                    importButton.setVisible(true);
                     break;
                 case LEDGER_RADIO_BUTTON_ID:
+                    importButton.setVisible(false);
+                    backgroundExecutor.submit(() -> {
+                        if (!connectToLedger()) {
+                            Platform.runLater(() -> {
+                                validationError.setText("Could not connect to Ledger!");
+                                validationError.setVisible(true);
+                            });
+                        }
+                    });
                     rememberAccount.setVisible(false);
                     importPrivateKeyView.setVisible(false);
                     importKeystoreView.setVisible(false);
@@ -280,16 +293,22 @@ public class ImportAccountDialog implements Initializable {
         connectLedgerButton.setText("Connecting...");
         connectionProgressBar.setVisible(true);
         validationError.setVisible(false);
-        if (connectToLedger()) {
-            ledgerAccountListDialog.open(mouseEvent);
-            this.close(mouseEvent);
-        } else {
-            connectLedgerButton.setDisable(false);
-            connectLedgerButton.setText("Connect to Ledger");
-            connectionProgressBar.setVisible(false);
-            validationError.setText("Could not connect to Ledger!");
-            validationError.setVisible(true);
-        }
+        backgroundExecutor.submit(() -> {
+            if (connectToLedger()) {
+                Platform.runLater(() -> {
+                    ledgerAccountListDialog.open(mouseEvent);
+                    this.close(mouseEvent);
+                });
+            } else {
+                Platform.runLater(() -> {
+                    connectLedgerButton.setDisable(false);
+                    connectLedgerButton.setText("Connect to Ledger");
+                    connectionProgressBar.setVisible(false);
+                    validationError.setText("Could not connect to Ledger!");
+                    validationError.setVisible(true);
+                });
+            }
+        });
     }
 
     private boolean connectToLedger() {

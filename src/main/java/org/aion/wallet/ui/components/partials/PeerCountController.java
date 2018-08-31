@@ -28,7 +28,7 @@ public class PeerCountController extends AbstractController {
 
     @Override
     protected final void refreshView(final RefreshEvent event) {
-        if (EnumSet.of(RefreshEvent.Type.TIMER, RefreshEvent.Type.CONNECTED).contains(event.getType())) {
+        if (EnumSet.of(RefreshEvent.Type.TIMER, RefreshEvent.Type.CONNECTED, RefreshEvent.Type.DISCONNECTED).contains(event.getType())) {
             final Task<Integer> getPeerCountTask = getApiTask(o -> blockchainConnector.getPeerCount(), null);
             runApiTask(
                     getPeerCountTask,

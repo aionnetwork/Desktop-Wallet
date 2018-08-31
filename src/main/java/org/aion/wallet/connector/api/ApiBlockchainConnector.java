@@ -18,6 +18,7 @@ import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.dto.LightAppSettings;
 import org.aion.wallet.events.*;
 import org.aion.wallet.exception.NotFoundException;
+import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.storage.ApiType;
 import org.aion.wallet.util.AionConstants;
@@ -52,6 +53,8 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     private String connectionString;
 
+    private long startingBlock;
+
     public ApiBlockchainConnector() {
         backgroundExecutor = Executors.newFixedThreadPool(getCores());
         connect(getConnectionString());
@@ -79,6 +82,8 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         }
         connectionFuture = backgroundExecutor.submit(() -> {
             API.connect(newConnectionString, true);
+            final Block latestBlock = getLatestBlock();
+            startingBlock = Math.max(0, latestBlock.getNumber() - 30 * BLOCK_BATCH_SIZE);
             EventPublisher.fireConnectionEstablished();
             processTransactionsOnReconnect();
         });
@@ -100,7 +105,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         lock();
         final BigInteger balance;
         try {
-            if (API.isConnected()) {
+            if (isConnectionUnLocked() && API.isConnected()) {
                 balance = API.getChain().getBalance(new Address(address)).getObject();
             } else {
                 balance = null;
@@ -112,7 +117,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     }
 
     @Override
-    protected TransactionResponseDTO sendTransactionInternal(final SendTransactionDTO dto) {
+    protected TransactionResponseDTO sendTransactionInternal(final SendTransactionDTO dto) throws ValidationException {
         final String fromAddress = dto.getFrom().getPublicAddress();
         final BigInteger latestTransactionNonce = getLatestTransactionNonce(fromAddress);
         final AionTransaction transaction = new AionTransaction(
@@ -169,10 +174,12 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     @Override
     public boolean getConnectionStatus() {
-        final boolean connected;
+        boolean connected = false;
         lock();
         try {
-            connected = API.isConnected();
+            if (isConnectionUnLocked()) {
+                connected = API.isConnected();
+            }
         } finally {
             unLock();
         }
@@ -183,18 +190,19 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     public SyncInfoDTO getSyncInfo() {
         long chainBest;
         long netBest;
-        SyncInfo syncInfo;
+        SyncInfo syncInfo = null;
         try {
             lock();
             try {
-                syncInfo = API.getNet().syncInfo().getObject();
+                if (isConnectionUnLocked()) {
+                    syncInfo = API.getNet().syncInfo().getObject();
+                }
             } finally {
                 unLock();
             }
             chainBest = syncInfo.getChainBestBlock();
             netBest = syncInfo.getNetworkBestBlock();
         } catch (Exception e) {
-            log.error("Could not get SyncInfo - sync displays latest block!");
             final Block latestBlock = getLatestBlock();
             if (latestBlock != null) {
                 chainBest = latestBlock.getNumber();
@@ -211,7 +219,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         final int size;
         lock();
         try {
-            if (API.isConnected()) {
+            if (isConnectionUnLocked() && API.isConnected()) {
                 size = ((List) API.getNet().getActiveNodes().getObject()).size();
             } else {
                 size = 0;
@@ -306,7 +314,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         }
     }
 
-    private BlockDTO getOldestSafeBlock(final Set<String> addresses, final Consumer<Iterator<String>> nullSafeBlockFilter) {
+    private BlockDTO getOldestSafeBlock(final Set<String> addresses, final Consumer<Iterator<String>> safeBlockFilter) {
         BlockDTO oldestSafeBlock = null;
         final Iterator<String> addressIterator = addresses.iterator();
         while (addressIterator.hasNext()) {
@@ -317,7 +325,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
                     oldestSafeBlock = lastSafeBlock;
                 }
             } else {
-                nullSafeBlockFilter.accept(addressIterator);
+                safeBlockFilter.accept(addressIterator);
             }
         }
         return oldestSafeBlock;
@@ -327,11 +335,11 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         if (API.isConnected()) {
             if (!addresses.isEmpty()) {
                 final long latest = getLatestBlock().getNumber();
-                final long previousSafe = lastSafeBlock != null ? lastSafeBlock.getNumber() : 0;
+                final long previousSafe = lastSafeBlock != null ? lastSafeBlock.getNumber() : startingBlock;
                 log.debug("Processing transactions from block: {} to block: {}, for addresses: {}", previousSafe, latest, addresses);
-                if (previousSafe > 0) {
+                if (previousSafe > startingBlock) {
                     final Block lastSupposedSafe = getBlock(previousSafe);
-                    if (!Arrays.equals(lastSafeBlock.getHash(), (lastSupposedSafe.getHash().toBytes()))) {
+                    if (lastSafeBlock == null || !Arrays.equals(lastSafeBlock.getHash(), (lastSupposedSafe.getHash().toBytes()))) {
                         EventPublisher.fireFatalErrorEncountered("A re-organization happened too far back. Please restart Wallet!");
                     }
                     removeTransactionsFromBlock(addresses, previousSafe);
@@ -409,7 +417,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         final Block block;
         lock();
         try {
-            if (API.isConnected()) {
+            if (isConnectionUnLocked() && API.isConnected()) {
                 final long latest = API.getChain().blockNumber().getObject();
                 block = API.getChain().getBlockByNumber(latest).getObject();
             } else {

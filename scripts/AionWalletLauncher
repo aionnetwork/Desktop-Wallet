@@ -1,0 +1,25 @@
+#!/bin/bash
+
+set +x
+SCRIPT_PATH=$(dirname $0)
+
+cd ${SCRIPT_PATH}
+
+STORAGE_DIR=${HOME}/.aion
+JAVA_INSTALL=${STORAGE_DIR}/jre-10.0.2.jre/Contents/Home
+
+if [ ! -f ${JAVA_INSTALL}/bin/java  ] || [ $({JAVA_INSTALL}/bin/java -version 2>&1 | grep "10.0.2" | wc -l) <= 0 ]
+ then
+  mkdir -p ${JAVA_INSTALL}
+   tar -xzf jre-10.0.2.tar.gz -C ${STORAGE_DIR}
+   rm jre-10.0.2.tar.gz
+fi
+
+if [ ! -d ${SCRIPT_PATH}/native/mac/ledger/hid ]
+ then
+  unzip ${SCRIPT_PATH}/native/mac/ledger/hid.zip -d ${SCRIPT_PATH}/native/mac/ledger/
+fi
+
+MOD_DIR=$(cd ../Java && pwd)/*
+
+${JAVA_INSTALL}/bin/java -cp "${MOD_DIR}" -Dlocal.storage.dir=${STORAGE_DIR} -Xms300m -Xmx500m org.aion.wallet.WalletApplication

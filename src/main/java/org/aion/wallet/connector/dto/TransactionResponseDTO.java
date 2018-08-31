@@ -7,12 +7,6 @@ public class TransactionResponseDTO {
     private final Hash256 txHash;
     private final String error;
 
-    public TransactionResponseDTO() {
-        status = 0;
-        txHash = null;
-        error = null;
-    }
-
     public TransactionResponseDTO(final byte status, final Hash256 txHash, final String error){
         this.status = status;
         this.txHash = txHash;

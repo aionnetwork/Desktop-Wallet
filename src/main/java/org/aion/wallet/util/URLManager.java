@@ -31,7 +31,7 @@ public class URLManager {
             final LinkOpener genericLinkOpener = getGenericLinkOpener();
             final LinkOpener linuxLinkOpener = getLinuxLinkOpener();
 
-            OSUtils.executeForOs(genericLinkOpener, linuxLinkOpener, genericLinkOpener, url);
+            OSUtils.executeForOs(genericLinkOpener, genericLinkOpener, linuxLinkOpener, url);
         }
     }
 

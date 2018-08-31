@@ -134,8 +134,8 @@ public class HeaderPaneControls extends AbstractController {
                 UIUtils.setWidth(activeAccount);
                 UIUtils.setWidth(accountBalance);
             }
-        } else if (AccountEvent.Type.LOCKED.equals(event.getType())){
-            if (account.getPublicAddress().equals(accountAddress)){
+        } else if (AccountEvent.Type.LOCKED.equals(event.getType())) {
+            if (account.getPublicAddress().equals(accountAddress)) {
                 accountAddress = "";
                 activeAccountLabel.setVisible(false);
                 accountBalance.setVisible(false);

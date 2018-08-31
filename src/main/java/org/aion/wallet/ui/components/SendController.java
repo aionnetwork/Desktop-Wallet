@@ -178,12 +178,17 @@ public class SendController extends AbstractController {
     }
 
     private void displayStatus(final String message, final boolean isError) {
+        final ConsoleManager.LogLevel logLevel;
         if (isError) {
             txStatusLabel.getStyleClass().add(ERROR_STYLE);
+            logLevel = ConsoleManager.LogLevel.ERROR;
+
         } else {
             txStatusLabel.getStyleClass().removeAll(ERROR_STYLE);
+            logLevel = ConsoleManager.LogLevel.INFO;
         }
         txStatusLabel.setText(message);
+        ConsoleManager.addLog(message, ConsoleManager.LogType.TRANSACTION, logLevel);
     }
 
     private TransactionResponseDTO sendTransaction(final SendTransactionDTO sendTransactionDTO) {
@@ -220,6 +225,7 @@ public class SendController extends AbstractController {
     private void handleAccountEvent(final AccountEvent event) {
         final AccountDTO account = event.getPayload();
         if (AccountEvent.Type.CHANGED.equals(event.getType())) {
+            connected = blockchainConnector.getConnectionStatus();
             if (account.isActive()) {
                 this.account = account;
                 sendButton.setDisable(!connected);
@@ -280,13 +286,6 @@ public class SendController extends AbstractController {
     }
 
     private SendTransactionDTO mapFormData() throws ValidationException {
-
-        if(account.getType().equals(AccountType.LEDGER)) {
-            HardwareWallet hardwareWallet = HardwareWalletFactory.getHardwareWallet(AccountType.LEDGER);
-            if(!hardwareWallet.isConnected()) {
-                throw new ValidationException("Could not connect to Ledger!");
-            }
-        }
 
         if (!AddressUtils.isValid(toInput.getText())) {
             throw new ValidationException("Address is not a valid AION address!");

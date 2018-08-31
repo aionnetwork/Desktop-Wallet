@@ -15,9 +15,12 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
+import org.aion.wallet.connector.BlockchainConnector;
+import org.aion.wallet.console.ConsoleManager;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.dto.AccountType;
 import org.aion.wallet.events.EventPublisher;
+import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.hardware.HardwareWallet;
 import org.aion.wallet.hardware.HardwareWalletFactory;
 import org.aion.wallet.ui.components.partials.LedgerDisconnectedDialog;
@@ -163,15 +166,14 @@ public class AccountCellItem extends ListCell<AccountDTO> {
             accountUnlockDialog.open(mouseEvent);
             EventPublisher.fireAccountUnlocked(modifiedAccount);
         } else {
-            if (modifiedAccount.getType().equals(AccountType.LEDGER)) {
-                HardwareWallet hardwareWallet = HardwareWalletFactory.getHardwareWallet(AccountType.LEDGER);
-                if (!hardwareWallet.isConnected()) {
-                    ledgerDisconnected.open(mouseEvent);
-                    return;
-                }
+            try {
+                BlockchainConnector.getInstance().unlockAccount(modifiedAccount, "");
+                modifiedAccount.setActive(true);
+                EventPublisher.fireAccountChanged(modifiedAccount);
+            } catch (ValidationException e) {
+                ledgerDisconnected.open(mouseEvent);
+                ConsoleManager.addLog(e.getMessage(), ConsoleManager.LogType.ACCOUNT, ConsoleManager.LogLevel.ERROR);
             }
-            modifiedAccount.setActive(true);
-            EventPublisher.fireAccountChanged(modifiedAccount);
         }
     }
 
