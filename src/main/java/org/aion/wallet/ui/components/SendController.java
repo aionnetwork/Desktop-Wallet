@@ -13,8 +13,11 @@ import org.aion.wallet.connector.dto.SendTransactionDTO;
 import org.aion.wallet.connector.dto.TransactionResponseDTO;
 import org.aion.wallet.console.ConsoleManager;
 import org.aion.wallet.dto.AccountDTO;
+import org.aion.wallet.dto.AccountType;
 import org.aion.wallet.events.*;
 import org.aion.wallet.exception.ValidationException;
+import org.aion.wallet.hardware.HardwareWallet;
+import org.aion.wallet.hardware.HardwareWalletFactory;
 import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.ui.components.partials.TransactionResubmissionDialog;
 import org.aion.wallet.util.*;
@@ -59,7 +62,7 @@ public class SendController extends AbstractController {
     @FXML
     private Button sendButton;
     @FXML
-    private Label timedOutTransactionsLabel;
+    private Label timedoutTransactionsLabel;
 
     private AccountDTO account;
 
@@ -211,9 +214,9 @@ public class SendController extends AbstractController {
         if(account != null) {
             final List<SendTransactionDTO> timedoutTransactions = blockchainConnector.getAccountManager().getTimedOutTransactions(account.getPublicAddress());
             if(!timedoutTransactions.isEmpty()) {
-                timedOutTransactionsLabel.setVisible(true);
-                timedOutTransactionsLabel.getStyleClass().add("warning-link-style");
-                timedOutTransactionsLabel.setText("You have transactions that require your attention!");
+                timedoutTransactionsLabel.setVisible(true);
+                timedoutTransactionsLabel.getStyleClass().add("warning-link-style");
+                timedoutTransactionsLabel.setText("You have transactions that require your attention!");
             }
         }
     }
@@ -256,7 +259,7 @@ public class SendController extends AbstractController {
         nrgPriceInput.setText(String.valueOf(sendTransaction.getNrgPrice()));
         valueInput.setText(BalanceUtils.formatBalance(sendTransaction.getValue()));
         txStatusLabel.setText("");
-        timedOutTransactionsLabel.setVisible(false);
+        timedoutTransactionsLabel.setVisible(false);
         transactionToResubmit = sendTransaction;
     }
 

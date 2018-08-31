@@ -1,0 +1,25 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+        <key>CFBundleDevelopmentRegion</key>
+        <string>English</string>
+        <key>CFBundleExecutable</key>
+        <string>AionWalletLauncher</string><!-- relative to Contents/MacOS -->
+        <key>CFBundleGetInfoString</key>
+        <string>AionWallet</string>
+        <key>CFBundleIconFile</key>
+        <string>aion-icon.icns</string><!-- relative to Contents/Resources -->
+        <key>CFBundleInfoDictionaryVersion</key>
+        <string>8.0</string>
+        <key>CFBundleName</key>
+        <string>YourApp</string>
+        <key>CFBundlePackageType</key>
+        <string>APPL</string>
+        <key>CFBundleSignature</key>
+        <string>????</string>
+        <key>CFBundleVersion</key>
+        <string>8.0</string>
+</dict>
+</plist>
+

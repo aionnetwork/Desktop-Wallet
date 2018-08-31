@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project basedir="." default="build_standalone" name="aion ui"
-         xmlns:if="ant:if" xmlns:unless="ant:unless">
+>
 
     <condition property="isWindows" value="true" else="false">
         <os family="windows"/>
@@ -37,10 +37,6 @@
             <pathelement location="${dir.lib}/ant-contrib-0.6.jar"/>
         </classpath>
     </taskdef>
-
-    <taskdef name="bundleapp"
-             classname="com.oracle.appbundler.AppBundlerTask"
-             classpath="${dir.lib}/appbundler-1.0ea.jar" />
 
     <macrodef name="git">
         <attribute name="command"/>
@@ -196,7 +192,7 @@
             <then>
                 <property name="native.source" value="${res.main}/native/mac"/>
                 <property name="native.dest" value="${project.name}/native/mac"/>
-                <property name="launcher" value="aion_ui.mac"/>
+                <property name="launcher" value="AionWalletLauncher"/>
             </then>
             <elseif>
                 <os family="windows"/>
@@ -238,6 +234,7 @@
                 <include name="${launcher}"/>
             </zipfileset>
         </zip>
+        <delete file="${dir.pack}/aion_ui.jar"/>
         <if>
             <os family="windows"/>
             <then>
@@ -265,19 +262,50 @@
                 <os family="mac"/>
                 <then>
                     <unzip src="${dir.pack}/aion_ui.zip" dest="${dir.pack}"/>
-                    <unzip src="${dir.pack}/aion_ui/native/mac/ledger/hid.zip" dest="${dir.pack}/aion_ui/native/mac/ledger/"/>
-                    <bundleapp outputdirectory="."
-                               name="AionWallet"
-                               displayname="AionWallet"
-                               identifier="AionWallet"
-                               mainclassname="org.aion.wallet.WalletApplication">
-                        <classpath dir="${dir.pack}/aion_ui/lib" />
-                        <classpath dir="${dir.pack}/aion_ui/mod" />
-                        <!--<runtime dir="/Users/robertgabrielbalas/IdeaProjects/aion_ui/pack/jre-10.0.2.jre/Contents/Home" />-->
-                        <!--<classpath dir="${dir.pack}/aion_ui/native" />-->
-                        <!--<classpath dir="${dir.pack}/aion_ui/config" />-->
-                        <!--<librarypath dir="${dir.pack}/aion_ui/mod"/>-->
-                    </bundleapp>
+                    <delete file="${dir.pack}/aion_ui.zip"/>
+
+                    <exec executable="curl">
+                        <arg value="-o"/>
+                        <arg value="${dir.pack}/jre-10.0.2.tar.gz"/>
+                        <arg value="-L"/>
+                        <arg value="-O"/>
+                        <arg value="-H"/>
+                        <arg value="'Cookie: oraclelicense=accept-securebackup-cookie'"/>
+                        <arg value="-k"/>
+                        <arg value="http://download.oracle.com/otn-pub/java/jdk/10.0.2+13/19aef61b38124481863b1413dce1855f/jre-10.0.2_osx-x64_bin.tar.gz"/>
+                    </exec>
+
+                    <mkdir dir="${dir.pack}/AionWallet.app"/>
+                    <property name="mac.dir" value="${dir.pack}/AionWallet.app/Contents"/>
+
+                    <!---->
+                    <mkdir dir="${mac.dir}"/>
+                    <copy todir="${mac.dir}" file="${dir.script}/Info.plist"/>
+
+                    <!--Libraries-->
+                    <mkdir dir="${mac.dir}/Java"/>
+                    <copy todir="${mac.dir}/Java" overwrite="true" verbose="true">
+                        <fileset dir="${dir.pack}/aion_ui/lib"/>
+                        <fileset dir="${dir.pack}/aion_ui/mod"/>
+                    </copy>
+
+                    <!--Launcher and natives-->
+                    <mkdir dir="${mac.dir}/MacOS"/>
+                    <copy todir="${mac.dir}/MacOS" file="${dir.pack}/aion_ui/AionWalletLauncher"/>
+                    <copy todir="${mac.dir}/MacOS" overwrite="true" verbose="true">
+                        <fileset dir="${dir.pack}/aion_ui">
+                            <include name="native/**"/>
+                            <include name="config/**"/>
+                        </fileset>
+                    </copy>
+                    <move todir="${mac.dir}/MacOS" file="${dir.pack}/jre-10.0.2.tar.gz"/>
+
+                    <!--icons-->
+                    <mkdir dir="${mac.dir}/Resources"/>
+                    <copy todir="${mac.dir}/Resources"
+                          file="${res.main}/org/aion/wallet/ui/components/icons/aion-icon.icns"/>
+
+                    <delete dir="${dir.pack}/aion_ui"/>
                 </then>
             </elseif>
         </if>
