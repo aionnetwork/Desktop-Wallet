@@ -264,21 +264,16 @@
                     <unzip src="${dir.pack}/aion_ui.zip" dest="${dir.pack}"/>
                     <delete file="${dir.pack}/aion_ui.zip"/>
 
-                    <exec executable="curl">
-                        <arg value="-o"/>
-                        <arg value="${dir.pack}/jre-10.0.2.tar.gz"/>
-                        <arg value="-L"/>
-                        <arg value="-O"/>
-                        <arg value="-H"/>
-                        <arg value="'Cookie: oraclelicense=accept-securebackup-cookie'"/>
-                        <arg value="-k"/>
-                        <arg value="http://download.oracle.com/otn-pub/java/jdk/10.0.2+13/19aef61b38124481863b1413dce1855f/jre-10.0.2_osx-x64_bin.tar.gz"/>
+                    <mkdir dir="${dir.pack}/AionWallet"/>
+                    <exec executable="ln">
+                        <arg value="-s"/>
+                        <arg value="/Applications"/>
+                        <arg value="${dir.pack}/AionWallet/"/>
                     </exec>
 
-                    <mkdir dir="${dir.pack}/AionWallet.app"/>
-                    <property name="mac.dir" value="${dir.pack}/AionWallet.app/Contents"/>
+                    <mkdir dir="${dir.pack}/AionWallet/AionWallet.app"/>
+                    <property name="mac.dir" value="${dir.pack}/AionWallet/AionWallet.app/Contents"/>
 
-                    <!---->
                     <mkdir dir="${mac.dir}"/>
                     <copy todir="${mac.dir}" file="${dir.script}/Info.plist"/>
 
@@ -298,7 +293,16 @@
                             <include name="config/**"/>
                         </fileset>
                     </copy>
-                    <move todir="${mac.dir}/MacOS" file="${dir.pack}/jre-10.0.2.tar.gz"/>
+                    <exec executable="curl">
+                        <arg value="-o"/>
+                        <arg value="${mac.dir}/MacOS/jre-10.0.2.tar.gz"/>
+                        <arg value="-L"/>
+                        <arg value="-O"/>
+                        <arg value="-H"/>
+                        <arg value="'Cookie: oraclelicense=accept-securebackup-cookie'"/>
+                        <arg value="-k"/>
+                        <arg value="http://download.oracle.com/otn-pub/java/jdk/10.0.2+13/19aef61b38124481863b1413dce1855f/jre-10.0.2_osx-x64_bin.tar.gz"/>
+                    </exec>
 
                     <!--icons-->
                     <mkdir dir="${mac.dir}/Resources"/>

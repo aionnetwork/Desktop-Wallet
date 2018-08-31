@@ -12,8 +12,7 @@ if [ ! -f ${JAVA_INSTALL}/bin/java  ] || [ $({JAVA_INSTALL}/bin/java -version 2>
  then
   mkdir -p ${JAVA_INSTALL}
    tar -xzf jre-10.0.2.tar.gz -C ${STORAGE_DIR}
-
-   rm jre-10.0.2_osx-x64_bin.tar.gz
+   rm jre-10.0.2.tar.gz
 fi
 
 if [ ! -d ${SCRIPT_PATH}/native/mac/ledger/hid ]
