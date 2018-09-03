@@ -18,7 +18,7 @@ pipeline {
         
         stage('Archive build output') {
             when {expression { GIT_BRANCH == 'master' || GIT_BRANCH == 'dev' || GIT_BRANCH == 'aion_ui_Jenkins' }}
-            steps {archiveArtifacts artifacts: 'pack/aion_ui*.tar.gz'}
+            steps {archiveArtifacts artifacts: 'pack/aion_ui*.zip'}
         }
         /*
     	stage('Test') {
