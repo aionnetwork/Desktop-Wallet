@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 public class LedgerAccountListDialog implements Initializable {
+    public static final int AION_BALANCE_DECIMAL_PLACES = 6;
     private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
     private int currentDerivationIndex;
@@ -68,7 +69,7 @@ public class LedgerAccountListDialog implements Initializable {
     }
 
     private void ledgerAccountChanged(final Observable observable) {
-        if(ledgerAccountsToggleGroup.getSelectedToggle() != null) {
+        if (ledgerAccountsToggleGroup.getSelectedToggle() != null) {
             ledgerContinueButton.setDisable(false);
         }
     }
@@ -96,7 +97,7 @@ public class LedgerAccountListDialog implements Initializable {
         final HardwareWallet hardwareWallet = HardwareWalletFactory.getHardwareWallet(AccountType.LEDGER);
         List<AionAccountDetails> aionAccountDetails = Collections.emptyList();
         try {
-             aionAccountDetails = hardwareWallet.getMultipleAccountDetails(startIndex, stopIndex);
+            aionAccountDetails = hardwareWallet.getMultipleAccountDetails(startIndex, stopIndex);
         } catch (HardwareWalletException e) {
             log.error(e.getMessage(), e);
         }
@@ -106,7 +107,7 @@ public class LedgerAccountListDialog implements Initializable {
             account.setSpacing(5);
             account.setAlignment(Pos.CENTER_LEFT);
             account.setStyle("-fx-border-color: #ececec; -fx-border-width: 0 0 1 0;");
-            
+
             RadioButton radioButton = new RadioButton();
             radioButton.setUserData(accountDetails);
             radioButton.setToggleGroup(ledgerAccountsToggleGroup);
@@ -116,7 +117,8 @@ public class LedgerAccountListDialog implements Initializable {
             address.getStyleClass().add("copyable-textfield");
             Label balance = new Label(
                     BalanceUtils.formatBalanceWithNumberOfDecimals(
-                            blockchainConnector.getBalance(accountDetails.getAddress()), 6) + " AION");
+                            blockchainConnector.getBalance(accountDetails.getAddress()), AION_BALANCE_DECIMAL_PLACES)
+                            + " AION");
             balance.getStyleClass().add("copyable-label");
             balance.setPrefWidth(100);
             account.getChildren().addAll(radioButton, address, balance);
@@ -165,7 +167,8 @@ public class LedgerAccountListDialog implements Initializable {
                     && ledgerAccountsToggleGroup.getSelectedToggle().getUserData() != null) {
                 AionAccountDetails accountDetails = (AionAccountDetails) ledgerAccountsToggleGroup.getSelectedToggle
                         ().getUserData();
-                AccountDTO account = BlockchainConnector.getInstance().importHardwareWallet(accountDetails.getDerivationIndex(),
+                AccountDTO account = BlockchainConnector.getInstance().importHardwareWallet(accountDetails
+                                .getDerivationIndex(),
                         accountDetails.getAddress(), AccountType.LEDGER);
                 EventPublisher.fireLedgerAccountSelected(eventSource);
                 EventPublisher.fireAccountChanged(account);
@@ -175,7 +178,7 @@ public class LedgerAccountListDialog implements Initializable {
             }
         } catch (ValidationException e) {
             log.error(e.getMessage(), e);
-            if(e.getMessage().equals("Account already exists!")) {
+            if (e.getMessage().equals("Account already exists!")) {
                 close(eventSource);
             }
         }
