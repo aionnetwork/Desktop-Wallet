@@ -2,10 +2,11 @@
 
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.AnchorPane?>
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
+<AnchorPane xmlns:fx="http://javafx.com/fxml"
+            xmlns="http://javafx.com/javafx"
             fx:controller="org.aion.wallet.ui.components.partials.AboutPage"
             prefWidth="150.0">
 
-    <Label AnchorPane.topAnchor="20" styleClass="version-style" text="AION Desktop Wallet v1.0.0" onMouseClicked="#openAboutDialog"/>
+    <Label AnchorPane.topAnchor="20" styleClass="version-style" text="AION Desktop Wallet v1.1.0"
+           onMouseClicked="#openAboutDialog"/>
 </AnchorPane>

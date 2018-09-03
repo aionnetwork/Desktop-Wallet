@@ -16,8 +16,15 @@ public class URLManager {
 
     private static final String TRANSACTION_URL = "/#/transaction/";
 
+    private static final String CENTRYS_URL = "http://www.centrys.io";
+
+
     public static void openDashboard() {
         openURL(AionConstants.AION_URL);
+    }
+
+    public static void openCentrys() {
+        openURL(CENTRYS_URL);
     }
 
     public static void openTransaction(final String transactionHash) {
