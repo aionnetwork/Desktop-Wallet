@@ -28,4 +28,12 @@ public final class BalanceUtils {
     public static BigInteger extractBalance(final String formattedBalance) {
         return new BigDecimal(formattedBalance).multiply(WEI_MULTIPLIER).toBigInteger();
     }
+
+    public static String formatBalanceWithNumberOfDecimals(final BigInteger balance, final int decimalPlaces) {
+        String formattedBalance = formatBalance(balance);
+        if(formattedBalance.indexOf(".") > 0) {
+            return formattedBalance.substring(0, formattedBalance.indexOf(".") + 1 + decimalPlaces);
+        }
+        return formattedBalance;
+    }
 }

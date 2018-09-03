@@ -115,8 +115,8 @@ public class LedgerAccountListDialog implements Initializable {
             address.setEditable(false);
             address.getStyleClass().add("copyable-textfield");
             Label balance = new Label(
-                    BalanceUtils.formatBalance(blockchainConnector.getBalance(accountDetails.getAddress()))
-                            + " AION");
+                    BalanceUtils.formatBalanceWithNumberOfDecimals(
+                            blockchainConnector.getBalance(accountDetails.getAddress()), 6) + " AION");
             balance.getStyleClass().add("copyable-label");
             balance.setPrefWidth(100);
             account.getChildren().addAll(radioButton, address, balance);
