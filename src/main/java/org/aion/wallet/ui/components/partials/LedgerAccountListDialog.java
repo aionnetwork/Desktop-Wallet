@@ -59,6 +59,9 @@ public class LedgerAccountListDialog implements Initializable {
     @FXML
     private Button ledgerContinueButton;
 
+    @FXML
+    private Label previousAddressesLink;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         registerEventBusConsumer();
@@ -185,5 +188,18 @@ public class LedgerAccountListDialog implements Initializable {
         ledgerContinueButton.setDisable(true);
         ledgerAccountList.getChildren().clear();
         generateLedgerAddresses(currentDerivationIndex, currentDerivationIndex + 5);
+
+        previousAddressesLink.setVisible(true);
+    }
+
+    public void previousAddresses() {
+        ledgerContinueButton.setDisable(true);
+        ledgerAccountList.getChildren().clear();
+
+        generateLedgerAddresses(currentDerivationIndex-10, currentDerivationIndex-5);
+
+        if(currentDerivationIndex == 5) {
+            previousAddressesLink.setVisible(false);
+        }
     }
 }

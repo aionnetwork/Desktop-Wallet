@@ -37,7 +37,11 @@
     </VBox>
 
     <AnchorPane AnchorPane.bottomAnchor="200" AnchorPane.rightAnchor="30">
-        <Label text="Next" styleClass="link-style-paragraph-text" onMouseClicked="#nextAddresses"/>
+        <HBox spacing="10">
+            <Label fx:id="previousAddressesLink" text="Previous" styleClass="link-style-paragraph-text"
+                   onMouseClicked="#previousAddresses" visible="false"/>
+            <Label text="Next" styleClass="link-style-paragraph-text" onMouseClicked="#nextAddresses"/>
+        </HBox>
     </AnchorPane>
 
     <AnchorPane AnchorPane.bottomAnchor="10" AnchorPane.rightAnchor="10">
