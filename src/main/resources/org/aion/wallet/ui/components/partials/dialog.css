@@ -92,3 +92,7 @@
     -fx-text-alignment: CENTER;
     -fx-display-caret: false;
 }
+
+.link {
+    -fx-cursor: hand;
+}

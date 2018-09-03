@@ -147,7 +147,7 @@
         <delete dir="${dir.mod}/updated"/>
     </target>
 
-    <target name="build_standalone">
+    <target name="build_standalone" depends="get_version_from_git">
         <mkdir dir="${out.main}"/>
         <mkdir dir="${dir.pack}"/>
         <condition property="parent.exists">
@@ -171,7 +171,7 @@
             <fileset dir="${res.main}" id="**"/>
         </copy>
         <jar
-                destfile="aion_ui.jar"
+                destfile="aion_ui${suffix}.jar"
                 filesetmanifest="mergewithoutmain"
                 basedir="${out.main}"
                 excludes="native/">
@@ -181,7 +181,7 @@
             </manifest>
         </jar>
         <move includeemptydirs="false" todir="${dir.pack}">
-            <file file="aion_ui.jar"/>
+            <file file="aion_ui${suffix}.jar"/>
         </move>
     </target>
 
@@ -210,7 +210,7 @@
                 </then>
             </elseif>
         </if>
-        <zip destfile="${dir.pack}/aion_ui.zip">
+        <zip destfile="${dir.pack}/aion_ui${suffix}.zip">
             <zipfileset dir="${dir.lib}" filemode="755" prefix="${project.name}/lib">
                 <include name="*.jar"/>
                 <exclude name="ant-contrib-0.6.jar"/>
@@ -234,11 +234,11 @@
                 <include name="${launcher}"/>
             </zipfileset>
         </zip>
-        <delete file="${dir.pack}/aion_ui.jar"/>
+        <delete file="${dir.pack}/aion_ui${suffix}.jar"/>
         <if>
             <os family="windows"/>
             <then>
-                <unzip src="${dir.pack}/aion_ui.zip" dest="${dir.pack}"/>
+                <unzip src="${dir.pack}/aion_ui${suffix}.zip" dest="${dir.pack}"/>
                 <copy file="${dir.script}/unzip.exe" todir="${dir.pack}/aion_ui"/>
                 <copy file="${dir.script}/wget.exe" todir="${dir.pack}/aion_ui"/>
                 <copy todir="${dir.pack}/aion_ui" overwrite="true" verbose="true">
@@ -261,8 +261,8 @@
             <elseif>
                 <os family="mac"/>
                 <then>
-                    <unzip src="${dir.pack}/aion_ui.zip" dest="${dir.pack}"/>
-                    <delete file="${dir.pack}/aion_ui.zip"/>
+                    <unzip src="${dir.pack}/aion_ui${suffix}.zip" dest="${dir.pack}"/>
+                    <delete file="${dir.pack}/aion_ui${suffix}.zip"/>
 
                     <mkdir dir="${dir.pack}/AionWallet"/>
                     <exec executable="ln">

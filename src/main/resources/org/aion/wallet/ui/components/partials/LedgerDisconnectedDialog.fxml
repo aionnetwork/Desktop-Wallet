@@ -17,13 +17,13 @@
     </stylesheets>
 
     <VBox spacing="10" alignment="CENTER_LEFT" AnchorPane.topAnchor="25" AnchorPane.leftAnchor="25">
-        <HBox spacing="5" alignment="CENTER_LEFT">
-            <ImageView fitHeight="25.0" pickOnBounds="true" preserveRatio="true">
-                <Image url="@../icons/error-icon.png"/>
+        <HBox spacing="5" alignment="CENTER">
+            <ImageView fitHeight="28.0" pickOnBounds="true" preserveRatio="true">
+                <Image url="@../icons/ledger_logo.png"/>
             </ImageView>
-            <Label text="Ledger disconnected!" styleClass="main-text"/>
+            <Label text="disconnected!" style="-fx-font-family: 'Open Sans Bold'; -fx-font-size: 24px;"/>
         </HBox>
-        <Text text="Please make sure that the Ledger is connected to your computer and it is unlocked!"
+        <Text text="Please make sure that the Ledger is connected to your computer, unlocked and the Aion app is open!"
               styleClass="paragraph-text"
               wrappingWidth="450"/>
     </VBox>
