@@ -22,10 +22,14 @@ import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.ui.components.partials.FatalErrorDialog;
 import org.aion.wallet.util.AionConstants;
 import org.aion.wallet.util.DataUpdater;
+import org.aion.wallet.util.OSUtils;
 import org.slf4j.Logger;
 
+import javax.swing.*;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -59,6 +63,18 @@ public class MainWindow extends Application {
         this.stage = stage;
         stage.initStyle(StageStyle.TRANSPARENT);
         stage.getIcons().add(new Image(getClass().getResourceAsStream(AION_LOGO)));
+
+        if(OSUtils.isMac()) {
+            java.awt.Image image = new ImageIcon(MainWindow.class.getResource(AION_LOGO)).getImage();
+            try {
+                Class<?> appClass = Class.forName("com.apple.eawt.Application");
+                Object app = appClass.getMethod("getApplication").invoke(appClass);
+                Method setter = app.getClass().getMethod("setDockIconImage", java.awt.Image.class);
+                setter.invoke(app, image);
+            } catch (Throwable t) {
+                System.err.println("Cannot set Mac tray icon due to error: " + t);
+            }
+        }
 
         registerEventBusConsumer();
 

@@ -11,3 +11,5 @@ Output
 #IDE
 *.iml
 /.idea
+.DS_Store
+
