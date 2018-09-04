@@ -65,6 +65,7 @@ public class LedgerWallet implements HardwareWallet {
 
     private static final WindowsNpmInstaller WINDOWS_NPM_INSTALLER = new WindowsNpmInstaller();
     private static final MacNpmInstaller MAC_NPM_INSTALLER = new MacNpmInstaller();
+    private static final String PREFIX = "--prefix";
 
     private final Map<Integer, AionAccountDetails> accountCache = new ConcurrentHashMap<>();
     private final ProcessBuilder processBuilder = createProcessBuilder();
@@ -280,7 +281,7 @@ public class LedgerWallet implements HardwareWallet {
                 RUN_CMD,
                 NPM_AION_HID_KEY,
                 getSignCommandAsHex(wrapper),
-                "--prefix",
+                PREFIX,
                 MAC_DRIVER_LOCATION
         };
     }
