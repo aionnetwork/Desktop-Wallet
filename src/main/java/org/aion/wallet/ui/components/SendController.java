@@ -4,6 +4,7 @@ import com.google.common.eventbus.Subscribe;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import org.aion.api.impl.internal.Message;
 import org.aion.api.log.LogEnum;
@@ -118,7 +119,85 @@ public class SendController extends AbstractController {
         setTimedoutTransactionsLabelText();
     }
 
-    public void onSendAionClicked() {
+    @FXML
+    private void addressPressed(final KeyEvent keyEvent) {
+        if (account != null) {
+            switch (keyEvent.getCode()) {
+                case TAB:
+                    try {
+                        checkAddress();
+                        displayStatus("", false);
+                    } catch (ValidationException e) {
+                        displayStatus(e.getMessage(), true);
+                    }
+                    break;
+            }
+        }
+    }
+
+    @FXML
+    private void nrgPressed(final KeyEvent keyEvent) {
+        if (account != null) {
+            switch (keyEvent.getCode()) {
+                case TAB:
+                    try {
+                        getNrg();
+                        displayStatus("", false);
+                    } catch (ValidationException e) {
+                        displayStatus(e.getMessage(), true);
+                    }
+                    break;
+            }
+        }
+    }
+
+    @FXML
+    private void nrgPricePressed(final KeyEvent keyEvent) {
+        if (account != null) {
+            switch (keyEvent.getCode()) {
+                case TAB:
+                    try {
+                        getNrgPrice();
+                        displayStatus("", false);
+                    } catch (ValidationException e) {
+                        displayStatus(e.getMessage(), true);
+                    }
+                    break;
+            }
+        }
+    }
+
+    @FXML
+    private void valuePressed(final KeyEvent keyEvent) {
+        if (account != null) {
+            switch (keyEvent.getCode()) {
+                case ENTER:
+                    sendAion();
+                    break;
+                case TAB:
+                    try {
+                        getValue();
+                        displayStatus("", false);
+                    } catch (ValidationException e) {
+                        displayStatus(e.getMessage(), true);
+                    }
+                    break;
+            }
+        }
+    }
+
+    @FXML
+    private void sendPressed(final KeyEvent keyEvent) {
+        if (account != null) {
+            switch (keyEvent.getCode()) {
+                case ENTER:
+                    sendAion();
+                    break;
+            }
+        }
+    }
+
+    public void sendAion() {
         if (account == null) {
             return;
         }
@@ -147,7 +226,7 @@ public class SendController extends AbstractController {
         );
     }
 
-    public void onTimedoutTransactionsClick(final MouseEvent mouseEvent) {
+    public void onTimedOutTransactionsClick(final MouseEvent mouseEvent) {
         transactionResubmissionDialog.open(mouseEvent);
     }
 
@@ -288,10 +367,24 @@ public class SendController extends AbstractController {
 
     private SendTransactionDTO mapFormData() throws ValidationException {
 
+        checkAddress();
+
+        final long nrg = getNrg();
+
+        final BigInteger nrgPrice = getNrgPrice();
+
+        final BigInteger value = getValue();
+
+        return new SendTransactionDTO(account, toInput.getText(), nrg, nrgPrice, value);
+    }
+
+    private void checkAddress() throws ValidationException {
         if (!AddressUtils.isValid(toInput.getText())) {
             throw new ValidationException("Address is not a valid AION address!");
         }
+    }
 
+    private long getNrg() throws ValidationException {
         final long nrg;
         try {
             nrg = TypeConverter.StringNumberAsBigInt(nrgInput.getText()).longValue();
@@ -301,7 +394,10 @@ public class SendController extends AbstractController {
         } catch (NumberFormatException e) {
             throw new ValidationException("Nrg must be a valid number!");
         }
+        return nrg;
+    }
 
+    private BigInteger getNrgPrice() throws ValidationException {
         final BigInteger nrgPrice;
         try {
             nrgPrice = TypeConverter.StringNumberAsBigInt(nrgPriceInput.getText());
@@ -311,7 +407,10 @@ public class SendController extends AbstractController {
         } catch (NumberFormatException e) {
             throw new ValidationException("Nrg price must be a valid number!");
         }
+        return nrgPrice;
+    }
 
+    private BigInteger getValue() throws ValidationException {
         final BigInteger value;
         try {
             value = BalanceUtils.extractBalance(valueInput.getText());
@@ -321,7 +420,6 @@ public class SendController extends AbstractController {
         } catch (NumberFormatException e) {
             throw new ValidationException("Amount must be a number");
         }
-
-        return new SendTransactionDTO(account, toInput.getText(), nrg, nrgPrice, value);
+        return value;
     }
 }

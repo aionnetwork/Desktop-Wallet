@@ -23,17 +23,20 @@
             <VBox spacing="5" prefWidth="400.0">
                 <Label text="New transaction" styleClass="header-text" />
                 <PasswordField fx:id="passwordInput" promptText="Password" styleClass="input-fields"/>
-                <TextField fx:id="toInput" promptText="To address" styleClass="input-fields"/>
-                <TextField fx:id="nrgInput" promptText="Energy" styleClass="input-fields"/>
-                <TextField fx:id="nrgPriceInput" promptText="Energy price" styleClass="input-fields"/>
-                <TextField fx:id="valueInput" promptText="Amount to send" styleClass="input-fields"/>
+                <TextField fx:id="toInput" promptText="To address" styleClass="input-fields"
+                           onKeyPressed="#addressPressed"/>
+                <TextField fx:id="nrgInput" promptText="Energy" styleClass="input-fields" onKeyPressed="#nrgPressed"/>
+                <TextField fx:id="nrgPriceInput" promptText="Energy price" styleClass="input-fields"
+                           onKeyPressed="#nrgPricePressed"/>
+                <TextField fx:id="valueInput" promptText="Amount to send" styleClass="input-fields"
+                           onKeyPressed="#valuePressed"/>
                 <Label fx:id="txStatusLabel"/>
                 <HBox>
                     <Button fx:id="sendButton" prefWidth="400.0" mnemonicParsing="false"
-                            onMouseClicked="#onSendAionClicked" text="Generate transaction"
+                            onMouseClicked="#sendAion" onKeyPressed="#sendPressed" text="Generate transaction"
                             styleClass="button"/>
                 </HBox>
-                <Label fx:id="timedoutTransactionsLabel" onMouseClicked="#onTimedoutTransactionsClick" />
+                <Label fx:id="timedoutTransactionsLabel" onMouseClicked="#onTimedOutTransactionsClick"/>
             </VBox>
         </HBox>
     </VBox>
