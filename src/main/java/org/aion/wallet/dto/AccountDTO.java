@@ -100,8 +100,7 @@ public class AccountDTO {
         this.transactions.addAll(transactions);
     }
 
-    public void removeTransactions(final Collection<TransactionDTO> transactions) {
-        this.transactions.removeAll(transactions);
+    public void removeTransactions(final Collection<TransactionDTO> transactions) {this.transactions.removeAll(transactions);
     }
 
     public BlockDTO getLastSafeBlock() {
