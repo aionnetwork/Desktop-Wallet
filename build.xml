@@ -286,13 +286,21 @@
 
                     <!--Launcher and natives-->
                     <mkdir dir="${mac.dir}/MacOS"/>
-                    <copy todir="${mac.dir}/MacOS" file="${dir.pack}/aion_ui/AionWalletLauncher"/>
+                    <copy todir="${mac.dir}/MacOS" file="${dir.pack}/aion_ui${suffix}/AionWalletLauncher"/>
                     <copy todir="${mac.dir}/MacOS" overwrite="true" verbose="true">
                         <fileset dir="${dir.pack}/aion_ui">
                             <include name="native/**"/>
                             <include name="config/**"/>
                         </fileset>
                     </copy>
+                    <exec executable="chmod">
+                        <arg value="755"/>
+                        <arg value="${mac.dir}/MacOS/AionWalletLauncher"/>
+                    </exec>
+                    <exec executable="chmod">
+                        <arg value="755"/>
+                        <arg value="${mac.dir}/MacOS/native/mac/ledger/hid.zip"/>
+                    </exec>
                     <exec executable="curl">
                         <arg value="-o"/>
                         <arg value="${mac.dir}/MacOS/jre-10.0.2.tar.gz"/>

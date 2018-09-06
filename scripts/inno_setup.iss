@@ -7,9 +7,10 @@
 ;
 ; Anywhere below, when building the setup, make sure to replace "C:\Projects\aion_ui" with the actual path where you clone the `aion_ui`
 ;
+; Before using the signtool, Windows 10 SDK should be installed - https://developer.microsoft.com/en-us/windows/downloads/windows-10-sdk
 ; A certificate needs to be added in Tools->Configure Sign Tools->Add
 ; Name=signtool
-; Value="C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe"  sign /f "C:\Projects\aion_ui\scripts\cert.pfx" /p superaion /t http://timestamp.verisign.com/scripts/timstamp.dll $f
+; Value="C:\Program Files (x86)\Windows Kits\10\App Certification Kit\signtool.exe"  sign /f "C:\Projects\aion_ui\scripts\cert.pfx" /p superaion /t http://timestamp.verisign.com/scripts/timstamp.dll $f
 ;
 ; If the current certificate has expired, a new one can be issued from powershell:
 ; > New-SelfSignedCertificate -certstorelocation cert:\localmachine\my -dnsname aion.network -type CodeSigning

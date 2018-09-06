@@ -65,6 +65,7 @@ public class LedgerWallet implements HardwareWallet {
 
     private static final WindowsNpmInstaller WINDOWS_NPM_INSTALLER = new WindowsNpmInstaller();
     private static final MacNpmInstaller MAC_NPM_INSTALLER = new MacNpmInstaller();
+    private static final String PREFIX = "--prefix";
 
     private final Map<Integer, AionAccountDetails> accountCache = new ConcurrentHashMap<>();
     private final ProcessBuilder processBuilder = createProcessBuilder();
@@ -84,6 +85,9 @@ public class LedgerWallet implements HardwareWallet {
 
     private void updateProcessBuilderForMac(final ProcessBuilder p) {
         p.directory(new File(MAC_DRIVER_LOCATION));
+        final Map<String, String> environment = p.environment();
+        final String oldPath = environment.get("PATH");
+        environment.put("PATH", oldPath + File.pathSeparator + "/usr/local/bin");
     }
 
     private void updateProcessBuilderForWindows(final ProcessBuilder p) {
@@ -276,7 +280,9 @@ public class LedgerWallet implements HardwareWallet {
                 NPM_COMMAND,
                 RUN_CMD,
                 NPM_AION_HID_KEY,
-                getSignCommandAsHex(wrapper)
+                getSignCommandAsHex(wrapper),
+                PREFIX,
+                MAC_DRIVER_LOCATION
         };
     }
 
@@ -341,7 +347,8 @@ public class LedgerWallet implements HardwareWallet {
             if (!Files.exists(Paths.get(MAC_DRIVER_LOCATION + "/node_modules"))) {
                 log.info("Driver not installed installing it now...");
                 final String[] commands = new String[]{"bash", MAC_DRIVER_LOCATION + "/setup.sh"};
-                processBuilder.directory(new File(MAC_DRIVER_LOCATION));
+                System.out.println(processBuilder.environment());
+                //processBuilder.directory(new File(MAC_DRIVER_LOCATION));
                 try {
                     Process process = processBuilder.command(commands).start();
                     final BufferedReader lineReader = new BufferedReader(new InputStreamReader(process.getInputStream

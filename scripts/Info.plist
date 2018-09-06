@@ -11,15 +11,15 @@
         <key>CFBundleIconFile</key>
         <string>aion-icon.icns</string><!-- relative to Contents/Resources -->
         <key>CFBundleInfoDictionaryVersion</key>
-        <string>8.0</string>
+        <string>1.1.0</string>
         <key>CFBundleName</key>
-        <string>YourApp</string>
+        <string>AionWallet</string>
         <key>CFBundlePackageType</key>
         <string>APPL</string>
         <key>CFBundleSignature</key>
         <string>????</string>
         <key>CFBundleVersion</key>
-        <string>8.0</string>
+        <string>1.1.0</string>
 </dict>
 </plist>
 
