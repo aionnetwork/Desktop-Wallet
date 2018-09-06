@@ -45,6 +45,11 @@ public class AionTransactionSigner {
                     log.error(e.getMessage(), e);
                     throw new ValidationException(accountType.getDisplayString() + " is not responding. Reconnect!");
                 }
+
+                if (!transaction.getFrom().toString().equals(publicKey)) {
+                    throw new ValidationException("Wrong " + accountType.getDisplayString() + " connected! Account not found!");
+                }
+
                 final String signature;
                 try {
                     signature = wallet.signMessage(account.getDerivationIndex(), transaction.getEncodedRaw());
