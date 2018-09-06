@@ -346,7 +346,7 @@ public class LedgerWallet implements HardwareWallet {
         public void accept(final ProcessBuilder processBuilder) {
             if (!Files.exists(Paths.get(MAC_DRIVER_LOCATION + "/node_modules"))) {
                 log.info("Driver not installed installing it now...");
-                final String[] commands = new String[]{"bash", MAC_DRIVER_LOCATION + "/setup.sh"};
+                final String[] commands = new String[]{"bash", MAC_DRIVER_LOCATION + "/npm install"};
                 System.out.println(processBuilder.environment());
                 //processBuilder.directory(new File(MAC_DRIVER_LOCATION));
                 try {
