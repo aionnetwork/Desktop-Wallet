@@ -215,6 +215,8 @@ public class SendController extends AbstractController {
                 timedoutTransactionsLabel.getStyleClass().add("warning-link-style");
                 timedoutTransactionsLabel.setText("You have transactions that require your attention!");
             }
+        } else {
+            timedoutTransactionsLabel.setVisible(false);
         }
     }
 
@@ -232,10 +234,12 @@ public class SendController extends AbstractController {
             }
         } else if (AccountEvent.Type.LOCKED.equals(event.getType())) {
             if (account.equals(this.account)) {
+                this.account = null;
                 sendButton.setDisable(true);
                 accountAddress.setText("");
                 accountBalance.setVisible(false);
-                this.account = null;
+                setDefaults();
+                txStatusLabel.setText("");
             }
         }
     }
