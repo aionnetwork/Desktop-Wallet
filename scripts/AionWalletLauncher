@@ -9,11 +9,10 @@ STORAGE_DIR=${HOME}/.aion
 LOG_DIR=${STORAGE_DIR}/log
 JAVA_INSTALL=${STORAGE_DIR}/jre-10.0.2.jre/Contents/Home
 
-if [ ! -f ${JAVA_INSTALL}/bin/java  ] || [ $({JAVA_INSTALL}/bin/java -version 2>&1 | grep "10.0.2" | wc -l) <= 0 ]
+if [ ! -f ${JAVA_INSTALL}/bin/java  ] || [ $(${JAVA_INSTALL}/bin/java -version 2>&1 | grep "10.0.2" | wc -l) <= 0 ]
  then
   mkdir -p ${JAVA_INSTALL}
    tar -xzf jre-10.0.2.tar.gz -C ${STORAGE_DIR}
-   rm jre-10.0.2.tar.gz
 fi
 
 if [ ! -d ${SCRIPT_PATH}/native/mac/ledger/hid ]

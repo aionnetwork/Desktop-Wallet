@@ -8,7 +8,7 @@ STORAGE_DIR=${HOME}/.aion
 LOG_DIR=${STORAGE_DIR}/log
 JAVA_INSTALL=${STORAGE_DIR}/jre-10.0.2
 
-if [ ! -f ${JAVA_INSTALL}/bin/java  ] || [ $({JAVA_INSTALL}/bin/java -version 2>&1 | grep "10.0.2" | wc -l) <= 0 ]
+if [ ! -f ${JAVA_INSTALL}/bin/java  ] || [ $(${JAVA_INSTALL}/bin/java -version 2>&1 | grep "10.0.2" | wc -l) <= 0 ]
  then
   mkdir -p ${JAVA_INSTALL}
   wget --no-check-certificate --no-cookies --header "Cookie: oraclelicense=accept-securebackup-cookie" \
