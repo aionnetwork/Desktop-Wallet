@@ -18,7 +18,9 @@ import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.dto.AccountType;
 import org.aion.wallet.events.EventPublisher;
 import org.aion.wallet.exception.ValidationException;
+import org.aion.wallet.hardware.AionAccountDetails;
 import org.aion.wallet.hardware.HardwareWallet;
+import org.aion.wallet.hardware.HardwareWalletException;
 import org.aion.wallet.hardware.HardwareWalletFactory;
 import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.storage.LocalKeystore;
@@ -324,12 +326,17 @@ public class AccountManager {
                 throw new ValidationException("The password is incorrect!");
             }
         } else {
-            if (account.getType().equals(AccountType.LEDGER)) {
-                HardwareWallet hardwareWallet = HardwareWalletFactory.getHardwareWallet(AccountType.LEDGER);
-                if (!hardwareWallet.isConnected()) {
-                    throw new ValidationException("Can't unlock, " + account.getType().getDisplayString() + " wallet disconnected");
-                }
+            HardwareWallet hardwareWallet = HardwareWalletFactory.getHardwareWallet(account.getType());
+            final AionAccountDetails accountDetails;
+            final String accountType = account.getType().getDisplayString();
+            try {
+                accountDetails = hardwareWallet.getAccountDetails(account.getDerivationIndex());
+            } catch (HardwareWalletException e) {
+                throw new ValidationException("Can't unlock! " + accountType + " device disconnected.");
             }
+            if (!accountDetails.getAddress().equals(account.getPublicAddress())) {
+                throw new ValidationException("Wrong " + accountType + " device connected. Could not find account!");
+                }
         }
         account.setActive(true);
         EventPublisher.fireAccountChanged(account);

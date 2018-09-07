@@ -21,8 +21,7 @@ import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.dto.AccountType;
 import org.aion.wallet.events.EventPublisher;
 import org.aion.wallet.exception.ValidationException;
-import org.aion.wallet.hardware.HardwareWallet;
-import org.aion.wallet.hardware.HardwareWalletFactory;
+import org.aion.wallet.ui.components.partials.HardwareWalletDisconnectedDialog;
 import org.aion.wallet.ui.components.partials.LedgerDisconnectedDialog;
 import org.aion.wallet.ui.components.partials.SaveKeystoreDialog;
 import org.aion.wallet.ui.components.partials.UnlockAccountDialog;
@@ -171,9 +170,19 @@ public class AccountCellItem extends ListCell<AccountDTO> {
                 modifiedAccount.setActive(true);
                 EventPublisher.fireAccountChanged(modifiedAccount);
             } catch (ValidationException e) {
-                ledgerDisconnected.open(mouseEvent);
+                final HardwareWalletDisconnectedDialog warningDialog = getWarningDialog(modifiedAccount.getType());
+                warningDialog.open(mouseEvent, e);
                 ConsoleManager.addLog(e.getMessage(), ConsoleManager.LogType.ACCOUNT, ConsoleManager.LogLevel.ERROR);
             }
+        }
+    }
+
+    private HardwareWalletDisconnectedDialog getWarningDialog(final AccountType type) {
+        switch (type) {
+            case LEDGER:
+                return ledgerDisconnected;
+            default:
+                throw new UnsupportedOperationException("Can't display this type of account");
         }
     }
 

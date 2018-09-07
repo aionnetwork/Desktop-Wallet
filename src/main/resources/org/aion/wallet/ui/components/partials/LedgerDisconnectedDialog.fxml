@@ -1,17 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.VBox?>
-<?import java.net.URL?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Text?>
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="org.aion.wallet.ui.components.partials.LedgerDisconnectedDialog"
-            prefWidth="500.0" prefHeight="200.0" styleClass="anchor-pane">
+<?import java.net.URL?>
+<AnchorPane xmlns="http://javafx.com/javafx" prefWidth="500.0" prefHeight="200.0" styleClass="anchor-pane">
     <stylesheets>
         <URL value="@dialog.css"/>
     </stylesheets>
@@ -23,6 +18,7 @@
             </ImageView>
             <Label text="disconnected!" style="-fx-font-family: 'Open Sans Bold'; -fx-font-size: 24px;"/>
         </HBox>
+        <Text id="errorText" styleClass="paragraph-text" wrappingWidth="450"/>
         <Text text="Please make sure that the Ledger is connected to your computer, unlocked and the Aion app is open!"
               styleClass="paragraph-text"
               wrappingWidth="450"/>

@@ -9,6 +9,7 @@ import org.aion.crypto.ed25519.Ed25519Signature;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.dto.AccountType;
 import org.aion.wallet.exception.ValidationException;
+import org.aion.wallet.hardware.AionAccountDetails;
 import org.aion.wallet.hardware.HardwareWallet;
 import org.aion.wallet.hardware.HardwareWalletException;
 import org.aion.wallet.hardware.HardwareWalletFactory;
@@ -37,18 +38,23 @@ public class AionTransactionSigner {
             case LEDGER:
             case TREZOR:
                 final HardwareWallet wallet = HardwareWalletFactory.getHardwareWallet(accountType);
-                final String publicKey;
+                final AionAccountDetails accountDetails;
                 transaction.setTimeStamp(TimeInstant.now().toEpochMicro());
                 try {
-                    publicKey = wallet.getAccountDetails(account.getDerivationIndex()).getPublicKey();
+                    accountDetails = wallet.getAccountDetails(account.getDerivationIndex());
                 } catch (HardwareWalletException e) {
                     log.error(e.getMessage(), e);
                     throw new ValidationException(accountType.getDisplayString() + " is not responding. Reconnect!");
                 }
+
+                if (!account.getPublicAddress().equals(accountDetails.getAddress())) {
+                    throw new ValidationException("Wrong " + accountType.getDisplayString() + " connected! Account not found!");
+                }
+
                 final String signature;
                 try {
                     signature = wallet.signMessage(account.getDerivationIndex(), transaction.getEncodedRaw());
-                    transaction.setSignature(new Ed25519Signature(TypeConverter.StringHexToByteArray(publicKey), TypeConverter.StringHexToByteArray(signature)));
+                    transaction.setSignature(new Ed25519Signature(TypeConverter.StringHexToByteArray(accountDetails.getPublicKey()), TypeConverter.StringHexToByteArray(signature)));
                 } catch (HardwareWalletException e) {
                     log.error(e.getMessage(), e);
                     throw new ValidationException(accountType.getDisplayString() + " transaction declined by user");
