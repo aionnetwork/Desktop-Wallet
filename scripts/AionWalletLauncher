@@ -1,6 +1,6 @@
 #!/bin/bash -il
 
-SCRIPT_PATH=$(dirname $0)
+SCRIPT_PATH=$(pwd)/$(dirname $0)
 
 cd ${SCRIPT_PATH}
 
@@ -17,16 +17,22 @@ fi
 
 LEDGER=${SCRIPT_PATH}/native/mac/ledger
 HID=${LEDGER}/hid
+PATH=$PATH:${HID}/node-v8.11.4-darwin-x64/bin
 if [ ! -d ${HID} ]
  then
-  unzip ${HID}.zip -d ${LEDGER}
-  PATH=$PATH:${HID}/node-v8.11.4-darwin-x64/bin
+  pushd ${LEDGER}
+  pwd
+  tar -xzf hid.tar.gz
   pushd ${HID}
   pwd
+  npm i -g npm
   npm install
-  popd
   pwd
+  popd
+  popd
 fi
+
+
 
 LIB_DIR=$(cd ../Java && pwd)/*
 

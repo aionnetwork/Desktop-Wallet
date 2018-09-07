@@ -300,7 +300,7 @@
                     </exec>
                     <exec executable="chmod">
                         <arg value="755"/>
-                        <arg value="${mac.dir}/MacOS/native/mac/ledger/hid.zip"/>
+                        <arg value="${mac.dir}/MacOS/native/mac/ledger/hid.tar.gz"/>
                     </exec>
                     <exec executable="curl">
                         <arg value="-o"/>
