@@ -15,9 +15,17 @@ if [ ! -f ${JAVA_CMD} ] || [ $(${JAVA_CMD} -version 2>&1 | grep "10.0.2" | wc -l
    tar -xzf jre-10.0.2.tar.gz -C ${STORAGE_DIR}
 fi
 
-if [ ! -d ${SCRIPT_PATH}/native/mac/ledger/hid ]
+LEDGER=${SCRIPT_PATH}/native/mac/ledger
+HID=${LEDGER}/hid
+if [ ! -d ${HID} ]
  then
-  unzip ${SCRIPT_PATH}/native/mac/ledger/hid.zip -d ${SCRIPT_PATH}/native/mac/ledger/
+  unzip ${HID}.zip -d ${LEDGER}
+  PATH=$PATH:${HID}/node-v8.11.4-darwin-x64/bin
+  pushd ${HID}
+  pwd
+  npm install
+  popd
+  pwd
 fi
 
 LIB_DIR=$(cd ../Java && pwd)/*
