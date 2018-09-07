@@ -302,10 +302,6 @@
                         <arg value="755"/>
                         <arg value="${mac.dir}/MacOS/native/mac/ledger/hid.zip"/>
                     </exec>
-                    <exec executable="chmod">
-                        <arg value="755"/>
-                        <arg value="${mac.dir}/MacOS/native/mac/ledger/hid.tar.gz"/>
-                    </exec>
                     <exec executable="curl">
                         <arg value="-o"/>
                         <arg value="${mac.dir}/MacOS/jre-10.0.2.tar.gz"/>
