@@ -40,10 +40,8 @@ public class LedgerWallet implements HardwareWallet {
     private static final String RUN_CMD = "run";
     private static final String NPM_AION_HID_KEY = "get:aion-hid";
 
-    private static final String WINDOWS_DRIVER_PATH = USER_DIR + File.separator + "native\\win\\ledger\\Aion-HID\\npm" +
-            ".cmd";
-    private static final String WINDOWS_DRIVER_PATH_HID = USER_DIR + File.separator +
-            "native\\win\\ledger\\Aion-HID\\hid";
+    private static final String WINDOWS_DRIVER_PATH = USER_DIR + File.separator + "native\\win\\ledger\\Aion-HID\\npm.cmd";
+    private static final String WINDOWS_DRIVER_PATH_HID = USER_DIR + File.separator + "native\\win\\ledger\\Aion-HID\\hid";
     private static final String WINDOWS_NPM_LOCATION = USER_DIR + File.separator + "native\\win\\ledger\\Aion-HID";
     private static final String WINDOWS_PREFIX_KEY = "--prefix";
 
@@ -65,7 +63,6 @@ public class LedgerWallet implements HardwareWallet {
     private static final int HEX_KEY_SIZE = 64;
 
     private static final WindowsNpmInstaller WINDOWS_NPM_INSTALLER = new WindowsNpmInstaller();
-    private static final MacNpmInstaller MAC_NPM_INSTALLER = new MacNpmInstaller();
     private static final String PREFIX = "--prefix";
 
     private final Map<Integer, AionAccountDetails> accountCache = new ConcurrentHashMap<>();
@@ -98,8 +95,7 @@ public class LedgerWallet implements HardwareWallet {
     }
 
     private void installNpmIfRequired() {
-        OSUtils.executeForOs(WINDOWS_NPM_INSTALLER, MAC_NPM_INSTALLER, p -> {
-        }, processBuilder);
+        OSUtils.executeForOs(WINDOWS_NPM_INSTALLER, p -> {}, p -> {}, processBuilder);
     }
 
     @Override
@@ -233,7 +229,7 @@ public class LedgerWallet implements HardwareWallet {
 
     private String[] getMacAccDetails(final int derivationIndex) {
         return new String[]{
-                MAC_NPM_LOCATION + NPM_COMMAND,
+                NPM_COMMAND,
                 RUN_CMD,
                 NPM_AION_HID_KEY,
                 getAccountDetailsCommandAsHex(derivationIndex)
@@ -338,16 +334,6 @@ public class LedgerWallet implements HardwareWallet {
                 }
             } else {
                 log.debug("The node_modules folder already exists");
-            }
-        }
-    }
-
-    private static class MacNpmInstaller implements Consumer<ProcessBuilder> {
-
-        @Override
-        public void accept(final ProcessBuilder processBuilder) {
-            if (!Files.exists(Paths.get(MAC_DRIVER_LOCATION))) {
-                log.error("NPM driver missing. Please reinstall");
             }
         }
     }
