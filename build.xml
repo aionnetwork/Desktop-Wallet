@@ -310,7 +310,7 @@
                         <arg value="-H"/>
                         <arg value="'Cookie: oraclelicense=accept-securebackup-cookie'"/>
                         <arg value="-k"/>
-                        <arg value="http://download.oracle.com/otn-pub/java/jdk/10.0.2+13/19aef61b38124481863b1413dce1855f/jre-10.0.2_osx-x64_bin.tar.gz"/>
+                        <arg value="https://download.oracle.com/otn-pub/java/jdk/10.0.2+13/19aef61b38124481863b1413dce1855f/jre-10.0.2_osx-x64_bin.tar.gz"/>
                     </exec>
 
                     <!--icons-->
