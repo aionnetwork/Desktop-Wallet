@@ -16,7 +16,7 @@ public class URLManager {
 
     private static final String TRANSACTION_URL = "/#/transaction/";
 
-    private static final String CENTRYS_URL = "http://www.centrys.io";
+    private static final String CENTRYS_URL = "https://www.centrys.io";
 
 
     public static void openDashboard() {
