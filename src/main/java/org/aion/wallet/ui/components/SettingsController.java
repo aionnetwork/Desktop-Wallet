@@ -16,6 +16,7 @@ import org.aion.wallet.events.HeaderPaneButtonEvent;
 import org.aion.wallet.events.SettingsEvent;
 
 import java.net.URL;
+import java.util.HashMap;
 import java.util.ResourceBundle;
 
 public class SettingsController extends AbstractController {

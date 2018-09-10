@@ -8,6 +8,7 @@ import org.aion.wallet.connector.dto.TransactionDTO;
 import org.aion.wallet.connector.dto.TransactionResponseDTO;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.dto.AccountType;
+import org.aion.wallet.dto.ConnectionKeyProvider;
 import org.aion.wallet.dto.LightAppSettings;
 import org.aion.wallet.events.EventPublisher;
 import org.aion.wallet.exception.NotFoundException;
@@ -183,5 +184,13 @@ public abstract class BlockchainConnector {
 
     protected final void storeLightweightWalletSettings(final LightAppSettings lightAppSettings) {
         walletStorage.saveLightAppSettings(lightAppSettings);
+    }
+
+    protected final ConnectionKeyProvider getConnectionKeyProvider() {
+        return walletStorage.getConnectionKeyProvider();
+    }
+
+    protected final void storeConnectionKeys(final ConnectionKeyProvider connectionKeyProvider) {
+        walletStorage.saveConnectionProperties(connectionKeyProvider);
     }
 }

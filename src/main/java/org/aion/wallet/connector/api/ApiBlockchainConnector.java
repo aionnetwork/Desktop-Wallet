@@ -15,6 +15,8 @@ import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.connector.dto.*;
 import org.aion.wallet.console.ConsoleManager;
 import org.aion.wallet.dto.AccountDTO;
+import org.aion.wallet.dto.ConnectionDetails;
+import org.aion.wallet.dto.ConnectionKeyProvider;
 import org.aion.wallet.dto.LightAppSettings;
 import org.aion.wallet.events.*;
 import org.aion.wallet.exception.NotFoundException;
@@ -49,15 +51,17 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     private LightAppSettings lightAppSettings = getLightweightWalletSettings(ApiType.JAVA);
 
+    private ConnectionKeyProvider connectionKeyProvider = getConnectionKeyProvider();
+
     private Future<?> connectionFuture;
 
-    private String connectionString;
+    private ConnectionDetails connectionDetails;
 
     private long startingBlock;
 
     public ApiBlockchainConnector() {
         backgroundExecutor = Executors.newFixedThreadPool(getCores());
-        connect(getConnectionString());
+        connect(getConnectionDetails());
         EventPublisher.fireApplicationSettingsChanged(lightAppSettings);
         registerEventBusConsumer();
     }
@@ -75,24 +79,27 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         EventBusFactory.getBus(SettingsEvent.ID).register(this);
     }
 
-    //IP : 52.231.152.219
-    //Port : 8549
-    private void connect(final String newConnectionString) {
-        connectionString = newConnectionString;
+    private void connect(final ConnectionDetails newConnectionDetails) {
+        connectionDetails = newConnectionDetails;
         if (connectionFuture != null) {
             connectionFuture.cancel(true);
         }
         connectionFuture = backgroundExecutor.submit(() -> {
-            API.connect(newConnectionString, true);
-            final Block latestBlock = getLatestBlock();
-            startingBlock = Math.max(0, latestBlock.getNumber() - 30 * BLOCK_BATCH_SIZE);
-            EventPublisher.fireConnectionEstablished();
-            processTransactionsOnReconnect();
+            final ApiMsg connect = API.connect(newConnectionDetails.toString(), true, connectionKeyProvider.getKey(newConnectionDetails));
+            if (connect.getObject()) {
+                final Block latestBlock = getLatestBlock();
+                startingBlock = Math.max(0, latestBlock.getNumber() - 30 * BLOCK_BATCH_SIZE);
+                EventPublisher.fireConnectionEstablished();
+                processTransactionsOnReconnect();
+            } else {
+                EventPublisher.fireConnectionBroken();
+            }
         });
     }
 
     private void disconnect() {
         storeLightweightWalletSettings(lightAppSettings);
+        storeConnectionKeys(connectionKeyProvider);
         lock();
         try {
             API.destroyApi().getObject();
@@ -239,8 +246,8 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     @Override
     public void close() {
-        super.close();
         disconnect();
+        super.close();
     }
 
     @Override
@@ -248,15 +255,15 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         if (!lightAppSettings.equals(settings)) {
             super.reloadSettings(settings);
             lightAppSettings = getLightweightWalletSettings(ApiType.JAVA);
-            final String newConnectionString = getConnectionString();
-            if (!newConnectionString.equalsIgnoreCase(this.connectionString)) {
+            final ConnectionDetails newConnectionDetails = getConnectionDetails();
+            if (!newConnectionDetails.equals(this.connectionDetails)) {
                 disconnect();
                 try {
                     Thread.sleep(DISCONNECT_TIMER);
                 } catch (InterruptedException e) {
                     log.error(e.getMessage(), e);
                 }
-                connect(newConnectionString);
+                connect(newConnectionDetails);
             }
             EventPublisher.fireApplicationSettingsApplied(settings);
         }
@@ -487,10 +494,10 @@ public class ApiBlockchainConnector extends BlockchainConnector {
                 transaction.getTxIndex());
     }
 
-    private String getConnectionString() {
+    private ConnectionDetails getConnectionDetails() {
         final String protocol = lightAppSettings.getProtocol();
         final String ip = lightAppSettings.getAddress();
         final String port = lightAppSettings.getPort();
-        return protocol + "://" + ip + ":" + port;
+        return new ConnectionDetails(protocol, ip, port);
     }
 }
