@@ -1,6 +1,6 @@
 #!/bin/bash -il
 
-SCRIPT_PATH=$(dirname $0)
+SCRIPT_PATH=$(pwd)/$(dirname $0)
 
 cd ${SCRIPT_PATH}
 
@@ -15,10 +15,24 @@ if [ ! -f ${JAVA_CMD} ] || [ $(${JAVA_CMD} -version 2>&1 | grep "10.0.2" | wc -l
    tar -xzf jre-10.0.2.tar.gz -C ${STORAGE_DIR}
 fi
 
-if [ ! -d ${SCRIPT_PATH}/native/mac/ledger/hid ]
+LEDGER=${SCRIPT_PATH}/native/mac/ledger
+HID=${LEDGER}/hid
+PATH=$PATH:${HID}/node-v8.11.4-darwin-x64/bin
+if [ ! -d ${HID} ]
  then
-  unzip ${SCRIPT_PATH}/native/mac/ledger/hid.zip -d ${SCRIPT_PATH}/native/mac/ledger/
+  pushd ${LEDGER}
+  pwd
+  tar -xzf hid.tar.gz
+  pushd ${HID}
+  pwd
+  npm i -g npm
+  npm install
+  pwd
+  popd
+  popd
 fi
+
+
 
 LIB_DIR=$(cd ../Java && pwd)/*
 

@@ -40,14 +40,13 @@ public class LedgerWallet implements HardwareWallet {
     private static final String RUN_CMD = "run";
     private static final String NPM_AION_HID_KEY = "get:aion-hid";
 
-    private static final String WINDOWS_DRIVER_PATH = USER_DIR + File.separator + "native\\win\\ledger\\Aion-HID\\npm" +
-            ".cmd";
-    private static final String WINDOWS_DRIVER_PATH_HID = USER_DIR + File.separator +
-            "native\\win\\ledger\\Aion-HID\\hid";
+    private static final String WINDOWS_DRIVER_PATH = USER_DIR + File.separator + "native\\win\\ledger\\Aion-HID\\npm.cmd";
+    private static final String WINDOWS_DRIVER_PATH_HID = USER_DIR + File.separator + "native\\win\\ledger\\Aion-HID\\hid";
     private static final String WINDOWS_NPM_LOCATION = USER_DIR + File.separator + "native\\win\\ledger\\Aion-HID";
     private static final String WINDOWS_PREFIX_KEY = "--prefix";
 
     private static final String MAC_DRIVER_LOCATION = USER_DIR + File.separator + "native/mac/ledger/hid";
+    private static final String MAC_NPM_LOCATION = MAC_DRIVER_LOCATION + File.separator + "node-v8.11.4-darwin-x64/bin/";
 
     private static final String LINUX_DRIVER_PATH = "native/linux/ledger/Aion-HID";
     private static final String LINUX_PARAM_KEY = "--param=";
@@ -64,7 +63,6 @@ public class LedgerWallet implements HardwareWallet {
     private static final int HEX_KEY_SIZE = 64;
 
     private static final WindowsNpmInstaller WINDOWS_NPM_INSTALLER = new WindowsNpmInstaller();
-    private static final MacNpmInstaller MAC_NPM_INSTALLER = new MacNpmInstaller();
     private static final String PREFIX = "--prefix";
 
     private final Map<Integer, AionAccountDetails> accountCache = new ConcurrentHashMap<>();
@@ -87,7 +85,7 @@ public class LedgerWallet implements HardwareWallet {
         p.directory(new File(MAC_DRIVER_LOCATION));
         final Map<String, String> environment = p.environment();
         final String oldPath = environment.get("PATH");
-        environment.put("PATH", oldPath + File.pathSeparator + "/usr/local/bin");
+        environment.put("PATH", oldPath + File.pathSeparator + MAC_NPM_LOCATION);
     }
 
     private void updateProcessBuilderForWindows(final ProcessBuilder p) {
@@ -97,7 +95,7 @@ public class LedgerWallet implements HardwareWallet {
     }
 
     private void installNpmIfRequired() {
-        OSUtils.executeForOs(WINDOWS_NPM_INSTALLER, MAC_NPM_INSTALLER, p -> {}, processBuilder);
+        OSUtils.executeForOs(WINDOWS_NPM_INSTALLER, p -> {}, p -> {}, processBuilder);
     }
 
     @Override
@@ -336,37 +334,6 @@ public class LedgerWallet implements HardwareWallet {
                 }
             } else {
                 log.debug("The node_modules folder already exists");
-            }
-        }
-    }
-
-    private static class MacNpmInstaller implements Consumer<ProcessBuilder> {
-
-        @Override
-        public void accept(final ProcessBuilder processBuilder) {
-            if (!Files.exists(Paths.get(MAC_DRIVER_LOCATION + "/node_modules"))) {
-                log.info("Driver not installed installing it now...");
-                final String[] commands = new String[]{"bash", MAC_DRIVER_LOCATION + "/setup.sh"};
-                System.out.println(processBuilder.environment());
-                //processBuilder.directory(new File(MAC_DRIVER_LOCATION));
-                try {
-                    Process process = processBuilder.command(commands).start();
-                    final BufferedReader lineReader = new BufferedReader(new InputStreamReader(process.getInputStream
-                            ()));
-                    final BufferedReader errorReader = new BufferedReader(new InputStreamReader(process
-                            .getErrorStream()));
-                    String line;
-                    while ((line = lineReader.readLine()) != null) {
-                        log.info(line);
-                    }
-                    while ((line = errorReader.readLine()) != null) {
-                        log.info(line);
-                    }
-                } catch (IOException e) {
-                    log.error(e.getMessage(), e);
-                }
-            } else {
-                log.debug("The node_module folder already exists");
             }
         }
     }
