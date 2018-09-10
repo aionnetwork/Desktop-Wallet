@@ -75,6 +75,8 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         EventBusFactory.getBus(SettingsEvent.ID).register(this);
     }
 
+    //IP : 52.231.152.219
+    //Port : 8549
     private void connect(final String newConnectionString) {
         connectionString = newConnectionString;
         if (connectionFuture != null) {

@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aion_api>
+	<secure-connect>true</secure-connect>
+
 	<log>
 		<SOL>INFO</SOL>
 		<EXE>INFO</EXE>

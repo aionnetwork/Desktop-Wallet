@@ -30,13 +30,13 @@ public class WalletStorageTest {
 
     private static final String ADDRESS = "some_address";
 
-    private static final String DEFAULT_IP = "127.0.0.1";
+    private static final String DEFAULT_ADDRESS = "aion-main.bdnodes.net";
 
     private static final String DEFAULT_PORT = "8547";
 
     private static final String DEFAULT_PROTOCOL = "tcp";
 
-    private static final Integer DEFAULT_LOCK_TIMEOUT = 3;
+    private static final Integer DEFAULT_LOCK_TIMEOUT = 1;
 
     private static final String DEFAULT_LOCK_TIMEOUT_MEASUREMENT_UNIT = "minutes";
 
@@ -88,7 +88,7 @@ public class WalletStorageTest {
     public void setLightAppSettings() {
         final LightAppSettings lightAppSettings = walletStorage.getLightAppSettings(ApiType.JAVA);
         assertEquals(ApiType.JAVA, lightAppSettings.getType());
-        assertEquals(DEFAULT_IP, lightAppSettings.getAddress());
+        assertEquals(DEFAULT_ADDRESS, lightAppSettings.getAddress());
         assertEquals(DEFAULT_PORT, lightAppSettings.getPort());
         assertEquals(DEFAULT_PROTOCOL, lightAppSettings.getProtocol());
         assertEquals(DEFAULT_LOCK_TIMEOUT, java.util.Optional.of(lightAppSettings.getLockTimeout()).get());
