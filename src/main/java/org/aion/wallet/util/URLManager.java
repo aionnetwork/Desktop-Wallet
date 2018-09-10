@@ -28,9 +28,16 @@ public class URLManager {
     }
 
     public static void openTransaction(final String transactionHash) {
-        if (transactionHash != null && !transactionHash.isEmpty()) {
+        if (checkTransactionHash(transactionHash)) {
             openURL(AionConstants.AION_URL + TRANSACTION_URL + transactionHash);
         }
+    }
+
+    private static boolean checkTransactionHash(final String transactionHash) {
+        return transactionHash != null &&
+               !transactionHash.isEmpty() &&
+               transactionHash.length() == 64 &&
+               transactionHash.matches("[0-9a-fA-F]+");
     }
 
     private static void openURL(final String url) {
