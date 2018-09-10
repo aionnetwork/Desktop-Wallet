@@ -30,6 +30,7 @@ import org.aion.wallet.util.UIUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.EnumSet;
 
 public class AccountCellItem extends ListCell<AccountDTO> {
 
@@ -161,9 +162,14 @@ public class AccountCellItem extends ListCell<AccountDTO> {
     @FXML
     public void onDisconnectedClicked(final MouseEvent mouseEvent) {
         final AccountDTO modifiedAccount = this.getItem();
-        if (!modifiedAccount.isUnlocked()) {
-            accountUnlockDialog.open(mouseEvent);
-            EventPublisher.fireAccountUnlocked(modifiedAccount);
+        if (EnumSet.of(AccountType.LOCAL, AccountType.EXTERNAL).contains(modifiedAccount.getType())) {
+            if (!modifiedAccount.isUnlocked()) {
+                accountUnlockDialog.open(mouseEvent);
+                EventPublisher.fireAccountUnlocked(modifiedAccount);
+            } else {
+                modifiedAccount.setActive(true);
+                EventPublisher.fireAccountChanged(modifiedAccount);
+            }
         } else {
             try {
                 BlockchainConnector.getInstance().unlockAccount(modifiedAccount, "");
@@ -172,7 +178,8 @@ public class AccountCellItem extends ListCell<AccountDTO> {
             } catch (ValidationException e) {
                 final HardwareWalletDisconnectedDialog warningDialog = getWarningDialog(modifiedAccount.getType());
                 warningDialog.open(mouseEvent, e);
-                ConsoleManager.addLog(e.getMessage(), ConsoleManager.LogType.ACCOUNT, ConsoleManager.LogLevel.ERROR);
+                ConsoleManager.addLog(e.getMessage(), ConsoleManager.LogType.ACCOUNT, ConsoleManager.LogLevel
+                        .ERROR);
             }
         }
     }
