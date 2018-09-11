@@ -4,21 +4,20 @@ import org.aion.api.log.LogEnum;
 import org.aion.wallet.log.WalletLoggerFactory;
 import org.slf4j.Logger;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class ConnectionKeyProvider {
 
     private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
 
-    private final Map<ConnectionDetails, String> addressToKey = new HashMap<>();
+    private final Map<ConnectionDetails, String> addressToKey = new LinkedHashMap<>();
 
     public ConnectionKeyProvider(final Properties connectionKeys) {
-        addressToKey.put(new ConnectionDetails("AION node","tcp", "52.231.152.219", "8549"),
-                "*y4vDwz$LA1b[+Yop>SkCm-H17UkaGd@3@A?*h%.");
+        final ConnectionDetails unSecuredNode = new ConnectionDetails(LightAppSettings.DEFAULT_NAME, LightAppSettings.DEFAULT_PROTOCOL, LightAppSettings.DEFAULT_IP, LightAppSettings.DEFAULT_PORT);
+        final ConnectionDetails securedNode = new ConnectionDetails("AION secured", "tcp", "52.231.152.219", "8549");
+        addressToKey.put(unSecuredNode, "");
+        addressToKey.put(securedNode, "*y4vDwz$LA1b[+Yop>SkCm-H17UkaGd@3@A?*h%.");
         for (Map.Entry<Object, Object> connectionToKey : connectionKeys.entrySet()) {
             final String connection = (String) connectionToKey.getKey();
             final String secureKey = (String) connectionToKey.getValue();

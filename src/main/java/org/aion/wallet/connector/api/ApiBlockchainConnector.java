@@ -64,7 +64,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     public ApiBlockchainConnector() {
         backgroundExecutor = Executors.newFixedThreadPool(getCores());
-        connect(getConnectionDetails());
+        connect();
         EventPublisher.fireApplicationSettingsChanged(lightAppSettings);
         registerEventBusConsumer();
     }
@@ -82,6 +82,11 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         EventBusFactory.getBus(SettingsEvent.ID).register(this);
     }
 
+    @Override
+    public void connect() {
+        connect(getConnectionDetails());
+    }
+
     public void connect(final ConnectionDetails newConnectionDetails) {
         connectionDetails = newConnectionDetails;
         if (connectionFuture != null) {
@@ -90,7 +95,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
             }
         }
         connectionFuture = backgroundExecutor.submit(() -> {
-            final String connectionKey = connectionKeyProvider.getKey(newConnectionDetails);
+            final String connectionKey = getConnectionKeyProvider().getKey(newConnectionDetails);
             isSecuredConnection = !(connectionKey == null || connectionKey.isEmpty());
             Platform.runLater(() -> EventPublisher.fireConnectAttmpted(isSecuredConnection));
             final ApiMsg connect = API.connect(newConnectionDetails.toConnectionString(), true, 1, 60_000, connectionKey);
@@ -517,5 +522,11 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         final String ip = connectionDetails.getAddress();
         final String port = connectionDetails.getPort();
         return new ConnectionDetails(connectionDetails.getName(), protocol, ip, port);
+    }
+
+    @Override
+    public void storeConnectionKeys(final ConnectionKeyProvider connectionKeyProvider) {
+        super.storeConnectionKeys(connectionKeyProvider);
+        this.connectionKeyProvider = getConnectionKeyProvider();
     }
 }

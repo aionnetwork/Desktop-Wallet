@@ -50,7 +50,7 @@
                     <TextField fx:id="timeout" prefColumnCount="20"/>
                     <ComboBox fx:id="timeoutMeasurementUnit" />
                 </HBox>
-                <HBox alignment="BOTTOM_RIGHT" spacing="10" prefHeight="225">
+                <HBox alignment="BOTTOM_RIGHT" spacing="10" prefHeight="200">
                     <Button text="Logs" onMouseClicked="#openConsole"/>
                     <Button text="Apply" onMouseClicked="#changeSettings" styleClass="disabled"/>
                 </HBox>

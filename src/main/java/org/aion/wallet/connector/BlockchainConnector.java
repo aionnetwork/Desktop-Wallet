@@ -115,8 +115,7 @@ public abstract class BlockchainConnector {
         return accountManager.getAccounts();
     }
 
-    public void connect() {
-    }
+    public void connect() {}
 
     public void close() {
         walletStorage.save();
@@ -205,7 +204,7 @@ public abstract class BlockchainConnector {
         return walletStorage.getConnectionKeyProvider();
     }
 
-    protected final void storeConnectionKeys(final ConnectionKeyProvider connectionKeyProvider) {
+    public void storeConnectionKeys(final ConnectionKeyProvider connectionKeyProvider) {
         walletStorage.saveConnectionProperties(connectionKeyProvider);
     }
 }

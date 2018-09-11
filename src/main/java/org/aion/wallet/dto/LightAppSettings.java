@@ -16,12 +16,12 @@ public class LightAppSettings {
     private static final String PROTOCOL = ".protocol";
     private static final String ACCOUNTS = "accounts";
 
-    private static final String DEFAULT_IP = "aion-main.bdnodes.net";
-    private static final String DEFAULT_PORT = "8547";
-    private static final String DEFAULT_PROTOCOL = "tcp";
+    public static final String DEFAULT_NAME = "AION unsecured";
+    public static final String DEFAULT_IP = "aion-main.bdnodes.net";
+    public static final String DEFAULT_PORT = "8547";
+    public static final String DEFAULT_PROTOCOL = "tcp";
     private static final String LOCK_TIMEOUT = ".lock_timeout";
     private static final String LOCK_TIMEOUT_MEASUREMENT_UNIT = ".lock_timeout_measurement_unit";
-    private static final String DEFAULT_NAME = "Unnamed connection";
 
     private final ApiType type;
     private final String lockTimeoutMeasurementUnit;

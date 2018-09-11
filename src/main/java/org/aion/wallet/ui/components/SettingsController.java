@@ -66,9 +66,7 @@ public class SettingsController extends AbstractController {
     public void changeSettings() {
         final LightAppSettings newSettings;
         ConnectionDetails selectedConnection = connectionDetailsComboBox.getSelectionModel().getSelectedItem();
-        if (selectedConnection != null &&
-                selectedConnection.getAddress() != null && !selectedConnection.getAddress().isEmpty() &&
-                selectedConnection.getPort() != null && !selectedConnection.getPort().isEmpty()) {
+        if (isValidConnection(selectedConnection)) {
             newSettings = new LightAppSettings(
                     connectionName.getText().trim(),
                     selectedConnection.getAddress().trim(),
@@ -81,8 +79,15 @@ public class SettingsController extends AbstractController {
             );
             Platform.runLater(() -> EventPublisher.fireApplicationSettingsChanged(newSettings));
             displayNotification("", false);
+        } else {
+            displayNotification("The selected connection is invalid!", true);
         }
-        displayNotification("The selected connection is invalid!", true);
+    }
+
+    private boolean isValidConnection(final ConnectionDetails selectedConnection) {
+        return selectedConnection != null &&
+                selectedConnection.getAddress() != null && !selectedConnection.getAddress().isEmpty() &&
+                selectedConnection.getPort() != null && !selectedConnection.getPort().isEmpty();
     }
 
     public void openConsole() {
@@ -168,7 +173,7 @@ public class SettingsController extends AbstractController {
     @Override
     protected void refreshView(final RefreshEvent event) {
         if (EnumSet.of(RefreshEvent.Type.CONNECTED, RefreshEvent.Type.DISCONNECTED).contains(event.getType())) {
-            reloadView();
+            displayNotification("", false);
         }
     }
 
@@ -212,7 +217,7 @@ public class SettingsController extends AbstractController {
         return connectionDetails;
     }
 
-    public void editConnection(final MouseEvent mouseEvent) {
+    public void editConnection() {
         connectionName.setDisable(false);
         connectionURL.setDisable(false);
         connectionPort.setDisable(false);
@@ -221,7 +226,7 @@ public class SettingsController extends AbstractController {
         saveConnectionButton.setDisable(false);
     }
 
-    public void saveConnection(final MouseEvent mouseEvent) {
+    public void saveConnection() {
         final String connectionNameText = connectionName.getText();
         final String connectionURLText = connectionURL.getText();
         final String connectionPortText = connectionPort.getText();
@@ -230,12 +235,12 @@ public class SettingsController extends AbstractController {
         if (connectionNameText != null && !connectionNameText.isEmpty() &&
                 connectionURLText != null && !connectionURLText.isEmpty() &&
                 connectionPortText != null && !connectionPortText.isEmpty() &&
-                connectionPortText.matches("[-+]?\\d*\\.?\\d+") &&
-                connectionKeyText != null && !connectionKeyText.isEmpty()) {
+                connectionPortText.matches("[-+]?\\d*\\.?\\d+")) {
 
             ConnectionDetails connectionDetails = new ConnectionDetails(connectionNameText, DEFAULT_PROTOCOL,
                     connectionURLText, connectionPortText);
             connectionKeyProvider.getAddressToKey().put(connectionDetails, connectionKeyText);
+            blockchainConnector.storeConnectionKeys(connectionKeyProvider);
             connectionName.setDisable(true);
             connectionURL.setDisable(true);
             connectionPort.setDisable(true);
@@ -245,7 +250,6 @@ public class SettingsController extends AbstractController {
             reloadView();
         } else {
             displayNotification("The connection details are invalid!", true);
-            return;
         }
     }
 }
