@@ -9,13 +9,34 @@
     <VBox AnchorPane.leftAnchor="10" AnchorPane.rightAnchor="10" AnchorPane.topAnchor="25"
           alignment="TOP_CENTER" spacing="10">
         <Label text="Settings" styleClass="tile-label" alignment="CENTER"/>
-        <HBox spacing="10" alignment="CENTER">
-            <VBox>
-                <Label text="Address" styleClass="paragraph-text" alignment="CENTER"/>
-                <TextField fx:id="address" prefColumnCount="30"/>
-                <Label/>
-                <Label text="Port" styleClass="paragraph-text" alignment="CENTER"/>
-                <TextField fx:id="port" prefColumnCount="30"/>
+        <HBox spacing="20" alignment="CENTER">
+            <VBox spacing="10" prefWidth="400">
+                <HBox>
+                    <VBox>
+                        <Label text="Connection" styleClass="paragraph-text" alignment="CENTER"/>
+                        <ComboBox fx:id="connectionDetailsComboBox" prefWidth="400"/>
+                    </VBox>
+                </HBox>
+                <HBox>
+                    <VBox>
+                        <Label text="Connection name" />
+                        <TextField fx:id="connectionName" prefWidth="400" disable="true"/>
+                    </VBox>
+                </HBox>
+                <HBox spacing="10">
+                    <VBox prefWidth="300">
+                        <Label text="URL" />
+                        <TextField fx:id="connectionURL" disable="true"/>
+                    </VBox>
+                    <VBox prefWidth="100">
+                        <Label text="Port" />
+                        <TextField fx:id="connectionPort" disable="true"/>
+                    </VBox>
+                </HBox>
+                <HBox spacing="10" prefWidth="400" alignment="CENTER_RIGHT">
+                    <Button fx:id="editConnectionButton" text="Edit" onMouseClicked="#editConnection"/>
+                    <Button fx:id="saveConnectionButton" text="Save" onMouseClicked="#saveConnection" disable="true"/>
+                </HBox>
             </VBox>
             <VBox>
                 <Label text="Account lock timeout" styleClass="paragraph-text" alignment="CENTER"/>

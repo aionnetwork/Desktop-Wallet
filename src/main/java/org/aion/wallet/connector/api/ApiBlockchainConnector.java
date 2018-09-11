@@ -93,7 +93,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
             final String connectionKey = connectionKeyProvider.getKey(newConnectionDetails);
             isSecuredConnection = !(connectionKey == null || connectionKey.isEmpty());
             Platform.runLater(() -> EventPublisher.fireConnectAttmpted(isSecuredConnection));
-            final ApiMsg connect = API.connect(newConnectionDetails.toString(), true, 1, 60_000, connectionKey);
+            final ApiMsg connect = API.connect(newConnectionDetails.toConnectionString(), true, 1, 60_000, connectionKey);
             if (connect.getObject()) {
                 Platform.runLater(() -> EventPublisher.fireConnectionEstablished(isSecuredConnection));
                 final Block latestBlock = getLatestBlock();
@@ -512,9 +512,10 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     }
 
     private ConnectionDetails getConnectionDetails() {
-        final String protocol = lightAppSettings.getProtocol();
-        final String ip = lightAppSettings.getAddress();
-        final String port = lightAppSettings.getPort();
-        return new ConnectionDetails(protocol, ip, port);
+        final ConnectionDetails connectionDetails = lightAppSettings.getConnectionDetails();
+        final String protocol = connectionDetails.getProtocol();
+        final String ip = connectionDetails.getAddress();
+        final String port = connectionDetails.getPort();
+        return new ConnectionDetails(connectionDetails.getName(), protocol, ip, port);
     }
 }

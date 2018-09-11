@@ -17,7 +17,8 @@ public class ConnectionKeyProvider {
     private final Map<ConnectionDetails, String> addressToKey = new HashMap<>();
 
     public ConnectionKeyProvider(final Properties connectionKeys) {
-        addressToKey.put(new ConnectionDetails("tcp", "52.231.152.219", "8549"), "*y4vDwz$LA1b[+Yop>SkCm-H17UkaGd@3@A?*h%.");
+        addressToKey.put(new ConnectionDetails("AION node","tcp", "52.231.152.219", "8549"),
+                "*y4vDwz$LA1b[+Yop>SkCm-H17UkaGd@3@A?*h%.");
         for (Map.Entry<Object, Object> connectionToKey : connectionKeys.entrySet()) {
             final String connection = (String) connectionToKey.getKey();
             final String secureKey = (String) connectionToKey.getValue();
@@ -32,6 +33,11 @@ public class ConnectionKeyProvider {
 
     public final String getKey(final ConnectionDetails connection) {
         return addressToKey.get(connection);
+    }
+
+
+    public Map<ConnectionDetails, String> getAddressToKey() {
+        return addressToKey;
     }
 
     public final Map<String, String> getConnectionProperties() {
@@ -53,7 +59,6 @@ public class ConnectionKeyProvider {
 
     @Override
     public int hashCode() {
-
         return Objects.hash(addressToKey);
     }
 }

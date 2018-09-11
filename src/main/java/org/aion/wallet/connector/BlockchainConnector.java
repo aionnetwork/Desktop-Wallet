@@ -49,7 +49,8 @@ public abstract class BlockchainConnector {
         if (ConfigUtils.isEmbedded()) {
             try {
                 INST = (BlockchainConnector) Class.forName(CORE_CONNECTOR_CLASS).getDeclaredConstructor().newInstance();
-            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | NoSuchMethodException | InvocationTargetException e) {
+            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | NoSuchMethodException
+                    | InvocationTargetException e) {
                 throw new RuntimeException("Could not instantiate class: " + CORE_CONNECTOR_CLASS, e);
             }
         } else {
@@ -82,19 +83,23 @@ public abstract class BlockchainConnector {
         accountManager.createAccount();
     }
 
-    public final AccountDTO importKeystoreFile(final byte[] file, final String password, final boolean shouldKeep) throws ValidationException {
+    public final AccountDTO importKeystoreFile(final byte[] file, final String password, final boolean shouldKeep)
+            throws ValidationException {
         return accountManager.importKeystore(file, password, shouldKeep);
     }
 
-    public final AccountDTO importPrivateKey(final byte[] privateKey, final String password, final boolean shouldKeep) throws ValidationException {
+    public final AccountDTO importPrivateKey(final byte[] privateKey, final String password, final boolean
+            shouldKeep) throws ValidationException {
         return accountManager.importPrivateKey(privateKey, password, shouldKeep);
     }
 
-    public final AccountDTO importHardwareWallet(final int derivationIndex, final String address, final AccountType accountType) throws ValidationException {
+    public final AccountDTO importHardwareWallet(final int derivationIndex, final String address, final AccountType
+            accountType) throws ValidationException {
         return accountManager.importHardwareWallet(accountType, derivationIndex, address);
     }
 
-    public final void exportAccount(final AccountDTO account, final String password, final String destinationDir) throws ValidationException {
+    public final void exportAccount(final AccountDTO account, final String password, final String destinationDir)
+            throws ValidationException {
         accountManager.exportAccount(account, password, destinationDir);
     }
 
@@ -110,7 +115,8 @@ public abstract class BlockchainConnector {
         return accountManager.getAccounts();
     }
 
-    public void connect() {}
+    public void connect() {
+    }
 
     public void close() {
         walletStorage.save();
@@ -127,7 +133,7 @@ public abstract class BlockchainConnector {
     }
 
     public void unlockConnection() {
-        if (connectionLocked){
+        if (connectionLocked) {
             connectionLocked = false;
             if (isConnected()) {
                 EventPublisher.fireConnectionEstablished(isSecuredConnection());
@@ -165,15 +171,15 @@ public abstract class BlockchainConnector {
         return sendTransactionInternal(dto);
     }
 
-    protected AionTransactionSigner getTransactionSigner(final AccountDTO from) {
-        return new AionTransactionSigner(from);
-    }
-
     protected abstract TransactionResponseDTO sendTransactionInternal(final SendTransactionDTO dto) throws ValidationException;
 
     protected abstract String getCurrency();
 
     protected abstract boolean isSecuredConnection();
+
+    protected AionTransactionSigner getTransactionSigner(final AccountDTO from) {
+        return new AionTransactionSigner(from);
+    }
 
     protected final boolean isConnectionUnLocked() {
         return !connectionLocked;
@@ -195,7 +201,7 @@ public abstract class BlockchainConnector {
         walletStorage.saveLightAppSettings(lightAppSettings);
     }
 
-    protected final ConnectionKeyProvider getConnectionKeyProvider() {
+    public final ConnectionKeyProvider getConnectionKeyProvider() {
         return walletStorage.getConnectionKeyProvider();
     }
 

@@ -202,6 +202,7 @@ public class WalletStorage {
     }
 
     public final void saveConnectionProperties(@Nonnull final ConnectionKeyProvider connectionKeyProvider) {
+        connectionProperties.clear();
         connectionProperties.putAll(connectionKeyProvider.getConnectionProperties());
         saveSettings();
     }

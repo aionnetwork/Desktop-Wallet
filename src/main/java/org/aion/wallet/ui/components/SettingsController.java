@@ -5,11 +5,15 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.input.MouseEvent;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.console.ConsoleManager;
+import org.aion.wallet.dto.ConnectionDetails;
+import org.aion.wallet.dto.ConnectionKeyProvider;
 import org.aion.wallet.dto.LightAppSettings;
 import org.aion.wallet.events.*;
 
@@ -22,18 +26,28 @@ public class SettingsController extends AbstractController {
     private static final String DEFAULT_PROTOCOL = "tcp";
 
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
-    @FXML
-    public TextField address;
-    @FXML
-    public TextField port;
+
     @FXML
     public Label notification;
     @FXML
     private TextField timeout;
     @FXML
+    private ComboBox<ConnectionDetails> connectionDetailsComboBox;
+    @FXML
+    private TextField connectionName;
+    @FXML
+    private TextField connectionURL;
+    @FXML
+    private TextField connectionPort;
+    @FXML
+    private Button editConnectionButton;
+    @FXML
+    private Button saveConnectionButton;
+    @FXML
     private ComboBox<String> timeoutMeasurementUnit;
 
     private LightAppSettings settings;
+    private ConnectionKeyProvider connectionKeyProvider;
 
     @Override
     protected void internalInit(final URL location, final ResourceBundle resources) {
@@ -49,9 +63,11 @@ public class SettingsController extends AbstractController {
 
     public void changeSettings() {
         final LightAppSettings newSettings;
+        ConnectionDetails selectedConnection = connectionDetailsComboBox.getSelectionModel().getSelectedItem();
         newSettings = new LightAppSettings(
-                address.getText().trim(),
-                port.getText().trim(),
+                connectionName.getText().trim(),
+                selectedConnection.getAddress().trim(),
+                selectedConnection.getPort().trim(),
                 DEFAULT_PROTOCOL,
                 settings.getType(),
                 Integer.parseInt(timeout.getText()),
@@ -99,9 +115,38 @@ public class SettingsController extends AbstractController {
 
     private void reloadView() {
         settings = blockchainConnector.getSettings();
-        address.setText(settings.getAddress());
-        port.setText(settings.getPort());
+        connectionKeyProvider = blockchainConnector.getConnectionKeyProvider();
         timeout.setText(String.valueOf(settings.getLockTimeout()));
+        connectionDetailsComboBox.setItems(getConnectionDetails());
+        connectionDetailsComboBox.getSelectionModel().select(0);
+        connectionName.setText(connectionDetailsComboBox.getSelectionModel().getSelectedItem().getName());
+        connectionURL.setText(connectionDetailsComboBox.getSelectionModel().getSelectedItem().getAddress());
+        connectionPort.setText(connectionDetailsComboBox.getSelectionModel().getSelectedItem().getPort());
+        connectionDetailsComboBox.valueProperty().addListener((observableValue, oldValue, newValue) -> {
+            if(oldValue != null && newValue != null && !oldValue.equals(newValue)) {
+                if (newValue.getName().equals("Add connection")) {
+                    connectionName.setText("");
+                    connectionName.setDisable(false);
+                    connectionURL.setText("");
+                    connectionURL.setDisable(false);
+                    connectionPort.setText("");
+                    connectionPort.setDisable(false);
+                    editConnectionButton.setVisible(false);
+                    saveConnectionButton.setDisable(false);
+                }
+                else {
+                    connectionName.setText(newValue.getName());
+                    connectionName.setDisable(true);
+                    connectionURL.setText(newValue.getAddress());
+                    connectionURL.setDisable(true);
+                    connectionPort.setText(newValue.getPort());
+                    connectionPort.setDisable(true);
+                    editConnectionButton.setVisible(true);
+                    editConnectionButton.setDisable(false);
+                    saveConnectionButton.setDisable(true);
+                }
+            }
+        });
         timeoutMeasurementUnit.setItems(getTimeoutMeasurementUnits());
         setInitialMeasurementUnit(settings.getLockTimeoutMeasurementUnit());
         displayNotification("", false);
@@ -145,5 +190,24 @@ public class SettingsController extends AbstractController {
             notification.getStyleClass().removeAll(ERROR_STYLE);
         }
         notification.setText(message);
+    }
+
+    private ObservableList<ConnectionDetails> getConnectionDetails() {
+        ObservableList<ConnectionDetails> connectionDetails = FXCollections.observableArrayList();
+        connectionDetails.addAll(connectionKeyProvider.getAddressToKey().keySet());
+        connectionDetails.add(new ConnectionDetails("Add connection", null, null, null));
+        return connectionDetails;
+    }
+
+    public void editConnection(final MouseEvent mouseEvent) {
+        connectionName.setDisable(false);
+        connectionURL.setDisable(false);
+        connectionPort.setDisable(false);
+        editConnectionButton.setDisable(true);
+        saveConnectionButton.setDisable(false);
+    }
+
+    public void saveConnection(final MouseEvent mouseEvent) {
+//        connectionKeyProvider.getAddressToKey().put(new ConnectionDetails());
     }
 }
