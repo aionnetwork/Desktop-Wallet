@@ -109,39 +109,7 @@ public abstract class BlockchainConnector {
         return accountManager.getAccounts();
     }
 
-    public abstract BigInteger getBalance(final String address);
-
-    public final TransactionResponseDTO sendTransaction(final SendTransactionDTO dto) throws ValidationException {
-        if (dto == null || !dto.validate()) {
-            throw new ValidationException("Invalid transaction request data");
-        }
-        if (dto.estimateValue().compareTo(getBalance(dto.getFrom().getPublicAddress())) >= 0) {
-            throw new ValidationException("Insufficient funds");
-        }
-        return sendTransactionInternal(dto);
-    }
-
-    protected AionTransactionSigner getTransactionSigner(final AccountDTO from) {
-        return new AionTransactionSigner(from);
-    }
-
-    public abstract TransactionDTO getTransaction(final String txHash) throws NotFoundException;
-
-    public abstract Set<TransactionDTO> getLatestTransactions(final String address);
-
-    public abstract boolean getConnectionStatus();
-
-    public abstract SyncInfoDTO getSyncInfo();
-
-    public abstract int getPeerCount();
-
-    public abstract LightAppSettings getSettings();
-
-    protected abstract TransactionResponseDTO sendTransactionInternal(final SendTransactionDTO dto) throws ValidationException;
-
-    protected abstract String getCurrency();
-
-    protected abstract boolean isSecuredConnection();
+    public void connect() {}
 
     public void close() {
         walletStorage.save();
@@ -160,16 +128,54 @@ public abstract class BlockchainConnector {
     public void unlockConnection() {
         if (connectionLocked){
             connectionLocked = false;
-            EventPublisher.fireConnectionEstablished(isSecuredConnection());
+            if (isConnected()) {
+                EventPublisher.fireConnectionEstablished(isSecuredConnection());
+            } else {
+                connect();
+            }
         }
-    }
-
-    protected final boolean isConnectionUnLocked() {
-        return !connectionLocked;
     }
 
     public final AccountManager getAccountManager() {
         return accountManager;
+    }
+
+    public abstract BigInteger getBalance(final String address);
+
+    public abstract TransactionDTO getTransaction(final String txHash) throws NotFoundException;
+
+    public abstract Set<TransactionDTO> getLatestTransactions(final String address);
+
+    public abstract boolean isConnected();
+
+    public abstract SyncInfoDTO getSyncInfo();
+
+    public abstract int getPeerCount();
+
+    public abstract LightAppSettings getSettings();
+
+    public final TransactionResponseDTO sendTransaction(final SendTransactionDTO dto) throws ValidationException {
+        if (dto == null || !dto.validate()) {
+            throw new ValidationException("Invalid transaction request data");
+        }
+        if (dto.estimateValue().compareTo(getBalance(dto.getFrom().getPublicAddress())) >= 0) {
+            throw new ValidationException("Insufficient funds");
+        }
+        return sendTransactionInternal(dto);
+    }
+
+    protected AionTransactionSigner getTransactionSigner(final AccountDTO from) {
+        return new AionTransactionSigner(from);
+    }
+
+    protected abstract TransactionResponseDTO sendTransactionInternal(final SendTransactionDTO dto) throws ValidationException;
+
+    protected abstract String getCurrency();
+
+    protected abstract boolean isSecuredConnection();
+
+    protected final boolean isConnectionUnLocked() {
+        return !connectionLocked;
     }
 
     protected final void lock() {

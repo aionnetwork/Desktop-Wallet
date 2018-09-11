@@ -82,13 +82,14 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         EventBusFactory.getBus(SettingsEvent.ID).register(this);
     }
 
-    private void connect(final ConnectionDetails newConnectionDetails) {
+    public void connect(final ConnectionDetails newConnectionDetails) {
         connectionDetails = newConnectionDetails;
         if (connectionFuture != null) {
-            Platform.runLater(EventPublisher::fireDisconnectAttempted);
-            connectionFuture.cancel(true);
-            API.destroyApi();
-            Platform.runLater(EventPublisher::fireConnectionBroken);
+            backgroundExecutor.submit(() -> Platform.runLater(EventPublisher::fireDisconnectAttempted));
+            if (!connectionFuture.isDone()) {
+                connectionFuture.cancel(true);
+            }
+            backgroundExecutor.submit(() -> Platform.runLater(EventPublisher::fireConnectionBroken));
         }
         connectionFuture = backgroundExecutor.submit(() -> {
             final String connectionKey = connectionKeyProvider.getKey(newConnectionDetails);
@@ -96,7 +97,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
                 isSecuredConnection = true;
             }
             Platform.runLater(() -> EventPublisher.fireConnectAttmpted(isSecuredConnection));
-            final ApiMsg connect = API.connect(newConnectionDetails.toString(), true, connectionKey);
+            final ApiMsg connect = API.connect(newConnectionDetails.toString(), true, 1, 60_000, connectionKey);
             if (connect.getObject()) {
                 Platform.runLater(() -> EventPublisher.fireConnectionEstablished(isSecuredConnection));
                 final Block latestBlock = getLatestBlock();
@@ -194,7 +195,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     }
 
     @Override
-    public boolean getConnectionStatus() {
+    public boolean isConnected() {
         boolean connected = false;
         lock();
         try {
@@ -272,8 +273,10 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     public void reloadSettings(final LightAppSettings settings) {
         if (!lightAppSettings.equals(settings)) {
             super.reloadSettings(settings);
-            lightAppSettings = getLightweightWalletSettings(ApiType.JAVA);
-            final ConnectionDetails newConnectionDetails = getConnectionDetails();
+        }
+        lightAppSettings = getLightweightWalletSettings(ApiType.JAVA);
+        final ConnectionDetails newConnectionDetails = getConnectionDetails();
+        if (isConnected()) {
             if (!newConnectionDetails.equals(this.connectionDetails)) {
                 disconnect();
                 try {
@@ -281,10 +284,10 @@ public class ApiBlockchainConnector extends BlockchainConnector {
                 } catch (InterruptedException e) {
                     log.error(e.getMessage(), e);
                 }
-                connect(newConnectionDetails);
             }
-            EventPublisher.fireApplicationSettingsApplied(settings);
         }
+        connect(newConnectionDetails);
+        EventPublisher.fireApplicationSettingsApplied(settings);
     }
 
     @Override

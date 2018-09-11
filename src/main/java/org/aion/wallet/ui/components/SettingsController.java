@@ -10,13 +10,10 @@ import javafx.scene.control.TextField;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.console.ConsoleManager;
 import org.aion.wallet.dto.LightAppSettings;
-import org.aion.wallet.events.EventBusFactory;
-import org.aion.wallet.events.EventPublisher;
-import org.aion.wallet.events.HeaderPaneButtonEvent;
-import org.aion.wallet.events.SettingsEvent;
+import org.aion.wallet.events.*;
 
 import java.net.URL;
-import java.util.HashMap;
+import java.util.EnumSet;
 import java.util.ResourceBundle;
 
 public class SettingsController extends AbstractController {
@@ -44,6 +41,7 @@ public class SettingsController extends AbstractController {
 
     @Override
     protected void registerEventBusConsumer() {
+        super.registerEventBusConsumer();
         EventBusFactory.getBus(HeaderPaneButtonEvent.ID).register(this);
         EventBusFactory.getBus(SettingsEvent.ID).register(this);
     }
@@ -106,6 +104,13 @@ public class SettingsController extends AbstractController {
         timeoutMeasurementUnit.setItems(getTimeoutMeasurementUnits());
         setInitialMeasurementUnit(settings.getLockTimeoutMeasurementUnit());
         displayNotification("", false);
+    }
+
+    @Override
+    protected void refreshView(final RefreshEvent event) {
+        if (EnumSet.of(RefreshEvent.Type.CONNECTED, RefreshEvent.Type.DISCONNECTED).contains(event.getType())) {
+            reloadView();
+        }
     }
 
     private void setInitialMeasurementUnit(String unlockTimeoutMeasurementUnit) {

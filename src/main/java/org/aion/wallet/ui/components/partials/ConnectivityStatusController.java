@@ -24,7 +24,7 @@ public class ConnectivityStatusController extends AbstractController {
     @Override
     protected final void refreshView(final RefreshEvent event) {
         if (RefreshEvent.Type.TIMER.equals(event.getType())) {
-            final Task<Boolean> getConnectedStatusTask = getApiTask(o -> blockchainConnector.getConnectionStatus(), null);
+            final Task<Boolean> getConnectedStatusTask = getApiTask(o -> blockchainConnector.isConnected(), null);
             runApiTask(
                     getConnectedStatusTask,
                     evt -> updateConnectionStatus(getConnectedStatusTask.getValue()),
