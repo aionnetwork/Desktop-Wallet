@@ -1,6 +1,7 @@
 package org.aion.wallet.ui.components;
 
 import com.google.common.eventbus.Subscribe;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -42,8 +43,8 @@ public class SettingsController extends AbstractController {
     @Override
     protected void registerEventBusConsumer() {
         super.registerEventBusConsumer();
-        EventBusFactory.getBus(HeaderPaneButtonEvent.ID).register(this);
         EventBusFactory.getBus(SettingsEvent.ID).register(this);
+        EventBusFactory.getBus(HeaderPaneButtonEvent.ID).register(this);
     }
 
     public void changeSettings() {
@@ -57,8 +58,8 @@ public class SettingsController extends AbstractController {
                 getSelectedTimeoutMeasurementUnit()
 
         );
+        Platform.runLater(() -> EventPublisher.fireApplicationSettingsChanged(newSettings));
         displayNotification("", false);
-        EventPublisher.fireApplicationSettingsChanged(newSettings);
     }
 
     public void openConsole() {
@@ -91,7 +92,7 @@ public class SettingsController extends AbstractController {
     @Subscribe
     private void handleSettingsChanged(final SettingsEvent event) {
         if (SettingsEvent.Type.APPLIED.equals(event.getType())) {
-            displayNotification("Changes applied", false);
+            Platform.runLater(() -> displayNotification("Changes applied", false));
             ConsoleManager.addLog("Settings updated", ConsoleManager.LogType.SETTINGS);
         }
     }

@@ -85,17 +85,13 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     public void connect(final ConnectionDetails newConnectionDetails) {
         connectionDetails = newConnectionDetails;
         if (connectionFuture != null) {
-            backgroundExecutor.submit(() -> Platform.runLater(EventPublisher::fireDisconnectAttempted));
             if (!connectionFuture.isDone()) {
                 connectionFuture.cancel(true);
             }
-            backgroundExecutor.submit(() -> Platform.runLater(EventPublisher::fireConnectionBroken));
         }
         connectionFuture = backgroundExecutor.submit(() -> {
             final String connectionKey = connectionKeyProvider.getKey(newConnectionDetails);
-            if (!(connectionKey == null || connectionKey.isEmpty())) {
-                isSecuredConnection = true;
-            }
+            isSecuredConnection = !(connectionKey == null || connectionKey.isEmpty());
             Platform.runLater(() -> EventPublisher.fireConnectAttmpted(isSecuredConnection));
             final ApiMsg connect = API.connect(newConnectionDetails.toString(), true, 1, 60_000, connectionKey);
             if (connect.getObject()) {
@@ -114,9 +110,8 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         storeConnectionKeys(connectionKeyProvider);
         lock();
         try {
-            backgroundExecutor.submit(() -> Platform.runLater(EventPublisher::fireDisconnectAttempted));
             API.destroyApi().getObject();
-            backgroundExecutor.submit(() -> Platform.runLater(EventPublisher::fireConnectionBroken));
+            Platform.runLater(EventPublisher::fireConnectionBroken);
         } finally {
             unLock();
         }
@@ -278,6 +273,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         final ConnectionDetails newConnectionDetails = getConnectionDetails();
         if (isConnected()) {
             if (!newConnectionDetails.equals(this.connectionDetails)) {
+                Platform.runLater(EventPublisher::fireDisconnectAttempted);
                 disconnect();
                 try {
                     Thread.sleep(DISCONNECT_TIMER);
@@ -323,7 +319,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         if (SettingsEvent.Type.CHANGED.equals(event.getType())) {
             final LightAppSettings settings = event.getSettings();
             if (settings != null) {
-                reloadSettings(settings);
+                backgroundExecutor.submit(() -> reloadSettings(settings));
             }
         }
     }

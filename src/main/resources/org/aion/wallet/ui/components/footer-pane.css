@@ -11,9 +11,30 @@
     -fx-background-radius: 20 20 20 20;
     -fx-padding: 5 15 5 15;
     -fx-text-fill: #5AF0BD;
-    -fx-font-family: 'Open Sans Regular';
+    -fx-font-family: 'Open Sans Bold';
     -fx-font-size: 14px;
     -fx-text-alignment: CENTER;
+}
+
+.connected-insecure {
+    -fx-background-radius: 20 20 20 20;
+    -fx-padding: 5 15 5 15;
+    -fx-text-fill: #4221CC;
+    -fx-font-family: 'Open Sans Bold';
+    -fx-font-size: 14px;
+    -fx-text-alignment: CENTER;
+    -fx-background-color: #cccc00;
+}
+
+
+.not-connected {
+    -fx-background-radius: 20 20 20 20;
+    -fx-padding: 5 15 5 15;
+    -fx-text-fill: #FFFFFF;
+    -fx-font-family: 'Open Sans Bold';
+    -fx-font-size: 14px;
+    -fx-text-alignment: CENTER;
+    -fx-background-color: #b32d00;
 }
 
 .footer-pane-text {
