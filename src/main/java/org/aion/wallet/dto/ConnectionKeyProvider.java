@@ -43,7 +43,7 @@ public class ConnectionKeyProvider {
     public final Map<String, String> getConnectionProperties() {
         return addressToKey.entrySet().stream().collect(
                 Collectors.toMap(
-                        e -> e.getKey().toString(),
+                        e -> e.getKey().serialized(),
                         Map.Entry::getValue
                 )
         );
