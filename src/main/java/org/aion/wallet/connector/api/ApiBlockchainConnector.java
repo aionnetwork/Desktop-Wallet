@@ -1,6 +1,7 @@
 package org.aion.wallet.connector.api;
 
 import com.google.common.eventbus.Subscribe;
+import javafx.application.Platform;
 import org.aion.api.IAionAPI;
 import org.aion.api.impl.AionAPIImpl;
 import org.aion.api.impl.internal.Message;
@@ -84,21 +85,25 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     private void connect(final ConnectionDetails newConnectionDetails) {
         connectionDetails = newConnectionDetails;
         if (connectionFuture != null) {
+            Platform.runLater(EventPublisher::fireDisconnectAttempted);
             connectionFuture.cancel(true);
+            API.destroyApi();
+            Platform.runLater(EventPublisher::fireConnectionBroken);
         }
         connectionFuture = backgroundExecutor.submit(() -> {
             final String connectionKey = connectionKeyProvider.getKey(newConnectionDetails);
             if (!(connectionKey == null || connectionKey.isEmpty())) {
                 isSecuredConnection = true;
             }
+            Platform.runLater(() -> EventPublisher.fireConnectAttmpted(isSecuredConnection));
             final ApiMsg connect = API.connect(newConnectionDetails.toString(), true, connectionKey);
             if (connect.getObject()) {
-                EventPublisher.fireConnectionEstablished(isSecuredConnection);
+                Platform.runLater(() -> EventPublisher.fireConnectionEstablished(isSecuredConnection));
                 final Block latestBlock = getLatestBlock();
                 startingBlock = Math.max(0, latestBlock.getNumber() - 30 * BLOCK_BATCH_SIZE);
                 processTransactionsOnReconnect();
             } else {
-                EventPublisher.fireConnectionBroken();
+                Platform.runLater(EventPublisher::fireConnectionBroken);
             }
         });
     }
@@ -108,8 +113,9 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         storeConnectionKeys(connectionKeyProvider);
         lock();
         try {
+            backgroundExecutor.submit(() -> Platform.runLater(EventPublisher::fireDisconnectAttempted));
             API.destroyApi().getObject();
-            EventPublisher.fireConnectionBroken();
+            backgroundExecutor.submit(() -> Platform.runLater(EventPublisher::fireConnectionBroken));
         } finally {
             unLock();
         }
@@ -258,6 +264,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     @Override
     public void close() {
         disconnect();
+        backgroundExecutor.shutdown();
         super.close();
     }
 

@@ -62,12 +62,20 @@ public class EventPublisher {
         EventBusFactory.getBus(RefreshEvent.ID).post(new RefreshEvent(RefreshEvent.Type.TRANSACTION_FINISHED, null));
     }
 
+    public static void fireConnectAttmpted(final boolean isSecuredConnection) {
+        EventBusFactory.getBus(RefreshEvent.ID).post(new RefreshEvent(RefreshEvent.Type.CONNECTING, isSecuredConnection));
+    }
+
     public static void fireConnectionEstablished(final boolean isSecuredConnection) {
         EventBusFactory.getBus(RefreshEvent.ID).post(new RefreshEvent(RefreshEvent.Type.CONNECTED, isSecuredConnection));
     }
 
     public static void fireConnectionBroken() {
         EventBusFactory.getBus(RefreshEvent.ID).post(new RefreshEvent(RefreshEvent.Type.DISCONNECTED, null));
+    }
+
+    public static void fireDisconnectAttempted() {
+        EventBusFactory.getBus(RefreshEvent.ID).post(new RefreshEvent(RefreshEvent.Type.DISCONNECTING, null));
     }
 
     public static void fireApplicationSettingsChanged(final LightAppSettings settings) {

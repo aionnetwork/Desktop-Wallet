@@ -34,7 +34,7 @@ public class ConnectionKeyProvider {
         return addressToKey.get(connection);
     }
 
-    public Map<String, String> getConnectionProperties() {
+    public final Map<String, String> getConnectionProperties() {
         return addressToKey.entrySet().stream().collect(
                 Collectors.toMap(
                         e -> e.getKey().toString(),
