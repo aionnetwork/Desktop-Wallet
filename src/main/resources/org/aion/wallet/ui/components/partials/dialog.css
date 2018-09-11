@@ -1,7 +1,11 @@
 .anchor-pane {
     -fx-background-color: WHITE;
-    -fx-border-color: #ececec;
+    -fx-border-color: #a5a5a5;
     -fx-border-width: 1 1 1 1;
+    -fx-border-style: solid;
+    -fx-border-radius: 7;
+    -fx-background-radius: 7;
+    -fx-padding: 7;
 }
 
 .main-text {
