@@ -107,6 +107,11 @@ public class CoreBlockchainConnector extends BlockchainConnector {
     }
 
     @Override
+    protected boolean isSecuredConnection() {
+        return true;
+    }
+
+    @Override
     public LightAppSettings getSettings() {
         throw new UnsupportedOperationException();
     }

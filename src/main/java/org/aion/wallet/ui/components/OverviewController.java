@@ -11,7 +11,10 @@ import org.aion.api.log.LogEnum;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.console.ConsoleManager;
 import org.aion.wallet.dto.AccountDTO;
-import org.aion.wallet.events.*;
+import org.aion.wallet.events.AccountEvent;
+import org.aion.wallet.events.EventBusFactory;
+import org.aion.wallet.events.HeaderPaneButtonEvent;
+import org.aion.wallet.events.RefreshEvent;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.ui.components.partials.AddAccountDialog;
@@ -72,8 +75,7 @@ public class OverviewController extends AbstractController {
         runApiTask(
                 getAccountsTask,
                 evt -> reloadAccountObservableList(getAccountsTask.getValue()),
-                getErrorEvent(t -> {
-                }, getAccountsTask),
+                getErrorEvent(t -> {}, getAccountsTask),
                 getEmptyEvent()
         );
         displayFooterActions();

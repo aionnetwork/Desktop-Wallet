@@ -141,6 +141,8 @@ public abstract class BlockchainConnector {
 
     protected abstract String getCurrency();
 
+    protected abstract boolean isSecuredConnection();
+
     public void close() {
         walletStorage.save();
     }
@@ -158,7 +160,7 @@ public abstract class BlockchainConnector {
     public void unlockConnection() {
         if (connectionLocked){
             connectionLocked = false;
-            EventPublisher.fireConnectionEstablished();
+            EventPublisher.fireConnectionEstablished(isSecuredConnection());
         }
     }
 

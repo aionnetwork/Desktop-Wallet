@@ -25,6 +25,14 @@ public class ConnectionDetails {
         }
     }
 
+    public String getAddress() {
+        return address;
+    }
+
+    public String getPort() {
+        return port;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

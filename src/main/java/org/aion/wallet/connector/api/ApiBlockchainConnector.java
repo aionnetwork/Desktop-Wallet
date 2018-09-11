@@ -59,6 +59,8 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     private long startingBlock;
 
+    private boolean isSecuredConnection;
+
     public ApiBlockchainConnector() {
         backgroundExecutor = Executors.newFixedThreadPool(getCores());
         connect(getConnectionDetails());
@@ -85,11 +87,15 @@ public class ApiBlockchainConnector extends BlockchainConnector {
             connectionFuture.cancel(true);
         }
         connectionFuture = backgroundExecutor.submit(() -> {
-            final ApiMsg connect = API.connect(newConnectionDetails.toString(), true, connectionKeyProvider.getKey(newConnectionDetails));
+            final String connectionKey = connectionKeyProvider.getKey(newConnectionDetails);
+            if (!(connectionKey == null || connectionKey.isEmpty())) {
+                isSecuredConnection = true;
+            }
+            final ApiMsg connect = API.connect(newConnectionDetails.toString(), true, connectionKey);
             if (connect.getObject()) {
+                EventPublisher.fireConnectionEstablished(isSecuredConnection);
                 final Block latestBlock = getLatestBlock();
                 startingBlock = Math.max(0, latestBlock.getNumber() - 30 * BLOCK_BATCH_SIZE);
-                EventPublisher.fireConnectionEstablished();
                 processTransactionsOnReconnect();
             } else {
                 EventPublisher.fireConnectionBroken();
@@ -242,6 +248,11 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     @Override
     public final String getCurrency() {
         return AionConstants.CCY;
+    }
+
+    @Override
+    protected boolean isSecuredConnection() {
+        return isSecuredConnection;
     }
 
     @Override
