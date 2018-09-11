@@ -9,7 +9,7 @@
     <VBox AnchorPane.leftAnchor="10" AnchorPane.rightAnchor="10" AnchorPane.topAnchor="25"
           alignment="TOP_CENTER" spacing="10">
         <Label text="Settings" styleClass="tile-label" alignment="CENTER"/>
-        <HBox spacing="20" alignment="CENTER">
+        <HBox spacing="10" alignment="CENTER">
             <VBox spacing="10" prefWidth="400">
                 <HBox>
                     <VBox>
@@ -33,7 +33,13 @@
                         <TextField fx:id="connectionPort" disable="true"/>
                     </VBox>
                 </HBox>
-                <HBox spacing="10" prefWidth="400" alignment="CENTER_RIGHT">
+                <HBox>
+                    <VBox>
+                        <Label text="Access key" />
+                        <TextField fx:id="connectionKey" disable="true" prefWidth="400"/>
+                    </VBox>
+                </HBox>
+                <HBox spacing="10" alignment="CENTER_RIGHT" prefWidth="400">
                     <Button fx:id="editConnectionButton" text="Edit" onMouseClicked="#editConnection"/>
                     <Button fx:id="saveConnectionButton" text="Save" onMouseClicked="#saveConnection" disable="true"/>
                 </HBox>
@@ -44,14 +50,13 @@
                     <TextField fx:id="timeout" prefColumnCount="20"/>
                     <ComboBox fx:id="timeoutMeasurementUnit" />
                 </HBox>
+                <HBox alignment="BOTTOM_RIGHT" spacing="10" prefHeight="225">
+                    <Button text="Logs" onMouseClicked="#openConsole"/>
+                    <Button text="Apply" onMouseClicked="#changeSettings" styleClass="disabled"/>
+                </HBox>
             </VBox>
         </HBox>
 
-
-        <HBox alignment="BASELINE_RIGHT" spacing="6.0">
-            <Button text="Logs" onMouseClicked="#openConsole"/>
-            <Button text="Apply" onMouseClicked="#changeSettings" styleClass="disabled"/>
-        </HBox>
         <Label fx:id="notification" alignment="CENTER"/>
         <ScrollPane VBox.vgrow="NEVER" hbarPolicy="NEVER" vbarPolicy="NEVER" prefViewportHeight="250"
                     prefViewportWidth="830"/>

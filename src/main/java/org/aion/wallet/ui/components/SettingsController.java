@@ -40,6 +40,8 @@ public class SettingsController extends AbstractController {
     @FXML
     private TextField connectionPort;
     @FXML
+    private TextField connectionKey;
+    @FXML
     private Button editConnectionButton;
     @FXML
     private Button saveConnectionButton;
@@ -64,18 +66,23 @@ public class SettingsController extends AbstractController {
     public void changeSettings() {
         final LightAppSettings newSettings;
         ConnectionDetails selectedConnection = connectionDetailsComboBox.getSelectionModel().getSelectedItem();
-        newSettings = new LightAppSettings(
-                connectionName.getText().trim(),
-                selectedConnection.getAddress().trim(),
-                selectedConnection.getPort().trim(),
-                DEFAULT_PROTOCOL,
-                settings.getType(),
-                Integer.parseInt(timeout.getText()),
-                getSelectedTimeoutMeasurementUnit()
+        if (selectedConnection != null &&
+                selectedConnection.getAddress() != null && !selectedConnection.getAddress().isEmpty() &&
+                selectedConnection.getPort() != null && !selectedConnection.getPort().isEmpty()) {
+            newSettings = new LightAppSettings(
+                    connectionName.getText().trim(),
+                    selectedConnection.getAddress().trim(),
+                    selectedConnection.getPort().trim(),
+                    DEFAULT_PROTOCOL,
+                    settings.getType(),
+                    Integer.parseInt(timeout.getText()),
+                    getSelectedTimeoutMeasurementUnit()
 
-        );
-        Platform.runLater(() -> EventPublisher.fireApplicationSettingsChanged(newSettings));
-        displayNotification("", false);
+            );
+            Platform.runLater(() -> EventPublisher.fireApplicationSettingsChanged(newSettings));
+            displayNotification("", false);
+        }
+        displayNotification("The selected connection is invalid!", true);
     }
 
     public void openConsole() {
@@ -118,12 +125,14 @@ public class SettingsController extends AbstractController {
         connectionKeyProvider = blockchainConnector.getConnectionKeyProvider();
         timeout.setText(String.valueOf(settings.getLockTimeout()));
         connectionDetailsComboBox.setItems(getConnectionDetails());
-        connectionDetailsComboBox.getSelectionModel().select(0);
+        connectionDetailsComboBox.getSelectionModel().select(settings.getConnectionDetails());
         connectionName.setText(connectionDetailsComboBox.getSelectionModel().getSelectedItem().getName());
         connectionURL.setText(connectionDetailsComboBox.getSelectionModel().getSelectedItem().getAddress());
         connectionPort.setText(connectionDetailsComboBox.getSelectionModel().getSelectedItem().getPort());
+        connectionKey.setText(connectionKeyProvider.getKey(connectionDetailsComboBox.getSelectionModel()
+                .getSelectedItem()));
         connectionDetailsComboBox.valueProperty().addListener((observableValue, oldValue, newValue) -> {
-            if(oldValue != null && newValue != null && !oldValue.equals(newValue)) {
+            if (oldValue != null && newValue != null && !oldValue.equals(newValue)) {
                 if (newValue.getName().equals("Add connection")) {
                     connectionName.setText("");
                     connectionName.setDisable(false);
@@ -131,16 +140,20 @@ public class SettingsController extends AbstractController {
                     connectionURL.setDisable(false);
                     connectionPort.setText("");
                     connectionPort.setDisable(false);
+                    connectionKey.setText("");
+                    connectionKey.setDisable(false);
                     editConnectionButton.setVisible(false);
                     saveConnectionButton.setDisable(false);
-                }
-                else {
+                } else {
                     connectionName.setText(newValue.getName());
                     connectionName.setDisable(true);
                     connectionURL.setText(newValue.getAddress());
                     connectionURL.setDisable(true);
                     connectionPort.setText(newValue.getPort());
                     connectionPort.setDisable(true);
+                    connectionKey.setText(connectionKeyProvider.getKey(connectionDetailsComboBox.getSelectionModel()
+                            .getSelectedItem()));
+                    connectionKey.setDisable(true);
                     editConnectionButton.setVisible(true);
                     editConnectionButton.setDisable(false);
                     saveConnectionButton.setDisable(true);
@@ -203,11 +216,36 @@ public class SettingsController extends AbstractController {
         connectionName.setDisable(false);
         connectionURL.setDisable(false);
         connectionPort.setDisable(false);
+        connectionKey.setDisable(false);
         editConnectionButton.setDisable(true);
         saveConnectionButton.setDisable(false);
     }
 
     public void saveConnection(final MouseEvent mouseEvent) {
-//        connectionKeyProvider.getAddressToKey().put(new ConnectionDetails());
+        final String connectionNameText = connectionName.getText();
+        final String connectionURLText = connectionURL.getText();
+        final String connectionPortText = connectionPort.getText();
+        final String connectionKeyText = connectionKey.getText();
+
+        if (connectionNameText != null && !connectionNameText.isEmpty() &&
+                connectionURLText != null && !connectionURLText.isEmpty() &&
+                connectionPortText != null && !connectionPortText.isEmpty() &&
+                connectionPortText.matches("[-+]?\\d*\\.?\\d+") &&
+                connectionKeyText != null && !connectionKeyText.isEmpty()) {
+
+            ConnectionDetails connectionDetails = new ConnectionDetails(connectionNameText, DEFAULT_PROTOCOL,
+                    connectionURLText, connectionPortText);
+            connectionKeyProvider.getAddressToKey().put(connectionDetails, connectionKeyText);
+            connectionName.setDisable(true);
+            connectionURL.setDisable(true);
+            connectionPort.setDisable(true);
+            connectionKey.setDisable(true);
+            editConnectionButton.setDisable(false);
+            saveConnectionButton.setDisable(true);
+            reloadView();
+        } else {
+            displayNotification("The connection details are invalid!", true);
+            return;
+        }
     }
 }
