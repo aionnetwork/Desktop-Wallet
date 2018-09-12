@@ -4,12 +4,15 @@ import java.util.Objects;
 
 public class ConnectionDetails {
 
+    private final String id;
     private final String name;
     private final String protocol;
     private final String address;
     private final String port;
+    private final String secureKey;
 
-    public ConnectionDetails(final String name, final String protocol, final String address, final String port) {
+    public ConnectionDetails(final String id, final String name, final String protocol, final String address, final String port, final String secureKey) {
+        this.id = id;
         if (name != null && !name.isEmpty()) {
             this.name = name;
         } else {
@@ -18,15 +21,18 @@ public class ConnectionDetails {
         this.protocol = protocol;
         this.address = address;
         this.port = port;
+        this.secureKey = secureKey;
     }
 
-    public ConnectionDetails(final String connection) {
+    public ConnectionDetails(final String connection, final String secureKey) {
         try {
             final String[] split = connection.split(":");
-            name = split[0];
-            protocol = split[1];
-            address = split[2].substring(2);
-            port = split[3];
+            this.id = split[0];
+            this.name = split[1];
+            this.protocol = split[2];
+            this.address = split[3].substring(2);
+            this.port = split[4];
+            this.secureKey = secureKey;
         } catch (final Exception e) {
             throw new IllegalArgumentException("Invalid connection string: " + connection, e);
         }
@@ -45,18 +51,17 @@ public class ConnectionDetails {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ConnectionDetails that = (ConnectionDetails) o;
-        return Objects.equals(address, that.address) &&
-                Objects.equals(port, that.port);
+        return Objects.equals(id, that.id);
     }
 
     @Override
     public int hashCode() {
 
-        return Objects.hash(address, port);
+        return Objects.hash(id);
     }
 
     @Override
@@ -65,7 +70,7 @@ public class ConnectionDetails {
     }
 
     public final String serialized() {
-        return name + ":" + toConnectionString();
+        return id + ":" + name + ":" + toConnectionString();
     }
 
     public String toConnectionString() {
@@ -74,5 +79,13 @@ public class ConnectionDetails {
 
     public String getProtocol() {
         return protocol;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getSecureKey() {
+        return secureKey;
     }
 }
