@@ -65,6 +65,8 @@ public class LedgerWallet implements HardwareWallet {
     private static final WindowsNpmInstaller WINDOWS_NPM_INSTALLER = new WindowsNpmInstaller();
     private static final String PREFIX = "--prefix";
 
+    private static final int RETRIES = 3;
+
     private final Map<Integer, AionAccountDetails> accountCache = new ConcurrentHashMap<>();
     private final ProcessBuilder processBuilder = createProcessBuilder();
 
@@ -125,15 +127,13 @@ public class LedgerWallet implements HardwareWallet {
     }
 
     @Override
-    public List<AionAccountDetails> getMultipleAccountDetails(final int derivationIndexStart, final int
-            derivationIndexEnd) throws LedgerException {
+    public List<AionAccountDetails> getMultipleAccountDetails(final int derivationIndexStart, final int derivationIndexEnd) throws LedgerException {
         final List<AionAccountDetails> accounts = new LinkedList<>();
         final AionAccountDetails newAccountDetails = getAccountDetails(derivationIndexStart);
 
         if (accountCache.containsKey(derivationIndexStart)) {
             final AionAccountDetails existingAionAccountDetails = accountCache.get(derivationIndexStart);
             if (!newAccountDetails.equals(existingAionAccountDetails)) {
-                //invalidate the cache
                 accountCache.clear();
                 accountCache.put(derivationIndexStart, newAccountDetails);
             }
@@ -143,7 +143,7 @@ public class LedgerWallet implements HardwareWallet {
 
         for (int i = derivationIndexStart + 1; i < derivationIndexEnd; i++) {
             if (!accountCache.containsKey(i)) {
-                accountCache.put(i, getAccountDetails(i));
+                accountCache.put(i, getAccountDetailsWithRetries(i));
             }
             accounts.add(accountCache.get(i));
         }
@@ -151,7 +151,7 @@ public class LedgerWallet implements HardwareWallet {
             try {
                 for (int i = derivationIndexEnd; i < derivationIndexEnd + (derivationIndexEnd - derivationIndexStart); i++) {
                     if (!accountCache.containsKey(i)) {
-                        accountCache.put(i, getAccountDetails(i));
+                        accountCache.put(i, getAccountDetailsWithRetries(i));
                     }
                 }
                 EventPublisher.fireAccountsRecovered(accountCache.values().stream().map(AionAccountDetails::getAddress).collect(Collectors.toSet()));
@@ -160,6 +160,23 @@ public class LedgerWallet implements HardwareWallet {
             }
         });
         return accounts;
+    }
+
+    private AionAccountDetails getAccountDetailsWithRetries(final int index) throws LedgerException {
+        AionAccountDetails accountDetails = null;
+        int retry = 0;
+        do {
+            try {
+                accountDetails = getAccountDetails(index);
+                break;
+            } catch (LedgerException e) {
+                if (retry == RETRIES) {
+                    throw e;
+                }
+            }
+            retry++;
+        } while (retry <= RETRIES);
+        return accountDetails;
     }
 
     @Override
