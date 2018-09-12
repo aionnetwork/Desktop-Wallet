@@ -9,11 +9,10 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.input.MouseEvent;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.console.ConsoleManager;
 import org.aion.wallet.dto.ConnectionDetails;
-import org.aion.wallet.dto.ConnectionKeyProvider;
+import org.aion.wallet.dto.ConnectionProvider;
 import org.aion.wallet.dto.LightAppSettings;
 import org.aion.wallet.events.*;
 
@@ -46,10 +45,12 @@ public class SettingsController extends AbstractController {
     @FXML
     private Button saveConnectionButton;
     @FXML
+    private Button deleteConnectionButton;
+    @FXML
     private ComboBox<String> timeoutMeasurementUnit;
 
     private LightAppSettings settings;
-    private ConnectionKeyProvider connectionKeyProvider;
+    private ConnectionProvider connectionProvider;
 
     @Override
     protected void internalInit(final URL location, final ResourceBundle resources) {
@@ -68,6 +69,7 @@ public class SettingsController extends AbstractController {
         ConnectionDetails selectedConnection = connectionDetailsComboBox.getSelectionModel().getSelectedItem();
         if (isValidConnection(selectedConnection)) {
             newSettings = new LightAppSettings(
+                    selectedConnection.getId(),
                     connectionName.getText().trim(),
                     selectedConnection.getAddress().trim(),
                     selectedConnection.getPort().trim(),
@@ -127,14 +129,14 @@ public class SettingsController extends AbstractController {
 
     private void reloadView() {
         settings = blockchainConnector.getSettings();
-        connectionKeyProvider = blockchainConnector.getConnectionKeyProvider();
+        connectionProvider = blockchainConnector.getConnectionKeyProvider();
         timeout.setText(String.valueOf(settings.getLockTimeout()));
         connectionDetailsComboBox.setItems(getConnectionDetails());
         connectionDetailsComboBox.getSelectionModel().select(settings.getConnectionDetails());
         connectionName.setText(connectionDetailsComboBox.getSelectionModel().getSelectedItem().getName());
         connectionURL.setText(connectionDetailsComboBox.getSelectionModel().getSelectedItem().getAddress());
         connectionPort.setText(connectionDetailsComboBox.getSelectionModel().getSelectedItem().getPort());
-        connectionKey.setText(connectionKeyProvider.getKey(connectionDetailsComboBox.getSelectionModel()
+        connectionKey.setText(connectionProvider.getKey(connectionDetailsComboBox.getSelectionModel()
                 .getSelectedItem()));
         connectionDetailsComboBox.valueProperty().addListener((observableValue, oldValue, newValue) -> {
             if (oldValue != null && newValue != null && !oldValue.equals(newValue)) {
@@ -156,7 +158,7 @@ public class SettingsController extends AbstractController {
                     connectionURL.setDisable(true);
                     connectionPort.setText(newValue.getPort());
                     connectionPort.setDisable(true);
-                    connectionKey.setText(connectionKeyProvider.getKey(connectionDetailsComboBox.getSelectionModel()
+                    connectionKey.setText(connectionProvider.getKey(connectionDetailsComboBox.getSelectionModel()
                             .getSelectedItem()));
                     connectionKey.setDisable(true);
                     editConnectionButton.setVisible(true);
@@ -212,8 +214,8 @@ public class SettingsController extends AbstractController {
 
     private ObservableList<ConnectionDetails> getConnectionDetails() {
         ObservableList<ConnectionDetails> connectionDetails = FXCollections.observableArrayList();
-        connectionDetails.addAll(connectionKeyProvider.getAddressToKey().keySet());
-        connectionDetails.add(new ConnectionDetails("Add connection", null, null, null));
+        connectionDetails.addAll(connectionProvider.getAddressToKey().keySet());
+        connectionDetails.add(new ConnectionDetails("", "Add connection", null, null, null));
         return connectionDetails;
     }
 
@@ -224,6 +226,7 @@ public class SettingsController extends AbstractController {
         connectionKey.setDisable(false);
         editConnectionButton.setDisable(true);
         saveConnectionButton.setDisable(false);
+        deleteConnectionButton.setDisable(true);
     }
 
     public void saveConnection() {
@@ -237,19 +240,40 @@ public class SettingsController extends AbstractController {
                 connectionPortText != null && !connectionPortText.isEmpty() &&
                 connectionPortText.matches("[-+]?\\d*\\.?\\d+")) {
 
-            ConnectionDetails connectionDetails = new ConnectionDetails(connectionNameText, DEFAULT_PROTOCOL,
+            ConnectionDetails connectionDetails = new ConnectionDetails("NEW_ID_HERE_PLS", connectionNameText, DEFAULT_PROTOCOL,
                     connectionURLText, connectionPortText);
-            connectionKeyProvider.getAddressToKey().put(connectionDetails, connectionKeyText);
-            blockchainConnector.storeConnectionKeys(connectionKeyProvider);
+
+            ConnectionDetails selectedConnection = connectionDetailsComboBox.getSelectionModel().getSelectedItem();
+            if(selectedConnection.getName().equals("Add connection")) {
+                connectionProvider.getAddressToKey().put(connectionDetails, connectionKeyText);
+            }
+            else {
+                connectionProvider.getAddressToKey().remove(selectedConnection,
+                        connectionProvider.getKey(selectedConnection));
+                connectionProvider.getAddressToKey().put(connectionDetails,
+                        connectionProvider.getKey(selectedConnection));
+                connectionProvider.getAddressToKey().replace(connectionDetails, connectionKeyText);
+            }
+
+            blockchainConnector.storeConnectionKeys(connectionProvider);
             connectionName.setDisable(true);
             connectionURL.setDisable(true);
             connectionPort.setDisable(true);
             connectionKey.setDisable(true);
             editConnectionButton.setDisable(false);
             saveConnectionButton.setDisable(true);
+            deleteConnectionButton.setDisable(false);
             reloadView();
         } else {
             displayNotification("The connection details are invalid!", true);
+        }
+    }
+
+    public void deleteConnection() {
+        if(!connectionDetailsComboBox.getSelectionModel().getSelectedItem().getName().equals("Add connection")) {
+            connectionProvider.getAddressToKey().remove(connectionDetailsComboBox.getSelectionModel().getSelectedItem());
+            blockchainConnector.storeConnectionKeys(connectionProvider);
+            reloadView();
         }
     }
 }

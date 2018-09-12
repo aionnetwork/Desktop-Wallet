@@ -39,9 +39,14 @@
                         <TextField fx:id="connectionKey" disable="true" prefWidth="400"/>
                     </VBox>
                 </HBox>
-                <HBox spacing="10" alignment="CENTER_RIGHT" prefWidth="400">
-                    <Button fx:id="editConnectionButton" text="Edit" onMouseClicked="#editConnection"/>
-                    <Button fx:id="saveConnectionButton" text="Save" onMouseClicked="#saveConnection" disable="true"/>
+                <HBox prefWidth="400">
+                    <HBox prefWidth="200" alignment="CENTER_LEFT">
+                        <Button fx:id="deleteConnectionButton" text="Delete" onMouseClicked="#deleteConnection"/>
+                    </HBox>
+                    <HBox spacing="10" prefWidth="200" alignment="CENTER_RIGHT">
+                        <Button fx:id="editConnectionButton" text="Edit" onMouseClicked="#editConnection"/>
+                        <Button fx:id="saveConnectionButton" text="Save" onMouseClicked="#saveConnection" disable="true"/>
+                    </HBox>
                 </HBox>
             </VBox>
             <VBox>

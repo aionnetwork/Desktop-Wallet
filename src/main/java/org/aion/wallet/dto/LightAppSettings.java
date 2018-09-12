@@ -10,38 +10,30 @@ public class LightAppSettings {
     private static final String DEFAULT_LOCK_TIMEOUT = "1";
     private static final String DEFAULT_LOCK_TIMEOUT_MEASUREMENT_UNIT = "minutes";
 
-    private static final String NAME = ".name";
-    private static final String ADDRESS = ".address";
-    private static final String PORT = ".port";
-    private static final String PROTOCOL = ".protocol";
     private static final String ACCOUNTS = "accounts";
 
-    public static final String DEFAULT_NAME = "AION unsecured";
-    public static final String DEFAULT_IP = "aion-main.bdnodes.net";
-    public static final String DEFAULT_PORT = "8547";
-    public static final String DEFAULT_PROTOCOL = "tcp";
     private static final String LOCK_TIMEOUT = ".lock_timeout";
     private static final String LOCK_TIMEOUT_MEASUREMENT_UNIT = ".lock_timeout_measurement_unit";
+    private static final String CONNECTION_ID = ".connection_id";
+    private static final String DEFAULT_ID = "default-id-12345";
 
     private final ApiType type;
     private final String lockTimeoutMeasurementUnit;
     private final int lockTimeout;
     private ConnectionDetails connectionDetails;
 
-    public LightAppSettings(final Properties lightSettingsProps, final ApiType type) {
+    public LightAppSettings(final Properties lightSettingsProps, final ApiType type, final ConnectionProvider connectionProvider) {
         this.type = type;
-        String address = Optional.ofNullable(lightSettingsProps.getProperty(type + ADDRESS)).orElse(DEFAULT_IP);
-        String port = Optional.ofNullable(lightSettingsProps.getProperty(type + PORT)).orElse(DEFAULT_PORT);
-        String protocol = Optional.ofNullable(lightSettingsProps.getProperty(type + PROTOCOL)).orElse(DEFAULT_PROTOCOL);
-        String name = Optional.ofNullable(lightSettingsProps.getProperty(type + NAME)).orElse(DEFAULT_NAME);
-        connectionDetails = new ConnectionDetails(name, protocol, address, port);
+        String connectionId = Optional.ofNullable(lightSettingsProps.getProperty(type + CONNECTION_ID)).orElse
+                (DEFAULT_ID);
+        connectionDetails = connectionProvider.getConnectionDetailsById(connectionId);
         lockTimeout = Integer.parseInt(Optional.ofNullable(lightSettingsProps.getProperty(ACCOUNTS + LOCK_TIMEOUT)).orElse(DEFAULT_LOCK_TIMEOUT));
         lockTimeoutMeasurementUnit = Optional.ofNullable(lightSettingsProps.getProperty(ACCOUNTS + LOCK_TIMEOUT_MEASUREMENT_UNIT)).orElse(DEFAULT_LOCK_TIMEOUT_MEASUREMENT_UNIT);
     }
 
-    public LightAppSettings(final String name, final String address, final String port, final String protocol, final ApiType type, final Integer timeout, final String lockTimeoutMeasurementUnit) {
+    public LightAppSettings(final String id, final String name, final String address, final String port, final String protocol, final ApiType type, final Integer timeout, final String lockTimeoutMeasurementUnit) {
         this.type = type;
-        this.connectionDetails = new ConnectionDetails(name, protocol, address, port);
+        this.connectionDetails = new ConnectionDetails(id, name, protocol, address, port);
         this.lockTimeout = timeout;
         this.lockTimeoutMeasurementUnit = lockTimeoutMeasurementUnit;
     }
@@ -60,10 +52,7 @@ public class LightAppSettings {
 
     public final Properties getSettingsProperties() {
         final Properties properties = new Properties();
-        properties.setProperty(type + ADDRESS, connectionDetails.getAddress());
-        properties.setProperty(type + PORT, connectionDetails.getPort());
-        properties.setProperty(type + PROTOCOL, connectionDetails.getProtocol());
-        properties.setProperty(type + NAME, connectionDetails.getName());
+        properties.setProperty(type + CONNECTION_ID, connectionDetails.getId());
         properties.setProperty(ACCOUNTS + LOCK_TIMEOUT, String.valueOf(lockTimeout));
         properties.setProperty(ACCOUNTS + LOCK_TIMEOUT_MEASUREMENT_UNIT, lockTimeoutMeasurementUnit);
         return properties;

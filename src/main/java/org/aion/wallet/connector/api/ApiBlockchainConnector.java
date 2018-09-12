@@ -17,7 +17,7 @@ import org.aion.wallet.connector.dto.*;
 import org.aion.wallet.console.ConsoleManager;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.dto.ConnectionDetails;
-import org.aion.wallet.dto.ConnectionKeyProvider;
+import org.aion.wallet.dto.ConnectionProvider;
 import org.aion.wallet.dto.LightAppSettings;
 import org.aion.wallet.events.*;
 import org.aion.wallet.exception.NotFoundException;
@@ -52,7 +52,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     private LightAppSettings lightAppSettings = getLightweightWalletSettings(ApiType.JAVA);
 
-    private ConnectionKeyProvider connectionKeyProvider = getConnectionKeyProvider();
+    private ConnectionProvider connectionProvider = getConnectionKeyProvider();
 
     private Future<?> connectionFuture;
 
@@ -112,7 +112,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     private void disconnect() {
         storeLightweightWalletSettings(lightAppSettings);
-        storeConnectionKeys(connectionKeyProvider);
+        storeConnectionKeys(connectionProvider);
         lock();
         try {
             API.destroyApi().getObject();
@@ -517,16 +517,12 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     }
 
     private ConnectionDetails getConnectionDetails() {
-        final ConnectionDetails connectionDetails = lightAppSettings.getConnectionDetails();
-        final String protocol = connectionDetails.getProtocol();
-        final String ip = connectionDetails.getAddress();
-        final String port = connectionDetails.getPort();
-        return new ConnectionDetails(connectionDetails.getName(), protocol, ip, port);
+        return lightAppSettings.getConnectionDetails();
     }
 
     @Override
-    public void storeConnectionKeys(final ConnectionKeyProvider connectionKeyProvider) {
-        super.storeConnectionKeys(connectionKeyProvider);
-        this.connectionKeyProvider = getConnectionKeyProvider();
+    public void storeConnectionKeys(final ConnectionProvider connectionProvider) {
+        super.storeConnectionKeys(connectionProvider);
+        this.connectionProvider = getConnectionKeyProvider();
     }
 }
