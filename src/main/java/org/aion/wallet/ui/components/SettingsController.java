@@ -19,6 +19,7 @@ import org.aion.wallet.events.*;
 import java.net.URL;
 import java.util.EnumSet;
 import java.util.ResourceBundle;
+import java.util.UUID;
 
 public class SettingsController extends AbstractController {
 
@@ -136,8 +137,7 @@ public class SettingsController extends AbstractController {
         connectionName.setText(connectionDetailsComboBox.getSelectionModel().getSelectedItem().getName());
         connectionURL.setText(connectionDetailsComboBox.getSelectionModel().getSelectedItem().getAddress());
         connectionPort.setText(connectionDetailsComboBox.getSelectionModel().getSelectedItem().getPort());
-        connectionKey.setText(connectionProvider.getKey(connectionDetailsComboBox.getSelectionModel()
-                .getSelectedItem()));
+        connectionKey.setText(connectionDetailsComboBox.getSelectionModel().getSelectedItem().getSecureKey());
         connectionDetailsComboBox.valueProperty().addListener((observableValue, oldValue, newValue) -> {
             if (oldValue != null && newValue != null && !oldValue.equals(newValue)) {
                 if (newValue.getName().equals("Add connection")) {
@@ -158,8 +158,7 @@ public class SettingsController extends AbstractController {
                     connectionURL.setDisable(true);
                     connectionPort.setText(newValue.getPort());
                     connectionPort.setDisable(true);
-                    connectionKey.setText(connectionProvider.getKey(connectionDetailsComboBox.getSelectionModel()
-                            .getSelectedItem()));
+                    connectionKey.setText(newValue.getSecureKey());
                     connectionKey.setDisable(true);
                     editConnectionButton.setVisible(true);
                     editConnectionButton.setDisable(false);
@@ -214,8 +213,8 @@ public class SettingsController extends AbstractController {
 
     private ObservableList<ConnectionDetails> getConnectionDetails() {
         ObservableList<ConnectionDetails> connectionDetails = FXCollections.observableArrayList();
-        connectionDetails.addAll(connectionProvider.getAddressToKey().keySet());
-        connectionDetails.add(new ConnectionDetails("", "Add connection", null, null, null));
+        connectionDetails.addAll(connectionProvider.getAllConnections());
+        connectionDetails.add(new ConnectionDetails("", "Add connection", null, null, null, ""));
         return connectionDetails;
     }
 
@@ -240,19 +239,19 @@ public class SettingsController extends AbstractController {
                 connectionPortText != null && !connectionPortText.isEmpty() &&
                 connectionPortText.matches("[-+]?\\d*\\.?\\d+")) {
 
-            ConnectionDetails connectionDetails = new ConnectionDetails("NEW_ID_HERE_PLS", connectionNameText, DEFAULT_PROTOCOL,
-                    connectionURLText, connectionPortText);
 
             ConnectionDetails selectedConnection = connectionDetailsComboBox.getSelectionModel().getSelectedItem();
-            if(selectedConnection.getName().equals("Add connection")) {
-                connectionProvider.getAddressToKey().put(connectionDetails, connectionKeyText);
-            }
-            else {
-                connectionProvider.getAddressToKey().remove(selectedConnection,
-                        connectionProvider.getKey(selectedConnection));
-                connectionProvider.getAddressToKey().put(connectionDetails,
-                        connectionProvider.getKey(selectedConnection));
-                connectionProvider.getAddressToKey().replace(connectionDetails, connectionKeyText);
+            if (selectedConnection.getName().equals("Add connection")) {
+                ConnectionDetails connectionDetails = new ConnectionDetails(UUID.randomUUID().toString(),
+                        connectionNameText, DEFAULT_PROTOCOL,
+                        connectionURLText, connectionPortText, connectionKeyText);
+                connectionProvider.addConnection(connectionDetails);
+            } else {
+                ConnectionDetails connectionDetails = new ConnectionDetails(selectedConnection.getId(),
+                        connectionNameText, DEFAULT_PROTOCOL,
+                        connectionURLText, connectionPortText, connectionKeyText);
+                connectionProvider.getAllConnections().remove(connectionDetailsComboBox.getSelectionModel().getSelectedItem());
+                connectionProvider.getAllConnections().add(connectionDetails);
             }
 
             blockchainConnector.storeConnectionKeys(connectionProvider);
@@ -270,8 +269,9 @@ public class SettingsController extends AbstractController {
     }
 
     public void deleteConnection() {
-        if(!connectionDetailsComboBox.getSelectionModel().getSelectedItem().getName().equals("Add connection")) {
-            connectionProvider.getAddressToKey().remove(connectionDetailsComboBox.getSelectionModel().getSelectedItem());
+        if (!connectionDetailsComboBox.getSelectionModel().getSelectedItem().getName().equals("Add connection")) {
+            connectionProvider.getAllConnections().remove(connectionDetailsComboBox.getSelectionModel()
+                    .getSelectedItem());
             blockchainConnector.storeConnectionKeys(connectionProvider);
             reloadView();
         }

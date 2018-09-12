@@ -95,7 +95,8 @@ public class ApiBlockchainConnector extends BlockchainConnector {
             }
         }
         connectionFuture = backgroundExecutor.submit(() -> {
-            final String connectionKey = getConnectionKeyProvider().getKey(newConnectionDetails);
+            final Optional<ConnectionDetails> connectionDetails = getConnectionKeyProvider().getConnectionDetails(newConnectionDetails.getId());
+            final String connectionKey = connectionDetails.get().getSecureKey();
             isSecuredConnection = !(connectionKey == null || connectionKey.isEmpty());
             Platform.runLater(() -> EventPublisher.fireConnectAttmpted(isSecuredConnection));
             final ApiMsg connect = API.connect(newConnectionDetails.toConnectionString(), true, 1, 60_000, connectionKey);

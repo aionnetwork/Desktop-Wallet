@@ -26,14 +26,15 @@ public class LightAppSettings {
         this.type = type;
         String connectionId = Optional.ofNullable(lightSettingsProps.getProperty(type + CONNECTION_ID)).orElse
                 (DEFAULT_ID);
-        connectionDetails = connectionProvider.getConnectionDetailsById(connectionId);
+        connectionDetails = connectionProvider.getConnectionDetails(connectionId).orElse(ConnectionProvider.DEFAULT_NODE);
         lockTimeout = Integer.parseInt(Optional.ofNullable(lightSettingsProps.getProperty(ACCOUNTS + LOCK_TIMEOUT)).orElse(DEFAULT_LOCK_TIMEOUT));
         lockTimeoutMeasurementUnit = Optional.ofNullable(lightSettingsProps.getProperty(ACCOUNTS + LOCK_TIMEOUT_MEASUREMENT_UNIT)).orElse(DEFAULT_LOCK_TIMEOUT_MEASUREMENT_UNIT);
     }
 
     public LightAppSettings(final String id, final String name, final String address, final String port, final String protocol, final ApiType type, final Integer timeout, final String lockTimeoutMeasurementUnit) {
         this.type = type;
-        this.connectionDetails = new ConnectionDetails(id, name, protocol, address, port);
+        this.connectionDetails = new ConnectionDetails(id, name, protocol, address, port,
+                "*y4vDwz$LA1b[+Yop>SkCm-H17UkaGd@3@A?*h%.");
         this.lockTimeout = timeout;
         this.lockTimeoutMeasurementUnit = lockTimeoutMeasurementUnit;
     }

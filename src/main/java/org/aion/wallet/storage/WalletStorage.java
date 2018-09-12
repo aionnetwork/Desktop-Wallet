@@ -1,6 +1,7 @@
 package org.aion.wallet.storage;
 
 import org.aion.api.log.LogEnum;
+import org.aion.wallet.dto.ConnectionDetails;
 import org.aion.wallet.dto.ConnectionProvider;
 import org.aion.wallet.dto.LightAppSettings;
 import org.aion.wallet.exception.ValidationException;
@@ -203,7 +204,9 @@ public class WalletStorage {
 
     public final void saveConnectionProperties(@Nonnull final ConnectionProvider connectionProvider) {
         connectionProperties.clear();
-        connectionProperties.putAll(connectionProvider.getConnectionProperties());
+        for(ConnectionDetails connectionDetails : connectionProvider.getAllConnections()) {
+            connectionProperties.put(connectionDetails.serialized(), connectionDetails.getSecureKey());
+        }
         saveSettings();
     }
 
