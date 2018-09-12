@@ -1,8 +1,11 @@
 package org.aion.wallet.ui.components.partials;
 
+import javafx.application.Platform;
+import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
+import javafx.scene.control.Tooltip;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.events.RefreshEvent;
 import org.aion.wallet.ui.components.AbstractController;
@@ -13,9 +16,9 @@ import java.util.ResourceBundle;
 
 public class ConnectivityStatusController extends AbstractController {
 
-    private static final String CONNECTIVITY_STATUS_CONNECTED = "CONNECTED";
-
-    private static final String CONNECTIVITY_STATUS_DISCONNECTED = "DISCONNECTED";
+    private static final Tooltip CONNECTION_ENCRYPTED = new Tooltip("Connection encrypted");
+    private static final Tooltip CONNECTION_UNENCRYPTED = new Tooltip("Connection not encrypted");
+    private static final Tooltip CONNECTION_MISSING = new Tooltip("Connection not established");
 
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
 
@@ -23,26 +26,63 @@ public class ConnectivityStatusController extends AbstractController {
     private Label connectivityLabel;
 
     @Override
-    public void internalInit(final URL location, final ResourceBundle resources) {
-    }
+    public void internalInit(final URL location, final ResourceBundle resources) {}
 
     @Override
     protected final void refreshView(final RefreshEvent event) {
-        if (EnumSet.of(RefreshEvent.Type.TIMER, RefreshEvent.Type.CONNECTED, RefreshEvent.Type.DISCONNECTED).contains(event.getType())) {
-            final Task<Boolean> getConnectedStatusTask = getApiTask(o -> blockchainConnector.getConnectionStatus(), null);
+        if (RefreshEvent.Type.TIMER.equals(event.getType())) {
+            final Task<Boolean> getConnectedStatusTask = getApiTask(o -> blockchainConnector.isConnected(), null);
             runApiTask(
                     getConnectedStatusTask,
-                    evt -> setConnectivityLabel(getConnectedStatusTask.getValue()),
+                    evt -> updateConnectionStatus(getConnectedStatusTask.getValue()),
                     getErrorEvent(t -> {}, getConnectedStatusTask),
                     getEmptyEvent());
+        } else if (EnumSet.of(RefreshEvent.Type.CONNECTING, RefreshEvent.Type.CONNECTED, RefreshEvent.Type.DISCONNECTING, RefreshEvent.Type.DISCONNECTED).contains(event.getType())) {
+            Platform.runLater(() -> updateConnectivityLabel(event));
         }
     }
 
-    private void setConnectivityLabel(boolean connected) {
-        if (connected) {
-            connectivityLabel.setText(CONNECTIVITY_STATUS_CONNECTED);
+    private void updateConnectivityLabel(final RefreshEvent connected) {
+        connectivityLabel.setText(String.valueOf(connected.getType()));
+        final ObservableList<String> styleClass = connectivityLabel.getStyleClass();
+        connected.getPayload().ifPresentOrElse(
+                secure -> setConnectionLabelStyle(styleClass, secure),
+                () -> setNotConnectedStyle(styleClass)
+        );
+    }
+
+    private void setConnectionLabelStyle(final ObservableList<String> styleClass, final Boolean secure) {
+        if (secure) {
+            setConnectedStyle(styleClass);
         } else {
-            connectivityLabel.setText(CONNECTIVITY_STATUS_DISCONNECTED);
+            setConnectedInsecureStyle(styleClass);
+        }
+    }
+
+    private void setConnectedStyle(final ObservableList<String> styleClass) {
+        styleClass.clear();
+        styleClass.add("connected-label");
+        Tooltip.install(connectivityLabel, CONNECTION_ENCRYPTED);
+    }
+
+    private void setConnectedInsecureStyle(final ObservableList<String> styleClass) {
+        styleClass.clear();
+        styleClass.add("connected-insecure");
+        Tooltip.install(connectivityLabel, CONNECTION_UNENCRYPTED);
+    }
+
+    private void setNotConnectedStyle(final ObservableList<String> styleClass) {
+        styleClass.clear();
+        styleClass.add("not-connected");
+        Tooltip.install(connectivityLabel, CONNECTION_MISSING);
+    }
+
+    private void updateConnectionStatus(final boolean isConnected) {
+        if (!isConnected) {
+            if (connectivityLabel.getText().equals(RefreshEvent.Type.CONNECTED.toString())) {
+                connectivityLabel.setText(RefreshEvent.Type.DISCONNECTED.toString());
+                setNotConnectedStyle(connectivityLabel.getStyleClass());
+            }
         }
     }
 }

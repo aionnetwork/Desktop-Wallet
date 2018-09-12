@@ -6,8 +6,10 @@ import org.aion.wallet.connector.dto.SendTransactionDTO;
 import org.aion.wallet.connector.dto.SyncInfoDTO;
 import org.aion.wallet.connector.dto.TransactionDTO;
 import org.aion.wallet.connector.dto.TransactionResponseDTO;
+import org.aion.wallet.console.ConsoleManager;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.dto.AccountType;
+import org.aion.wallet.dto.ConnectionKeyProvider;
 import org.aion.wallet.dto.LightAppSettings;
 import org.aion.wallet.events.EventPublisher;
 import org.aion.wallet.exception.NotFoundException;
@@ -47,7 +49,8 @@ public abstract class BlockchainConnector {
         if (ConfigUtils.isEmbedded()) {
             try {
                 INST = (BlockchainConnector) Class.forName(CORE_CONNECTOR_CLASS).getDeclaredConstructor().newInstance();
-            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | NoSuchMethodException | InvocationTargetException e) {
+            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | NoSuchMethodException
+                    | InvocationTargetException e) {
                 throw new RuntimeException("Could not instantiate class: " + CORE_CONNECTOR_CLASS, e);
             }
         } else {
@@ -80,19 +83,23 @@ public abstract class BlockchainConnector {
         accountManager.createAccount();
     }
 
-    public final AccountDTO importKeystoreFile(final byte[] file, final String password, final boolean shouldKeep) throws ValidationException {
+    public final AccountDTO importKeystoreFile(final byte[] file, final String password, final boolean shouldKeep)
+            throws ValidationException {
         return accountManager.importKeystore(file, password, shouldKeep);
     }
 
-    public final AccountDTO importPrivateKey(final byte[] privateKey, final String password, final boolean shouldKeep) throws ValidationException {
+    public final AccountDTO importPrivateKey(final byte[] privateKey, final String password, final boolean
+            shouldKeep) throws ValidationException {
         return accountManager.importPrivateKey(privateKey, password, shouldKeep);
     }
 
-    public final AccountDTO importHardwareWallet(final int derivationIndex, final String address, final AccountType accountType) throws ValidationException {
+    public final AccountDTO importHardwareWallet(final int derivationIndex, final String address, final AccountType
+            accountType) throws ValidationException {
         return accountManager.importHardwareWallet(accountType, derivationIndex, address);
     }
 
-    public final void exportAccount(final AccountDTO account, final String password, final String destinationDir) throws ValidationException {
+    public final void exportAccount(final AccountDTO account, final String password, final String destinationDir)
+            throws ValidationException {
         accountManager.exportAccount(account, password, destinationDir);
     }
 
@@ -108,37 +115,7 @@ public abstract class BlockchainConnector {
         return accountManager.getAccounts();
     }
 
-    public abstract BigInteger getBalance(final String address);
-
-    public final TransactionResponseDTO sendTransaction(final SendTransactionDTO dto) throws ValidationException {
-        if (dto == null || !dto.validate()) {
-            throw new ValidationException("Invalid transaction request data");
-        }
-        if (dto.estimateValue().compareTo(getBalance(dto.getFrom().getPublicAddress())) >= 0) {
-            throw new ValidationException("Insufficient funds");
-        }
-        return sendTransactionInternal(dto);
-    }
-
-    protected AionTransactionSigner getTransactionSigner(final AccountDTO from) {
-        return new AionTransactionSigner(from);
-    }
-
-    public abstract TransactionDTO getTransaction(final String txHash) throws NotFoundException;
-
-    public abstract Set<TransactionDTO> getLatestTransactions(final String address);
-
-    public abstract boolean getConnectionStatus();
-
-    public abstract SyncInfoDTO getSyncInfo();
-
-    public abstract int getPeerCount();
-
-    public abstract LightAppSettings getSettings();
-
-    protected abstract TransactionResponseDTO sendTransactionInternal(final SendTransactionDTO dto) throws ValidationException;
-
-    protected abstract String getCurrency();
+    public void connect() {}
 
     public void close() {
         walletStorage.save();
@@ -155,18 +132,56 @@ public abstract class BlockchainConnector {
     }
 
     public void unlockConnection() {
-        if (connectionLocked){
+        if (connectionLocked) {
             connectionLocked = false;
-            EventPublisher.fireConnectionEstablished();
+            if (isConnected()) {
+                EventPublisher.fireConnectionEstablished(isSecuredConnection());
+            } else {
+                connect();
+            }
         }
-    }
-
-    protected final boolean isConnectionUnLocked() {
-        return !connectionLocked;
     }
 
     public final AccountManager getAccountManager() {
         return accountManager;
+    }
+
+    public abstract BigInteger getBalance(final String address);
+
+    public abstract TransactionDTO getTransaction(final String txHash) throws NotFoundException;
+
+    public abstract Set<TransactionDTO> getLatestTransactions(final String address);
+
+    public abstract boolean isConnected();
+
+    public abstract SyncInfoDTO getSyncInfo();
+
+    public abstract int getPeerCount();
+
+    public abstract LightAppSettings getSettings();
+
+    public final TransactionResponseDTO sendTransaction(final SendTransactionDTO dto) throws ValidationException {
+        if (dto == null || !dto.validate()) {
+            throw new ValidationException("Invalid transaction request data");
+        }
+        if (dto.estimateValue().compareTo(getBalance(dto.getFrom().getPublicAddress())) >= 0) {
+            throw new ValidationException("Insufficient funds");
+        }
+        return sendTransactionInternal(dto);
+    }
+
+    protected abstract TransactionResponseDTO sendTransactionInternal(final SendTransactionDTO dto) throws ValidationException;
+
+    protected abstract String getCurrency();
+
+    protected abstract boolean isSecuredConnection();
+
+    protected AionTransactionSigner getTransactionSigner(final AccountDTO from) {
+        return new AionTransactionSigner(from);
+    }
+
+    protected final boolean isConnectionUnLocked() {
+        return !connectionLocked;
     }
 
     protected final void lock() {
@@ -183,5 +198,13 @@ public abstract class BlockchainConnector {
 
     protected final void storeLightweightWalletSettings(final LightAppSettings lightAppSettings) {
         walletStorage.saveLightAppSettings(lightAppSettings);
+    }
+
+    public final ConnectionKeyProvider getConnectionKeyProvider() {
+        return walletStorage.getConnectionKeyProvider();
+    }
+
+    public void storeConnectionKeys(final ConnectionKeyProvider connectionKeyProvider) {
+        walletStorage.saveConnectionProperties(connectionKeyProvider);
     }
 }

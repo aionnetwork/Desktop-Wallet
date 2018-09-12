@@ -1,11 +1,13 @@
 package org.aion.wallet.storage;
 
 import org.aion.api.log.LogEnum;
+import org.aion.wallet.dto.ConnectionKeyProvider;
 import org.aion.wallet.dto.LightAppSettings;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
 import org.slf4j.Logger;
 
+import javax.annotation.Nonnull;
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.File;
@@ -43,6 +45,8 @@ public class WalletStorage {
 
     private static final String ACCOUNTS_FILE;
 
+    private static final String CONNECTIONS_FILE;
+
     private static final String WALLET_FILE;
 
     static {
@@ -55,6 +59,8 @@ public class WalletStorage {
         KEYSTORE_PATH = Paths.get(STORAGE_DIR + File.separator + "keystore");
 
         ACCOUNTS_FILE = STORAGE_DIR + File.separator + "accounts.properties";
+
+        CONNECTIONS_FILE = STORAGE_DIR + File.separator + "connections.properties";
 
         WALLET_FILE = STORAGE_DIR + File.separator + "wallet.properties";
     }
@@ -69,12 +75,15 @@ public class WalletStorage {
 
     private final Properties accountsProperties;
 
+    private final Properties connectionProperties;
+
     private final Properties lightAppProperties;
 
     private WalletStorage() throws IOException {
         final Path dir = Paths.get(STORAGE_DIR);
         ensureExistence(dir, true);
         accountsProperties = getPropertiesFomFIle(ACCOUNTS_FILE);
+        connectionProperties = getPropertiesFomFIle(CONNECTIONS_FILE);
         lightAppProperties = getPropertiesFomFIle(WALLET_FILE);
     }
 
@@ -107,15 +116,16 @@ public class WalletStorage {
     }
 
     private void saveAccounts() {
-        try (final OutputStream writer = Files.newOutputStream(Paths.get(ACCOUNTS_FILE))) {
-            accountsProperties.store(writer, LocalDateTime.now().toString());
-        } catch (IOException e) {
-            log.error(e.getMessage(), e);
-        }
+        savePropertiesToFile(accountsProperties, ACCOUNTS_FILE);
     }
 
     private void saveSettings() {
-        try (final OutputStream writer = Files.newOutputStream(Paths.get(WALLET_FILE))) {
+        savePropertiesToFile(lightAppProperties, WALLET_FILE);
+        savePropertiesToFile(connectionProperties, CONNECTIONS_FILE);
+    }
+
+    private void savePropertiesToFile(Properties lightAppProperties, String connectionsFile) {
+        try (final OutputStream writer = Files.newOutputStream(Paths.get(connectionsFile))) {
             lightAppProperties.store(writer, LocalDateTime.now().toString());
         } catch (IOException e) {
             log.error(e.getMessage(), e);
@@ -133,7 +143,7 @@ public class WalletStorage {
         }
     }
 
-    public String getMasterAccountMnemonic(String password) throws ValidationException {
+    public String getMasterAccountMnemonic(final String password) throws ValidationException {
         if (password == null || password.equalsIgnoreCase("")) {
             throw new ValidationException("Password is not valid");
         }
@@ -149,11 +159,11 @@ public class WalletStorage {
         }
     }
 
-    public void setMasterAccountMnemonic(final String mnemonic, String password) throws ValidationException {
+    public void setMasterAccountMnemonic(final String mnemonic, final String password) throws ValidationException {
         try {
             if (mnemonic != null) {
                 accountsProperties.setProperty(MASTER_MNEMONIC_PROP, encryptMnemonic(mnemonic, password));
-                saveSettings();
+                saveAccounts();
             }
         } catch (Exception e) {
             throw new ValidationException("Cannot encode master account key");
@@ -172,7 +182,7 @@ public class WalletStorage {
     public void incrementMasterAccountDerivations() throws ValidationException {
         if (hasMasterAccount()) {
             accountsProperties.setProperty(MASTER_DERIVATIONS_PROP, String.valueOf(getMasterAccountDerivations() + 1));
-            saveSettings();
+            saveAccounts();
         } else {
             throw new ValidationException("Cannot increment derivation when master account is missing");
         }
@@ -182,11 +192,19 @@ public class WalletStorage {
         return new LightAppSettings(lightAppProperties, type);
     }
 
-    public final void saveLightAppSettings(final LightAppSettings lightAppSettings) {
-        if (lightAppSettings != null) {
-            lightAppProperties.putAll(lightAppSettings.getSettingsProperties());
-            saveSettings();
-        }
+    public final void saveLightAppSettings(@Nonnull final LightAppSettings lightAppSettings) {
+        lightAppProperties.putAll(lightAppSettings.getSettingsProperties());
+        saveSettings();
+    }
+
+    public final ConnectionKeyProvider getConnectionKeyProvider() {
+        return new ConnectionKeyProvider(connectionProperties);
+    }
+
+    public final void saveConnectionProperties(@Nonnull final ConnectionKeyProvider connectionKeyProvider) {
+        connectionProperties.clear();
+        connectionProperties.putAll(connectionKeyProvider.getConnectionProperties());
+        saveSettings();
     }
 
     private String encryptMnemonic(String mnemonic, String password) throws Exception {

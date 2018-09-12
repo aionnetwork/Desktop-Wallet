@@ -16,6 +16,7 @@ import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import org.aion.api.log.LogEnum;
 import org.aion.wallet.connector.BlockchainConnector;
+import org.aion.wallet.console.ConsoleManager;
 import org.aion.wallet.dto.LightAppSettings;
 import org.aion.wallet.events.*;
 import org.aion.wallet.log.WalletLoggerFactory;
@@ -60,6 +61,7 @@ public class MainWindow extends Application {
 
     @Override
     public void start(final Stage stage) throws IOException {
+        ConsoleManager.addLog("Welcome!", ConsoleManager.LogType.SETTINGS);
         this.stage = stage;
         stage.initStyle(StageStyle.TRANSPARENT);
         stage.getIcons().add(new Image(getClass().getResourceAsStream(AION_LOGO)));

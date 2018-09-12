@@ -92,7 +92,7 @@ public class CoreBlockchainConnector extends BlockchainConnector {
     }
 
     @Override
-    public boolean getConnectionStatus() {
+    public boolean isConnected() {
         return API.peerCount() > 0;
     }
 
@@ -104,6 +104,11 @@ public class CoreBlockchainConnector extends BlockchainConnector {
     @Override
     public String getCurrency() {
         return AionConstants.CCY;
+    }
+
+    @Override
+    protected boolean isSecuredConnection() {
+        return true;
     }
 
     @Override

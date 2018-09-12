@@ -303,7 +303,7 @@ public class SendController extends AbstractController {
     private void handleAccountEvent(final AccountEvent event) {
         final AccountDTO account = event.getPayload();
         if (AccountEvent.Type.CHANGED.equals(event.getType())) {
-            connected = blockchainConnector.getConnectionStatus();
+            connected = blockchainConnector.isConnected();
             if (account.isActive()) {
                 this.account = account;
                 sendButton.setDisable(!connected);
