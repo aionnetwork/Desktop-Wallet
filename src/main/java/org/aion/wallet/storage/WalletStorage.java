@@ -83,6 +83,7 @@ public class WalletStorage {
     private WalletStorage() throws IOException {
         final Path dir = Paths.get(STORAGE_DIR);
         ensureExistence(dir, true);
+        ensureExistence(KEYSTORE_PATH, true);
         accountsProperties = getPropertiesFomFIle(ACCOUNTS_FILE);
         connectionProperties = getPropertiesFomFIle(CONNECTIONS_FILE);
         lightAppProperties = getPropertiesFomFIle(WALLET_FILE);
