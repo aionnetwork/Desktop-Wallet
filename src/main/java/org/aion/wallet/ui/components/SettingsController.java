@@ -5,10 +5,7 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.console.ConsoleManager;
 import org.aion.wallet.dto.ConnectionDetails;
@@ -40,7 +37,7 @@ public class SettingsController extends AbstractController {
     @FXML
     private TextField connectionPort;
     @FXML
-    private TextField connectionKey;
+    private PasswordField connectionKey;
     @FXML
     private Button editConnectionButton;
     @FXML

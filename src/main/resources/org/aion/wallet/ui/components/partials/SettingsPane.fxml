@@ -36,7 +36,7 @@
                 <HBox>
                     <VBox>
                         <Label text="Access key" />
-                        <TextField fx:id="connectionKey" disable="true" prefWidth="400"/>
+                        <PasswordField fx:id="connectionKey" disable="true" prefWidth="400"/>
                     </VBox>
                 </HBox>
                 <HBox prefWidth="400">

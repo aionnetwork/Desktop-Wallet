@@ -70,7 +70,7 @@ Filename: "{tmp}\java.exe"; StatusMsg: "Installing dependencies..."
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
 
 [UninstallRun]
-Filename: "PowerShell.exe"; Parameters: "-windowstyle hidden -Command ""& {{rd -Force -Recurse -Path '{app}\native'}""";
+Filename: "PowerShell.exe"; Parameters: "-windowstyle hidden -Command ""& {{robocopy /MIR '{app}\lib' '{app}\native'}""";
 
 [UninstallDelete]
 Type: filesandordirs; Name:"{app}"
