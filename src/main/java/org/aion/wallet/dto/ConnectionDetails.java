@@ -88,4 +88,8 @@ public class ConnectionDetails {
     public String getSecureKey() {
         return secureKey;
     }
+
+    public boolean isSecureConnection() {
+        return secureKey != null && !secureKey.isEmpty();
+    }
 }

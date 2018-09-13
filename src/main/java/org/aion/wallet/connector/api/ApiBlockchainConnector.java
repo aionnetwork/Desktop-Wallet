@@ -46,7 +46,9 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     private static final int DISCONNECT_TIMER = 3000;
 
-    private static final List<Integer> ACCEPTED_TRANSACTION_RESPONSE_STATUSES = Arrays.asList(Message.Retcode.r_tx_Init_VALUE, Message.Retcode.r_tx_Recved_VALUE, Message.Retcode.r_tx_NewPending_VALUE, Message.Retcode.r_tx_Pending_VALUE, Message.Retcode.r_tx_Included_VALUE);
+    private static final List<Integer> ACCEPTED_TRANSACTION_RESPONSE_STATUSES = Arrays.asList(Message.Retcode
+            .r_tx_Init_VALUE, Message.Retcode.r_tx_Recved_VALUE, Message.Retcode.r_tx_NewPending_VALUE, Message
+            .Retcode.r_tx_Pending_VALUE, Message.Retcode.r_tx_Included_VALUE);
 
     private final ExecutorService backgroundExecutor;
 
@@ -59,8 +61,6 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     private ConnectionDetails connectionDetails;
 
     private long startingBlock;
-
-    private boolean isSecuredConnection;
 
     public ApiBlockchainConnector() {
         backgroundExecutor = Executors.newFixedThreadPool(getCores());
@@ -95,13 +95,13 @@ public class ApiBlockchainConnector extends BlockchainConnector {
             }
         }
         connectionFuture = backgroundExecutor.submit(() -> {
-            final Optional<ConnectionDetails> connectionDetails = getConnectionKeyProvider().getConnectionDetails(newConnectionDetails.getId());
-            final String connectionKey = connectionDetails.get().getSecureKey();
-            isSecuredConnection = !(connectionKey == null || connectionKey.isEmpty());
-            Platform.runLater(() -> EventPublisher.fireConnectAttmpted(isSecuredConnection));
-            final ApiMsg connect = API.connect(newConnectionDetails.toConnectionString(), true, 1, 60_000, connectionKey);
+            final String connectionKey = newConnectionDetails.getSecureKey();
+            Platform.runLater(() -> EventPublisher.fireConnectAttmpted(newConnectionDetails.isSecureConnection()));
+            final ApiMsg connect = API.connect(newConnectionDetails.toConnectionString(), true, 1, 60_000,
+                    connectionKey);
             if (connect.getObject()) {
-                Platform.runLater(() -> EventPublisher.fireConnectionEstablished(isSecuredConnection));
+                Platform.runLater(() -> EventPublisher.fireConnectionEstablished(newConnectionDetails
+                        .isSecureConnection()));
                 final Block latestBlock = getLatestBlock();
                 startingBlock = Math.max(0, latestBlock.getNumber() - 30 * BLOCK_BATCH_SIZE);
                 processTransactionsOnReconnect();
@@ -155,7 +155,8 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         final MsgRsp response;
         lock();
         try {
-            ConsoleManager.addLog("Sending transaction", ConsoleManager.LogType.TRANSACTION, ConsoleManager.LogLevel.INFO);
+            ConsoleManager.addLog("Sending transaction", ConsoleManager.LogType.TRANSACTION, ConsoleManager.LogLevel
+                    .INFO);
             response = API.getTx().sendRawTransaction(ByteArrayWrapper.wrap(encodedTransaction)).getObject();
         } finally {
             unLock();
@@ -260,7 +261,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     @Override
     protected boolean isSecuredConnection() {
-        return isSecuredConnection;
+        return connectionDetails.isSecureConnection();
     }
 
     @Override
@@ -272,13 +273,15 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     @Override
     public void reloadSettings(final LightAppSettings settings) {
+        boolean settingsChanged = false;
         if (!lightAppSettings.equals(settings)) {
             super.reloadSettings(settings);
+            settingsChanged = true;
         }
         lightAppSettings = getLightweightWalletSettings(ApiType.JAVA);
         final ConnectionDetails newConnectionDetails = getConnectionDetails();
         if (isConnected()) {
-            if (!newConnectionDetails.equals(this.connectionDetails)) {
+            if (!connectionDetails.toConnectionString().equals(newConnectionDetails.toConnectionString())) {
                 Platform.runLater(EventPublisher::fireDisconnectAttempted);
                 disconnect();
                 try {
@@ -286,10 +289,16 @@ public class ApiBlockchainConnector extends BlockchainConnector {
                 } catch (InterruptedException e) {
                     log.error(e.getMessage(), e);
                 }
+                connect(newConnectionDetails);
+                settingsChanged = true;
             }
+        } else {
+            connect(newConnectionDetails);
+            settingsChanged = true;
         }
-        connect(newConnectionDetails);
-        EventPublisher.fireApplicationSettingsApplied(settings);
+        if(settingsChanged) {
+            EventPublisher.fireApplicationSettingsApplied(settings);
+        }
     }
 
     @Override
@@ -303,7 +312,8 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         if (AbstractAccountEvent.Type.CHANGED.equals(event.getType())) {
             getAccountManager().updateAccount(account);
         } else if (AbstractAccountEvent.Type.ADDED.equals(event.getType())) {
-            backgroundExecutor.submit(() -> processTransactionsFromBlock(null, Collections.singleton(account.getPublicAddress())));
+            backgroundExecutor.submit(() -> processTransactionsFromBlock(null, Collections.singleton(account
+                    .getPublicAddress())));
         }
     }
 
@@ -311,7 +321,8 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     private void handleAccountListEvent(final AccountListEvent event) {
         if (AbstractAccountEvent.Type.RECOVERED.equals(event.getType())) {
             final Set<String> addresses = event.getPayload();
-            final BlockDTO oldestSafeBlock = getOldestSafeBlock(addresses, i -> {});
+            final BlockDTO oldestSafeBlock = getOldestSafeBlock(addresses, i -> {
+            });
             backgroundExecutor.submit(() -> processTransactionsFromBlock(oldestSafeBlock, addresses));
             final Iterator<String> addressesIterator = addresses.iterator();
             AccountDTO account = getAccount(addressesIterator.next());
@@ -368,16 +379,20 @@ public class ApiBlockchainConnector extends BlockchainConnector {
             if (!addresses.isEmpty()) {
                 final long latest = getLatestBlock().getNumber();
                 final long previousSafe = lastSafeBlock != null ? lastSafeBlock.getNumber() : startingBlock;
-                log.debug("Processing transactions from block: {} to block: {}, for addresses: {}", previousSafe, latest, addresses);
+                log.debug("Processing transactions from block: {} to block: {}, for addresses: {}", previousSafe,
+                        latest, addresses);
                 if (previousSafe > startingBlock) {
                     final Block lastSupposedSafe = getBlock(previousSafe);
-                    if (lastSafeBlock == null || !Arrays.equals(lastSafeBlock.getHash(), (lastSupposedSafe.getHash().toBytes()))) {
-                        EventPublisher.fireFatalErrorEncountered("A re-organization happened too far back. Please restart Wallet!");
+                    if (lastSafeBlock == null || !Arrays.equals(lastSafeBlock.getHash(), (lastSupposedSafe.getHash()
+                            .toBytes()))) {
+                        EventPublisher.fireFatalErrorEncountered("A re-organization happened too far back. Please " +
+                                "restart Wallet!");
                     }
                     removeTransactionsFromBlock(addresses, previousSafe);
                 }
                 for (long i = latest; i > previousSafe; i -= BLOCK_BATCH_SIZE) {
-                    List<Long> blockBatch = LongStream.iterate(i, j -> j - 1).limit(BLOCK_BATCH_SIZE).boxed().collect(Collectors.toList());
+                    List<Long> blockBatch = LongStream.iterate(i, j -> j - 1).limit(BLOCK_BATCH_SIZE).boxed().collect
+                            (Collectors.toList());
                     List<BlockDetails> blk = getBlockDetailsByNumbers(blockBatch);
                     blk.forEach(getBlockDetailsConsumer(addresses));
                 }
@@ -386,13 +401,15 @@ public class ApiBlockchainConnector extends BlockchainConnector {
                 if (newSafeBlockNumber > 0) {
                     newSafe = getBlock(newSafeBlockNumber);
                     for (String address : addresses) {
-                        getAccountManager().updateLastSafeBlock(address, new BlockDTO(newSafe.getNumber(), newSafe.getHash().toBytes()));
+                        getAccountManager().updateLastSafeBlock(address, new BlockDTO(newSafe.getNumber(), newSafe
+                                .getHash().toBytes()));
                     }
                 }
                 log.debug("finished processing for addresses: {}", addresses);
             }
         } else {
-            log.warn("WIll not process transactions from block: {} for addresses: {} because API is disconnected or no addresses", lastSafeBlock, addresses);
+            log.warn("WIll not process transactions from block: {} for addresses: {} because API is disconnected or " +
+                    "no addresses", lastSafeBlock, addresses);
         }
     }
 
