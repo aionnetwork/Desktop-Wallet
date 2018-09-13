@@ -30,13 +30,10 @@ if [ ! -d ${HID} ]
   pwd
   popd
   popd
+  open -a AionWallet
+ else
+  LIB_DIR=$(cd ../Java && pwd)/*
+  mkdir -p ${LOG_DIR}
+  ${JAVA_CMD} -cp "${LIB_DIR}" -Dlocal.storage.dir=${STORAGE_DIR} -Xms300m -Xmx500m org.aion.wallet.WalletApplication &> ${LOG_DIR}/log
 fi
-
-
-
-LIB_DIR=$(cd ../Java && pwd)/*
-
-mkdir -p ${LOG_DIR}
-
-${JAVA_CMD} -cp "${LIB_DIR}" -Dlocal.storage.dir=${STORAGE_DIR} -Xms300m -Xmx500m org.aion.wallet.WalletApplication &> ${LOG_DIR}/log
 
