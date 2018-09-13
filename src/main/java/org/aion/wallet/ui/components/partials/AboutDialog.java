@@ -1,5 +1,6 @@
 package org.aion.wallet.ui.components.partials;
 
+import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.input.InputEvent;
@@ -8,6 +9,7 @@ import javafx.scene.layout.Pane;
 import javafx.stage.Popup;
 import org.aion.api.log.LogEnum;
 import org.aion.wallet.log.WalletLoggerFactory;
+import org.aion.wallet.util.URLManager;
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -41,4 +43,8 @@ public class AboutDialog {
         ((Node) eventSource.getSource()).getScene().getWindow().hide();
     }
 
+    @FXML
+    private void openDevPage(final MouseEvent mouseEvent) {
+        URLManager.openCentrys();
+    }
 }

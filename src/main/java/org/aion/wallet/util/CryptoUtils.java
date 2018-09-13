@@ -52,4 +52,8 @@ public final class CryptoUtils {
     public static ECKey getECKey(final byte[] privateKey) {
         return EC_KEY_FACTORY.fromPrivate(privateKey);
     }
+
+    public static void preloadNatives() {
+        //no need to do anything here, we just want the EC_KEY_FACTORY to be initialized
+    }
 }

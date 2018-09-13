@@ -9,7 +9,7 @@
         xmlns="http://javafx.com/javafx"
         fx:controller="org.aion.wallet.ui.components.partials.PeerCountController"
         fx:id="parent"
-        prefWidth="100.0" alignment="CENTER">
+        prefWidth="120.0" alignment="CENTER">
     <stylesheets>
         <URL value="@../footer-pane.css" />
     </stylesheets>

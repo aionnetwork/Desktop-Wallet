@@ -93,6 +93,14 @@
     -fx-cursor: hand;
 }
 
+.link-style-paragraph-text {
+    -fx-text-fill: blue;
+    -fx-underline: true ;
+    -fx-cursor: hand;
+    -fx-font-family: 'Open Sans Regular';
+    -fx-font-size: 16px;
+}
+
 .error-label {
     -fx-text-fill: RED;
 }

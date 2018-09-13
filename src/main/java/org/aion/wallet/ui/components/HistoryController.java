@@ -280,8 +280,9 @@ public class HistoryController extends AbstractController {
 
     public class TxRow {
 
-        private static final String TO = "outgoing";
-        private static final String FROM = "incoming";
+        private static final String OUT = "outgoing";
+        private static final String IN = "incoming";
+        private static final String CREATE = "contract";
 
         private final TransactionDTO transaction;
         private final SimpleStringProperty type;
@@ -296,7 +297,8 @@ public class HistoryController extends AbstractController {
             final AccountDTO fromAccount = blockchainConnector.getAccount(dto.getFrom());
             final String balance = BalanceUtils.formatBalance(dto.getValue());
             boolean isFromTx = AddressUtils.equals(requestingAddress, fromAccount.getPublicAddress());
-            this.type = new SimpleStringProperty(isFromTx ? TO : FROM);
+            final String out = dto.getTo().equals("0x") ? CREATE : OUT;
+            this.type = new SimpleStringProperty(isFromTx ? out : IN);
             this.date = new SimpleStringProperty(SIMPLE_DATE_FORMAT.format(new Date(dto.getTimeStamp() * 1000)));
             this.status = new SimpleStringProperty(getTransactionStatus(dto));
             this.value = new SimpleStringProperty(balance);

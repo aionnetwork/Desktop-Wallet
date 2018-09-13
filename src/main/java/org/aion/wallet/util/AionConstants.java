@@ -2,11 +2,11 @@ package org.aion.wallet.util;
 
 import java.math.BigInteger;
 
-public class AionConstants {
+public final class AionConstants {
 
     private AionConstants() {}
 
-    public static final String AION_URL = "http://mainnet.aion.network";
+    public static final String AION_URL = "https://mainnet.aion.network";
 
     private static final long AMP = (long) 1E9;
 

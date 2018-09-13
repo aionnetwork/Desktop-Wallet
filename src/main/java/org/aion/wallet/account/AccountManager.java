@@ -7,7 +7,6 @@ import org.aion.api.log.LogEnum;
 import org.aion.base.util.TypeConverter;
 import org.aion.crypto.ECKey;
 import org.aion.crypto.ECKeyFac;
-import org.aion.mcf.account.Keystore;
 import org.aion.mcf.account.KeystoreFormat;
 import org.aion.mcf.account.KeystoreItem;
 import org.aion.wallet.connector.dto.BlockDTO;
@@ -16,12 +15,17 @@ import org.aion.wallet.connector.dto.TransactionDTO;
 import org.aion.wallet.console.ConsoleManager;
 import org.aion.wallet.crypto.MasterKey;
 import org.aion.wallet.dto.AccountDTO;
+import org.aion.wallet.dto.AccountType;
 import org.aion.wallet.events.EventPublisher;
 import org.aion.wallet.exception.ValidationException;
+import org.aion.wallet.hardware.AionAccountDetails;
+import org.aion.wallet.hardware.HardwareWallet;
+import org.aion.wallet.hardware.HardwareWalletException;
+import org.aion.wallet.hardware.HardwareWalletFactory;
 import org.aion.wallet.log.WalletLoggerFactory;
+import org.aion.wallet.storage.LocalKeystore;
 import org.aion.wallet.storage.WalletStorage;
 import org.aion.wallet.util.AddressUtils;
-import org.aion.wallet.util.BalanceUtils;
 import org.aion.wallet.util.CryptoUtils;
 import org.slf4j.Logger;
 
@@ -59,9 +63,10 @@ public class AccountManager {
     public AccountManager(final Function<String, BigInteger> balanceProvider, final Supplier<String> currencySupplier) {
         this.balanceProvider = balanceProvider;
         this.currencySupplier = currencySupplier;
-        for (String address : Keystore.list()) {
-            addressToAccount.put(address, getNewAccount(address));
+        for (String address : LocalKeystore.list()) {
+            addressToAccount.put(address, getNewImportedAccount(address));
         }
+        CryptoUtils.preloadNatives();
     }
 
     public String createMasterAccount(final String password, final String name) throws ValidationException {
@@ -148,6 +153,18 @@ public class AccountManager {
         }
     }
 
+    public AccountDTO importHardwareWallet(final AccountType accountType, final int derivationIndex, final String address) throws ValidationException {
+        AccountDTO account;
+        if (!addressToAccount.keySet().contains(address)) {
+            account = createHardwareWalletAccount(accountType, derivationIndex, address);
+            if (account == null) return null;
+        } else {
+            throw new ValidationException("Account already exists!");
+        }
+        EventPublisher.fireAccountAdded(account);
+        return account;
+    }
+
     private String unlockInternalAccount(final int derivationIndex) throws ValidationException {
         if (root == null) {
             return null;
@@ -158,7 +175,7 @@ public class AccountManager {
         if (recoveredAccount != null) {
             recoveredAccount.setPrivateKey(derivedKey.getPrivKeyBytes());
         } else {
-            recoveredAccount = createAccountWithPrivateKey(address, derivedKey.getPrivKeyBytes(), false, derivationIndex);
+            recoveredAccount = createAccountWithPrivateKey(address, derivedKey.getPrivKeyBytes(), AccountType.LOCAL, derivationIndex);
         }
         return recoveredAccount == null ? null : address;
     }
@@ -169,7 +186,7 @@ public class AccountManager {
         }
         final ECKey derivedKey = getEcKeyFromRoot(derivationIndex);
         final String address = TypeConverter.toJsonHex(derivedKey.computeAddress(derivedKey.getPubKey()));
-        return createAccountWithPrivateKey(address, derivedKey.getPrivKeyBytes(), false, derivationIndex);
+        return createAccountWithPrivateKey(address, derivedKey.getPrivKeyBytes(), AccountType.LOCAL, derivationIndex);
     }
 
     private ECKey getEcKeyFromRoot(final int derivationIndex) throws ValidationException {
@@ -186,10 +203,10 @@ public class AccountManager {
         String address = TypeConverter.toJsonHex(KeystoreItem.parse(fileContent).getAddress());
         final AccountDTO accountDTO;
         if (shouldKeep) {
-            if (!Keystore.exist(address)) {
-                address = Keystore.create(password, key);
+            if (!LocalKeystore.exist(address)) {
+                address = LocalKeystore.create(password, key);
                 if (AddressUtils.isValid(address)) {
-                    accountDTO = createImportedAccountFromPrivateKey(address, key.getPrivKeyBytes());
+                    accountDTO = createExternalAccountFromPrivateKey(address, key.getPrivKeyBytes());
                 } else {
                     throw new ValidationException("Failed to save keystore file");
                 }
@@ -198,7 +215,7 @@ public class AccountManager {
             }
         } else {
             if (!addressToAccount.keySet().contains(address)) {
-                accountDTO = createImportedAccountFromPrivateKey(address, key.getPrivKeyBytes());
+                accountDTO = createExternalAccountFromPrivateKey(address, key.getPrivKeyBytes());
             } else {
                 throw new ValidationException("Account already exists!");
             }
@@ -206,15 +223,15 @@ public class AccountManager {
         if (accountDTO == null) {
             throw new ValidationException("Failed to create account");
         }
-        processAccountAdded(accountDTO, fileContent);
+        processExternalAccountAdded(accountDTO, fileContent);
         return accountDTO;
     }
 
     public void exportAccount(final AccountDTO account, final String password, final String destinationDir) throws ValidationException {
         final ECKey ecKey = CryptoUtils.getECKey(account.getPrivateKey());
-        final boolean remembered = account.isImported() && Keystore.exist(account.getPublicAddress());
+        final boolean remembered = account.isImported() && LocalKeystore.exist(account.getPublicAddress());
         if (!remembered) {
-            Keystore.create(password, ecKey);
+            LocalKeystore.create(password, ecKey);
         }
         if (Files.isDirectory(WalletStorage.KEYSTORE_PATH)) {
             final String fileNameRegex = getExportedFileNameRegex(account.getPublicAddress());
@@ -259,7 +276,8 @@ public class AccountManager {
     }
 
     public BlockDTO getLastSafeBlock(final String address) {
-        return addressToAccount.get(address).getLastSafeBlock();
+        final AccountDTO accountDTO = addressToAccount.get(address);
+        return accountDTO != null ? accountDTO.getLastSafeBlock() : null;
     }
 
     public void updateLastSafeBlock(final String address, final BlockDTO lastCheckedBlock) {
@@ -269,14 +287,12 @@ public class AccountManager {
     public List<AccountDTO> getAccounts() {
         final Collection<AccountDTO> filteredAccounts = addressToAccount.values().stream().filter(account -> account.isImported() || account.isUnlocked()).collect(Collectors.toList());
         for (AccountDTO account : filteredAccounts) {
-            account.setBalance(BalanceUtils.formatBalance(balanceProvider.apply(account.getPublicAddress())));
+            account.setBalance(balanceProvider.apply(account.getPublicAddress()));
         }
         List<AccountDTO> accounts = new ArrayList<>(filteredAccounts);
         accounts.sort((AccountDTO o1, AccountDTO o2) -> {
-            if (!o1.isImported() && !o2.isImported()) {
-                return o1.getDerivationIndex() - o2.getDerivationIndex();
-            }
-            return o1.isImported() ? 1 : -1;
+            final int order = o1.getType().getOrder() - o2.getType().getOrder();
+            return order == 0 ? o1.getDerivationIndex() - o2.getDerivationIndex() : order;
         });
         return accounts;
     }
@@ -286,7 +302,7 @@ public class AccountManager {
     }
 
     public AccountDTO getAccount(final String address) {
-        return Optional.ofNullable(addressToAccount.get(address)).orElse(getNewAccount(address));
+        return Optional.ofNullable(addressToAccount.get(address)).orElse(getNewImportedAccount(address));
     }
 
     public void updateAccount(final AccountDTO account) {
@@ -295,34 +311,49 @@ public class AccountManager {
 
     public void unlockAccount(final AccountDTO account, final String password) throws ValidationException {
         isWalletLocked = false;
-        final Optional<byte[]> fileContent = Optional.ofNullable(addressToKeystoreContent.get(account.getPublicAddress()));
-        final ECKey storedKey;
-        if (fileContent.isPresent()) {
-            storedKey = KeystoreFormat.fromKeystore(fileContent.get(), password);
-        } else {
-            storedKey = Keystore.getKey(account.getPublicAddress(), password);
-        }
+        if (EnumSet.of(AccountType.LOCAL, AccountType.EXTERNAL).contains(account.getType())) {
+            final Optional<byte[]> fileContent = Optional.ofNullable(addressToKeystoreContent.get(account.getPublicAddress()));
+            final ECKey storedKey;
+            if (fileContent.isPresent()) {
+                storedKey = KeystoreFormat.fromKeystore(fileContent.get(), password);
+            } else {
+                storedKey = LocalKeystore.getKey(account.getPublicAddress(), password);
+            }
 
-        if (storedKey != null) {
-            account.setActive(true);
-            account.setPrivateKey(storedKey.getPrivKeyBytes());
-            EventPublisher.fireAccountChanged(account);
+            if (storedKey != null) {
+                account.setPrivateKey(storedKey.getPrivKeyBytes());
+            } else {
+                throw new ValidationException("The password is incorrect!");
+            }
         } else {
-            throw new ValidationException("The password is incorrect!");
+            HardwareWallet hardwareWallet = HardwareWalletFactory.getHardwareWallet(account.getType());
+            final AionAccountDetails accountDetails;
+            final String accountType = account.getType().getDisplayString();
+            try {
+                accountDetails = hardwareWallet.getAccountDetails(account.getDerivationIndex());
+            } catch (HardwareWalletException e) {
+                throw new ValidationException("Can't unlock! " + accountType + " device disconnected.");
+            }
+            if (!accountDetails.getAddress().equals(account.getPublicAddress())) {
+                throw new ValidationException("Wrong " + accountType + " device connected. Could not find account!");
+                }
         }
+        account.setActive(true);
+        EventPublisher.fireAccountChanged(account);
 
     }
 
     public List<SendTransactionDTO> getTimedOutTransactions(final String accountAddress) {
-        return addressToAccount.get(accountAddress).getTimedOutTransactions();
+        final AccountDTO accountDTO = addressToAccount.get(accountAddress);
+        return accountDTO == null ? Collections.emptyList() : accountDTO.getTimedOutTransactions();
     }
 
     public void addTimedOutTransaction(final SendTransactionDTO transaction) {
-        addressToAccount.get(transaction.getFrom()).addTimedOutTransaction(transaction);
+        addressToAccount.get(transaction.getFrom().getPublicAddress()).addTimedOutTransaction(transaction);
     }
 
     public void removeTimedOutTransaction(final SendTransactionDTO transaction) {
-        addressToAccount.get(transaction.getFrom()).removeTimedOutTransaction(transaction);
+        addressToAccount.get(transaction.getFrom().getPublicAddress()).removeTimedOutTransaction(transaction);
     }
 
     public void lockAll() {
@@ -339,11 +370,11 @@ public class AccountManager {
         }
     }
 
-    private AccountDTO createImportedAccountFromPrivateKey(final String address, final byte[] privateKeyBytes) {
-        return createAccountWithPrivateKey(address, privateKeyBytes, true, -1);
+    private AccountDTO createExternalAccountFromPrivateKey(final String address, final byte[] privateKeyBytes) {
+        return createAccountWithPrivateKey(address, privateKeyBytes, AccountType.EXTERNAL, -1);
     }
 
-    private AccountDTO createAccountWithPrivateKey(final String address, final byte[] privateKeyBytes, boolean isImported, int derivation) {
+    private AccountDTO createAccountWithPrivateKey(final String address, final byte[] privateKeyBytes, AccountType accountType, int derivation) {
         if (address == null) {
             log.error("Can't create account with null address");
             return null;
@@ -352,14 +383,26 @@ public class AccountManager {
             log.error("Can't create account without private key");
             return null;
         }
-        AccountDTO account = getNewAccount(address, isImported, derivation);
+        AccountDTO account = getNewAccount(address, accountType, derivation);
         account.setPrivateKey(privateKeyBytes);
         account.setActive(true);
         addressToAccount.put(account.getPublicAddress(), account);
         return account;
     }
 
-    private void processAccountAdded(final AccountDTO account, final byte[] keystoreContent) {
+    private AccountDTO createHardwareWalletAccount(final AccountType accountType, final int derivationIndex, final String address) {
+        final AccountDTO account;
+        if (address == null) {
+            log.error("Can't create account with null address");
+            return null;
+        }
+        account = getNewAccount(address, accountType, derivationIndex);
+        account.setActive(true);
+        addressToAccount.put(account.getPublicAddress(), account);
+        return account;
+    }
+
+    private void processExternalAccountAdded(final AccountDTO account, final byte[] keystoreContent) {
         if (account == null || keystoreContent == null) {
             throw new IllegalArgumentException(String.format("account %s ; keystoreContent: %s", account, Arrays.toString(keystoreContent)));
         }
@@ -372,21 +415,17 @@ public class AccountManager {
         return walletStorage.getAccountName(publicAddress);
     }
 
-    private AccountDTO getNewAccount(final String publicAddress, boolean isImported, int derivation) {
+    private AccountDTO getNewAccount(final String publicAddress, AccountType accountType, int derivation) {
         return new AccountDTO(getStoredAccountName(publicAddress),
                 publicAddress,
-                getFormattedBalance(publicAddress),
+                balanceProvider.apply(publicAddress),
                 currencySupplier.get(),
-                isImported,
+                accountType,
                 derivation);
     }
 
-    private AccountDTO getNewAccount(final String publicAddress) {
-        return getNewAccount(publicAddress, true, -1);
-    }
-
-    private String getFormattedBalance(String address) {
-        return BalanceUtils.formatBalance(balanceProvider.apply(address));
+    private AccountDTO getNewImportedAccount(final String publicAddress) {
+        return getNewAccount(publicAddress, AccountType.EXTERNAL, -1);
     }
 
     private void storeAccountName(final String address, final String name) {

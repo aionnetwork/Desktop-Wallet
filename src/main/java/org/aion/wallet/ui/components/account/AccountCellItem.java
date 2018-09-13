@@ -5,15 +5,24 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
-import javafx.scene.control.*;
+import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
+import org.aion.wallet.connector.BlockchainConnector;
+import org.aion.wallet.console.ConsoleManager;
 import org.aion.wallet.dto.AccountDTO;
+import org.aion.wallet.dto.AccountType;
 import org.aion.wallet.events.EventPublisher;
+import org.aion.wallet.exception.ValidationException;
+import org.aion.wallet.ui.components.partials.HardwareWalletDisconnectedDialog;
+import org.aion.wallet.ui.components.partials.LedgerDisconnectedDialog;
 import org.aion.wallet.ui.components.partials.SaveKeystoreDialog;
 import org.aion.wallet.ui.components.partials.UnlockAccountDialog;
 import org.aion.wallet.util.BalanceUtils;
@@ -21,6 +30,7 @@ import org.aion.wallet.util.UIUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.EnumSet;
 
 public class AccountCellItem extends ListCell<AccountDTO> {
 
@@ -47,6 +57,8 @@ public class AccountCellItem extends ListCell<AccountDTO> {
     private final UnlockAccountDialog accountUnlockDialog = new UnlockAccountDialog();
 
     private final SaveKeystoreDialog saveKeystoreDialog = new SaveKeystoreDialog();
+
+    private final LedgerDisconnectedDialog ledgerDisconnected = new LedgerDisconnectedDialog();
 
     @FXML
     private TextField importedLabel;
@@ -117,6 +129,7 @@ public class AccountCellItem extends ListCell<AccountDTO> {
             final ObservableList<Node> children = nameBox.getChildren();
             children.removeAll(importedLabel, name);
             if (item.isImported()) {
+                importedLabel.setText(item.getType().getDisplayString());
                 children.addAll(importedLabel, name);
             } else {
                 children.add(name);
@@ -125,7 +138,7 @@ public class AccountCellItem extends ListCell<AccountDTO> {
             publicAddress.setText(item.getPublicAddress());
             publicAddress.setPadding(new Insets(5, 0, 0, 10));
 
-            balance.setText(item.getBalance() + BalanceUtils.CCY_SEPARATOR + item.getCurrency());
+            balance.setText(item.getFormattedBalance() + BalanceUtils.CCY_SEPARATOR + item.getCurrency());
             UIUtils.setWidth(balance);
 
             if (item.isActive()) {
@@ -140,6 +153,8 @@ public class AccountCellItem extends ListCell<AccountDTO> {
                 Tooltip.install(accountSelectButton, CONNECT_ACCOUNT_TOOLTIP);
             }
 
+            accountExportButton.setVisible(!item.getType().equals(AccountType.LEDGER));
+
             setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
         }
     }
@@ -147,12 +162,34 @@ public class AccountCellItem extends ListCell<AccountDTO> {
     @FXML
     public void onDisconnectedClicked(final MouseEvent mouseEvent) {
         final AccountDTO modifiedAccount = this.getItem();
-        if (!modifiedAccount.isUnlocked()) {
-            accountUnlockDialog.open(mouseEvent);
-            EventPublisher.fireAccountUnlocked(modifiedAccount);
+        if (EnumSet.of(AccountType.LOCAL, AccountType.EXTERNAL).contains(modifiedAccount.getType())) {
+            if (!modifiedAccount.isUnlocked()) {
+                accountUnlockDialog.open(mouseEvent);
+                EventPublisher.fireAccountUnlocked(modifiedAccount);
+            } else {
+                modifiedAccount.setActive(true);
+                EventPublisher.fireAccountChanged(modifiedAccount);
+            }
         } else {
-            modifiedAccount.setActive(true);
-            EventPublisher.fireAccountChanged(modifiedAccount);
+            try {
+                BlockchainConnector.getInstance().unlockAccount(modifiedAccount, "");
+                modifiedAccount.setActive(true);
+                EventPublisher.fireAccountChanged(modifiedAccount);
+            } catch (ValidationException e) {
+                final HardwareWalletDisconnectedDialog warningDialog = getWarningDialog(modifiedAccount.getType());
+                warningDialog.open(mouseEvent, e);
+                ConsoleManager.addLog(e.getMessage(), ConsoleManager.LogType.ACCOUNT, ConsoleManager.LogLevel
+                        .ERROR);
+            }
+        }
+    }
+
+    private HardwareWalletDisconnectedDialog getWarningDialog(final AccountType type) {
+        switch (type) {
+            case LEDGER:
+                return ledgerDisconnected;
+            default:
+                throw new UnsupportedOperationException("Can't display this type of account");
         }
     }
 
@@ -174,7 +211,7 @@ public class AccountCellItem extends ListCell<AccountDTO> {
     }
 
     @FXML
-    public void onExportClicked(final MouseEvent mouseEvent){
+    public void onExportClicked(final MouseEvent mouseEvent) {
         final AccountDTO account = getItem();
         if (!account.isUnlocked()) {
             accountUnlockDialog.open(mouseEvent);

@@ -1,10 +1,10 @@
 package org.aion.wallet.events;
 
+import javafx.scene.input.InputEvent;
 import org.aion.wallet.connector.dto.SendTransactionDTO;
 import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.dto.LightAppSettings;
 
-import java.util.List;
 import java.util.Set;
 
 public class EventPublisher {
@@ -46,26 +46,36 @@ public class EventPublisher {
 
     public static void fireAccountLocked(final AccountDTO account) {
         if (account != null) {
-            EventBusFactory.getBus(AbstractAccountEvent.ID).post(new AccountEvent(AbstractAccountEvent.Type.LOCKED, account));
+            EventBusFactory.getBus(AbstractAccountEvent.ID)
+                    .post(new AccountEvent(AbstractAccountEvent.Type.LOCKED, account));
         }
     }
 
     public static void fireAccountsRecovered(final Set<String> addresses) {
         if (addresses != null && !addresses.isEmpty()) {
-            EventBusFactory.getBus(AbstractAccountEvent.ID).post(new AccountListEvent(AbstractAccountEvent.Type.RECOVERED, addresses));
+            EventBusFactory.getBus(AbstractAccountEvent.ID)
+                    .post(new AccountListEvent(AbstractAccountEvent.Type.RECOVERED, addresses));
         }
     }
 
     public static void fireTransactionFinished() {
-        EventBusFactory.getBus(RefreshEvent.ID).post(new RefreshEvent(RefreshEvent.Type.TRANSACTION_FINISHED));
+        EventBusFactory.getBus(RefreshEvent.ID).post(new RefreshEvent(RefreshEvent.Type.TRANSACTION_FINISHED, null));
     }
 
-    public static void fireConnectionEstablished() {
-        EventBusFactory.getBus(RefreshEvent.ID).post(new RefreshEvent(RefreshEvent.Type.CONNECTED));
+    public static void fireConnectAttmpted(final boolean isSecuredConnection) {
+        EventBusFactory.getBus(RefreshEvent.ID).post(new RefreshEvent(RefreshEvent.Type.CONNECTING, isSecuredConnection));
+    }
+
+    public static void fireConnectionEstablished(final boolean isSecuredConnection) {
+        EventBusFactory.getBus(RefreshEvent.ID).post(new RefreshEvent(RefreshEvent.Type.CONNECTED, isSecuredConnection));
     }
 
     public static void fireConnectionBroken() {
-        EventBusFactory.getBus(RefreshEvent.ID).post(new RefreshEvent(RefreshEvent.Type.DISCONNECTED));
+        EventBusFactory.getBus(RefreshEvent.ID).post(new RefreshEvent(RefreshEvent.Type.DISCONNECTED, null));
+    }
+
+    public static void fireDisconnectAttempted() {
+        EventBusFactory.getBus(RefreshEvent.ID).post(new RefreshEvent(RefreshEvent.Type.DISCONNECTING, null));
     }
 
     public static void fireApplicationSettingsChanged(final LightAppSettings settings) {
@@ -77,6 +87,16 @@ public class EventPublisher {
     }
 
     public static void fireTransactionResubmited(final SendTransactionDTO transaction) {
-        EventBusFactory.getBus(TransactionEvent.ID).post(new TransactionEvent(TransactionEvent.Type.RESUBMIT, transaction));
+        EventBusFactory.getBus(TransactionEvent.ID)
+                .post(new TransactionEvent(TransactionEvent.Type.RESUBMIT, transaction));
+    }
+
+    public static void fireLedgerConnected() {
+        EventBusFactory.getBus(UiMessageEvent.ID).post(new UiMessageEvent(UiMessageEvent.Type.LEDGER_CONNECTED, ""));
+    }
+
+    public static void fireLedgerAccountSelected(final InputEvent eventSource) {
+        EventBusFactory.getBus(UiMessageEvent.ID)
+                .post(new UiMessageEvent(UiMessageEvent.Type.LEDGER_ACCOUNT_SELECTED, eventSource));
     }
 }

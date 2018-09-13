@@ -8,7 +8,7 @@ import java.math.BigInteger;
 
 public class SeededECKeyEd25519 extends ECKeyEd25519 {
 
-    private static int SIG_BYTES = Sodium.crypto_sign_ed25519_seedbytes();
+    private static final int SIG_BYTES = Sodium.crypto_sign_ed25519_seedbytes();
 
     private final byte[] publicKey;
     private final byte[] secretKey;

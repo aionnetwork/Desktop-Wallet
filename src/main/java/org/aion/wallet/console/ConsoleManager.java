@@ -12,8 +12,8 @@ public class ConsoleManager {
     private static final SimpleDateFormat SIMPLE_DATE_FORMAT = new SimpleDateFormat("dd-MM-YY - HH.mm.ss");
 
     private static final TextArea LOGS_TEXT_FIELD = new TextArea();
-    private static Stage CONSOLE_LOG_WINDOW;
-    private static StringBuilder logs = new StringBuilder();
+    private static final Stage CONSOLE_LOG_WINDOW;
+    private static final StringBuilder logs = new StringBuilder();
 
     static {
         LOGS_TEXT_FIELD.setEditable(false);
@@ -55,6 +55,7 @@ public class ConsoleManager {
 
     public enum LogLevel {
         INFO,
-        WARNING
+        WARNING,
+        ERROR
     }
 }

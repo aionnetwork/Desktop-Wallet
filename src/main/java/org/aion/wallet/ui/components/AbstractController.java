@@ -61,8 +61,7 @@ public abstract class AbstractController implements Initializable {
     }
 
     protected final EventHandler<WorkerStateEvent> getEmptyEvent() {
-        return event -> {
-        };
+        return event -> {};
     }
 
     protected final EventHandler<WorkerStateEvent> getErrorEvent(Consumer<Throwable> consumer, Task t) {
@@ -79,8 +78,7 @@ public abstract class AbstractController implements Initializable {
         return parent != null && parent.isVisible();
     }
 
-    protected void refreshView(final RefreshEvent event) {
-    }
+    protected void refreshView(final RefreshEvent event) {}
 
     protected abstract void internalInit(final URL location, final ResourceBundle resources);
 }

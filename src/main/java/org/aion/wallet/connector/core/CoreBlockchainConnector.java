@@ -92,7 +92,7 @@ public class CoreBlockchainConnector extends BlockchainConnector {
     }
 
     @Override
-    public boolean getConnectionStatus() {
+    public boolean isConnected() {
         return API.peerCount() > 0;
     }
 
@@ -104,6 +104,11 @@ public class CoreBlockchainConnector extends BlockchainConnector {
     @Override
     public String getCurrency() {
         return AionConstants.CCY;
+    }
+
+    @Override
+    protected boolean isSecuredConnection() {
+        return true;
     }
 
     @Override
@@ -124,10 +129,7 @@ public class CoreBlockchainConnector extends BlockchainConnector {
     }
 
     private SyncInfoDTO mapSyncInfo(final SyncInfo sync) {
-        SyncInfoDTO syncInfoDTO = new SyncInfoDTO();
-        syncInfoDTO.setChainBestBlkNumber(sync.chainBestBlkNumber);
-        syncInfoDTO.setNetworkBestBlkNumber(sync.networkBestBlkNumber);
-        return syncInfoDTO;
+        return new SyncInfoDTO(sync.chainBestBlkNumber, sync.networkBestBlkNumber);
     }
 
     private TransactionDTO mapTransaction(final AionTransaction transaction) {

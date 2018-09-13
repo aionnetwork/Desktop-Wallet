@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
-<?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.*?>
 <?import java.net.URL?>
-<?import javafx.scene.layout.HBox?>
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
+<AnchorPane xmlns:fx="http://javafx.com/fxml"
+            xmlns="http://javafx.com/javafx"
             fx:controller="org.aion.wallet.ui.components.partials.AboutDialog"
             prefHeight="250.0" prefWidth="350.0"
             styleClass="anchor-pane">
@@ -21,12 +19,15 @@
             <Image url="@../icons/aion-icon.png"/>
         </ImageView>
         <Label styleClass="main-text" text="AION Wallet"/>
-        <Label styleClass="paragraph-text" text="Current version: 0.2.0-light" />
+        <Label styleClass="paragraph-text" text="Current version: 1.1.0"/>
     </VBox>
     <HBox AnchorPane.bottomAnchor="0" AnchorPane.rightAnchor="0" spacing="5">
-        <Label AnchorPane.rightAnchor="10" AnchorPane.topAnchor="240" styleClass="paragraph-text" text="Powered by" />
-        <ImageView id="logo" pickOnBounds="true" preserveRatio="true" fitHeight="25">
-            <Image url="@../icons/centrys-logo.png"/>
-        </ImageView>
+        <Label AnchorPane.rightAnchor="10" AnchorPane.topAnchor="240" styleClass="paragraph-text" text="Powered by"/>
+        <HBox styleClass="link" onMouseClicked="#openDevPage">
+            <ImageView id="logo" pickOnBounds="true" preserveRatio="true" fitHeight="25">
+                <Image url="@../icons/centrys-logo.png"/>
+            </ImageView>
+        </HBox>
+
     </HBox>
 </AnchorPane>

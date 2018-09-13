@@ -2,7 +2,9 @@ package org.aion.wallet.util;
 
 import org.aion.base.util.TypeConverter;
 
-public class AddressUtils {
+public final class AddressUtils {
+
+    private AddressUtils() {}
 
     public static boolean isValid(final String address) {
         return address != null && !address.isEmpty() && isAionAddress(address);

@@ -14,11 +14,13 @@ import java.util.HashMap;
  * @author Sergiu-Paul Falcusan
  * -cheers
  */
-public class QRCodeUtils {
+public final class QRCodeUtils {
     private static final int MIN_QRCODE_WIDTH = 150;
     private static final int MIN_QRCODE_HEIGHT = 150;
     private static final int WHITE = 255 << 16 | 255 << 8 | 255;
     private static final int BLACK = 0;
+
+    private QRCodeUtils() {}
 
     /**
      * Encode a string into a QR Code (Default size Width 150px and Height 150px)

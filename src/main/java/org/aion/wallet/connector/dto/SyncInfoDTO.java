@@ -1,22 +1,20 @@
 package org.aion.wallet.connector.dto;
 
 public class SyncInfoDTO {
-    private long chainBestBlkNumber;
-    private long networkBestBlkNumber;
+
+    private final long chainBestBlkNumber;
+    private final long networkBestBlkNumber;
+
+    public SyncInfoDTO(final long chainBestBlkNumber, final long networkBestBlkNumber) {
+        this.chainBestBlkNumber = chainBestBlkNumber;
+        this.networkBestBlkNumber = networkBestBlkNumber;
+    }
 
     public long getNetworkBestBlkNumber() {
         return networkBestBlkNumber;
     }
 
-    public void setNetworkBestBlkNumber(long networkBestBlkNumber) {
-        this.networkBestBlkNumber = networkBestBlkNumber;
-    }
-
     public long getChainBestBlkNumber() {
         return chainBestBlkNumber;
-    }
-
-    public void setChainBestBlkNumber(long chainBestBlkNumber) {
-        this.chainBestBlkNumber = chainBestBlkNumber;
     }
 }

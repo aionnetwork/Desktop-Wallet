@@ -13,6 +13,6 @@
         <URL value="@../footer-pane.css" />
     </stylesheets>
     <HBox spacing="10">
-        <Label fx:id="connectivityLabel" styleClass="connected-label" text="Connecting.."/>
+        <Label fx:id="connectivityLabel" styleClass="connected-label" text="CONNECTING"/>
     </HBox>
 </VBox>

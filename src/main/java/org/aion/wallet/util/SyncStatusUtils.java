@@ -2,7 +2,7 @@ package org.aion.wallet.util;
 
 import org.aion.wallet.connector.dto.SyncInfoDTO;
 
-public class SyncStatusUtils {
+public final class SyncStatusUtils {
     private static final int SECONDS_IN_A_MINUTE = 60;
     private static final int SECONDS_IN_A_HOUR = 3600;
     private static final int SECONDS_IN_A_DAY = 86400;
@@ -11,6 +11,8 @@ public class SyncStatusUtils {
     private static final int HOURS_IN_A_DAY = 24;
     private static final int MINUTES_IN_AN_HOUR = 60;
     private static final int SYNC_STATUS_DISPLAY_UNIT_LIMIT = 2;
+
+    private SyncStatusUtils() {}
 
     public static String formatSyncStatus(final SyncInfoDTO syncInfo) {
         if(syncInfo != null) {

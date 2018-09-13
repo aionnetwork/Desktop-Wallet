@@ -1,12 +1,26 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project basedir="." default="build_standalone" name="aion ui"
-         xmlns:if="ant:if" xmlns:unless="ant:unless">
+>
+
+    <condition property="isWindows" value="true" else="false">
+        <os family="windows"/>
+    </condition>
+
+    <condition property="isLinux" value="true" else="false">
+        <os family="unix"/>
+    </condition>
+
+    <condition property="isMac" value="true" else="false">
+        <os family="mac"/>
+    </condition>
+
     <property name="parent.mod" value="../mod"/>
     <property name="project.name" value="aion_ui"/>
     <property name="dir.lib" value="./lib"/>
     <property name="dir.mod" value="./mod"/>
     <property name="dir.pack" value="./pack"/>
     <property name="dir.script" value="./scripts"/>
+    <property name="dir.cfg" value="./config"/>
     <property name="dir.main" value="./src/main"/>
     <property name="src.main" value="${dir.main}/java"/>
     <property name="res.main" value="${dir.main}/resources"/>
@@ -18,6 +32,12 @@
     <property name="out.test" value="./build/test"/>
     <property name="test.report.dir" value="./build/report"/>
 
+    <taskdef resource="net/sf/antcontrib/antcontrib.properties">
+        <classpath>
+            <pathelement location="${dir.lib}/ant-contrib-0.6.jar"/>
+        </classpath>
+    </taskdef>
+
     <macrodef name="git">
         <attribute name="command"/>
         <attribute name="options"/>
@@ -27,7 +47,7 @@
         <sequential>
             <echo message="git @{command} @{options}"/>
             <exec executable="git" dir="@{dir}" outputproperty="@{output}">
-                <arg line="@{command} @{options}" />
+                <arg line="@{command} @{options}"/>
                 <args/>
             </exec>
             <echo message="${@{output}}"/>
@@ -43,7 +63,7 @@
 
     <target name="get_version_from_git">
         <git command="tag" output="git.version" options="-l --points-at HEAD"/>
-        <condition property="suffix" value="" else="-${git.version}" >
+        <condition property="suffix" value="" else="-${git.version}">
             <equals arg1="${git.version}" arg2=""/>
         </condition>
     </target>
@@ -134,6 +154,7 @@
             <available file="${parent.mod}" type="dir"/>
         </condition>
         <javac
+                debug="true"
                 debuglevel="source,lines,vars"
                 includeantruntime="false"
                 release="10"
@@ -167,22 +188,139 @@
 
     <target name="pack" depends="build_standalone">
         <mkdir dir="${dir.pack}"/>
-        <delete file="${dir.pack}/aion_ui*.tar.gz"/>
-        <tar destfile="${dir.pack}/aion_ui${suffix}.tar.gz" longfile="gnu" compression="gzip">
-            <tarfileset dir="${dir.lib}" filemode="755" prefix="${project.name}/lib">
+        <if>
+            <os family="mac"/>
+            <then>
+                <property name="native.source" value="${res.main}/native/mac"/>
+                <property name="native.dest" value="${project.name}/native/mac"/>
+                <property name="launcher" value="AionWalletLauncher"/>
+            </then>
+            <elseif>
+                <os family="windows"/>
+                <then>
+                    <property name="native.source" value="${res.main}/native/win"/>
+                    <property name="native.dest" value="${project.name}/native/win"/>
+                </then>
+            </elseif>
+            <elseif>
+                <os family="unix"/>
+                <then>
+                    <property name="native.source" value="${res.main}/native/linux"/>
+                    <property name="native.dest" value="${project.name}/native/linux"/>
+                    <property name="launcher" value="aion_ui.sh"/>
+                </then>
+            </elseif>
+        </if>
+        <zip destfile="${dir.pack}/aion_ui${suffix}.zip">
+            <zipfileset dir="${dir.lib}" filemode="755" prefix="${project.name}/lib">
                 <include name="*.jar"/>
-            </tarfileset>
-            <tarfileset dir="${dir.mod}" filemode="755" prefix="${project.name}/mod">
+                <exclude name="ant-contrib-0.6.jar"/>
+            </zipfileset>
+            <zipfileset dir="${dir.mod}" filemode="755" prefix="${project.name}/mod">
                 <include name="*.jar"/>
-            </tarfileset>
-            <tarfileset dir="${dir.pack}" filemode="755" prefix="${project.name}/mod">
-                <include name="aion_ui${suffix}.jar"/>
-            </tarfileset>
-            <tarfileset dir="${res.main}/native" filemode="755" prefix="${project.name}/native"/>
-            <tarfileset dir="${dir.script}" filemode="755" prefix="${project.name}">
-                <include name="aion_ui.sh"/>
-            </tarfileset>
-        </tar>
-    </target>
+            </zipfileset>
+            <zipfileset dir="${dir.pack}" filemode="755" prefix="${project.name}/mod">
+                <include name="*.jar"/>
+            </zipfileset>
+            <zipfileset dir="${dir.cfg}" filemode="755" prefix="${project.name}/config">
+                <include name="*.xml"/>
+            </zipfileset>
+            <zipfileset dir="${native.source}" filemode="755" prefix="${native.dest}">
+                <include name="blake2b/**"/>
+                <include name="sodium/**"/>
+                <include name="zmq/**"/>
+                <include name="ledger/**"/>
+            </zipfileset>
+            <zipfileset dir="${dir.script}" filemode="755" prefix="${project.name}">
+                <include name="${launcher}"/>
+            </zipfileset>
+        </zip>
+        <delete file="${dir.pack}/aion_ui${suffix}.jar"/>
+        <if>
+            <os family="windows"/>
+            <then>
+                <unzip src="${dir.pack}/aion_ui${suffix}.zip" dest="${dir.pack}"/>
+                <copy file="${dir.script}/unzip.exe" todir="${dir.pack}/aion_ui"/>
+                <copy file="${dir.script}/wget.exe" todir="${dir.pack}/aion_ui"/>
+                <copy todir="${dir.pack}/aion_ui" overwrite="true" verbose="true">
+                    <fileset dir="${dir.script}">
+                        <filename regex="\/*.dll|\/*.pfx"/>
+                    </fileset>
+                </copy>
+                <exec executable="${dir.script}/bat2exe.exe">
+                    <arg value="/bat"/>
+                    <arg value="${dir.script}\aion_ui.bat"/>
+                    <arg value="/exe"/>
+                    <arg value="${dir.pack}\aion_ui\AionWallet.exe"/>
+                    <arg value="/icon"/>
+                    <arg value="${res.main}\org\aion\wallet\ui\components\icons\aion_icon_IR4_icon.ico"/>
+                    <arg value="/x64"/>
+                    <arg value="/invisible"/>
+                    <arg value="/overwrite"/>
+                </exec>
+            </then>
+            <elseif>
+                <os family="mac"/>
+                <then>
+                    <unzip src="${dir.pack}/aion_ui${suffix}.zip" dest="${dir.pack}"/>
+                    <delete file="${dir.pack}/aion_ui${suffix}.zip"/>
 
+                    <mkdir dir="${dir.pack}/AionWallet"/>
+                    <exec executable="ln">
+                        <arg value="-s"/>
+                        <arg value="/Applications"/>
+                        <arg value="${dir.pack}/AionWallet/"/>
+                    </exec>
+
+                    <mkdir dir="${dir.pack}/AionWallet/AionWallet.app"/>
+                    <property name="mac.dir" value="${dir.pack}/AionWallet/AionWallet.app/Contents"/>
+
+                    <mkdir dir="${mac.dir}"/>
+                    <copy todir="${mac.dir}" file="${dir.script}/Info.plist"/>
+
+                    <!--Libraries-->
+                    <mkdir dir="${mac.dir}/Java"/>
+                    <copy todir="${mac.dir}/Java" overwrite="true" verbose="true">
+                        <fileset dir="${dir.pack}/aion_ui/lib"/>
+                        <fileset dir="${dir.pack}/aion_ui/mod"/>
+                    </copy>
+
+                    <!--Launcher and natives-->
+                    <mkdir dir="${mac.dir}/MacOS"/>
+                    <copy todir="${mac.dir}/MacOS" file="${dir.pack}/aion_ui${suffix}/AionWalletLauncher"/>
+                    <copy todir="${mac.dir}/MacOS" overwrite="true" verbose="true">
+                        <fileset dir="${dir.pack}/aion_ui">
+                            <include name="native/**"/>
+                            <include name="config/**"/>
+                        </fileset>
+                    </copy>
+                    <exec executable="chmod">
+                        <arg value="755"/>
+                        <arg value="${mac.dir}/MacOS/AionWalletLauncher"/>
+                    </exec>
+                    <exec executable="chmod">
+                        <arg value="755"/>
+                        <arg value="${mac.dir}/MacOS/native/mac/ledger/hid.tar.gz"/>
+                    </exec>
+                    <exec executable="curl">
+                        <arg value="-o"/>
+                        <arg value="${mac.dir}/MacOS/jre-10.0.2.tar.gz"/>
+                        <arg value="-L"/>
+                        <arg value="-O"/>
+                        <arg value="-H"/>
+                        <arg value="'Cookie: oraclelicense=accept-securebackup-cookie'"/>
+                        <arg value="-k"/>
+                        <arg value="https://download.oracle.com/otn-pub/java/jdk/10.0.2+13/19aef61b38124481863b1413dce1855f/jre-10.0.2_osx-x64_bin.tar.gz"/>
+                    </exec>
+
+                    <!--icons-->
+                    <mkdir dir="${mac.dir}/Resources"/>
+                    <copy todir="${mac.dir}/Resources"
+                          file="${res.main}/org/aion/wallet/ui/components/icons/aion-icon.icns"/>
+
+                    <delete dir="${dir.pack}/aion_ui"/>
+                </then>
+            </elseif>
+        </if>
+    </target>
 </project>

@@ -4,7 +4,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 
-public class UIUtils {
+public final class UIUtils {
 
     private static final Text HELPER = new Text();
 
@@ -16,6 +16,7 @@ public class UIUtils {
 
     private static final int SIZE_BUFFER = 20;
 
+    private UIUtils() {}
 
     private static double computeTextWidth(final Font font, final String text) {
         HELPER.setText(text);

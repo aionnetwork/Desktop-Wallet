@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Text?>
+<?import java.net.URL?>
+<AnchorPane xmlns="http://javafx.com/javafx" prefWidth="500.0" prefHeight="200.0" styleClass="anchor-pane">
+    <stylesheets>
+        <URL value="@dialog.css"/>
+    </stylesheets>
+
+    <VBox spacing="10" alignment="CENTER_LEFT" AnchorPane.topAnchor="25" AnchorPane.leftAnchor="25">
+        <HBox spacing="5" alignment="CENTER">
+            <ImageView fitHeight="28.0" pickOnBounds="true" preserveRatio="true">
+                <Image url="@../icons/ledger_logo.png"/>
+            </ImageView>
+            <Label text="disconnected!" style="-fx-font-family: 'Open Sans Bold'; -fx-font-size: 24px;"/>
+        </HBox>
+        <Text id="errorText" styleClass="paragraph-text" wrappingWidth="450"/>
+        <Text text="Please make sure that the Ledger is connected to your computer, unlocked and the Aion app is open!"
+              styleClass="paragraph-text"
+              wrappingWidth="450"/>
+    </VBox>
+</AnchorPane>
