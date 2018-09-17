@@ -69,6 +69,12 @@
     </target>
 
     <target name="clean">
+        <if>
+            <os family="mac"/>
+            <then>
+                <symlink action="delete" link="${dir.pack}/AionWallet/Applications"/>
+            </then>
+        </if>
         <delete dir="${dir.out}" includeEmptyDirs="true" includes="**/*/"/>
         <delete dir="${test.report.dir}"/>
         <delete dir="${dir.pack}"/>
@@ -287,7 +293,7 @@
 
                     <!--Launcher and natives-->
                     <mkdir dir="${mac.dir}/MacOS"/>
-                    <copy todir="${mac.dir}/MacOS" file="${dir.pack}/aion_ui${suffix}/AionWalletLauncher"/>
+                    <copy todir="${mac.dir}/MacOS" file="${dir.pack}/aion_ui/AionWalletLauncher"/>
                     <copy todir="${mac.dir}/MacOS" overwrite="true" verbose="true">
                         <fileset dir="${dir.pack}/aion_ui">
                             <include name="native/**"/>
@@ -303,14 +309,14 @@
                         <arg value="${mac.dir}/MacOS/native/mac/ledger/hid.tar.gz"/>
                     </exec>
                     <exec executable="curl">
-                        <arg value="-o"/>
-                        <arg value="${mac.dir}/MacOS/jre-10.0.2.tar.gz"/>
-                        <arg value="-L"/>
-                        <arg value="-O"/>
-                        <arg value="-H"/>
-                        <arg value="'Cookie: oraclelicense=accept-securebackup-cookie'"/>
-                        <arg value="-k"/>
-                        <arg value="https://download.oracle.com/otn-pub/java/jdk/10.0.2+13/19aef61b38124481863b1413dce1855f/jre-10.0.2_osx-x64_bin.tar.gz"/>
+                        <arg value='-o'/>
+                        <arg value='${mac.dir}/MacOS/jre-10.0.2.tar.gz'/>
+                        <arg value='-L'/>
+                        <arg value='-O'/>
+                        <arg value='-H'/>
+                        <arg value='Cookie: oraclelicense=accept-securebackup-cookie'/>
+                        <arg value='-k'/>
+                        <arg value='https://download.oracle.com/otn-pub/java/jdk/10.0.2+13/19aef61b38124481863b1413dce1855f/jre-10.0.2_osx-x64_bin.tar.gz'/>
                     </exec>
 
                     <!--icons-->
