@@ -1,33 +1,26 @@
 package org.aion.wallet.util;
 
 import io.github.novacrypto.bip39.SeedCalculator;
-import org.aion.base.util.Hex;
-import org.aion.base.util.TypeConverter;
 import org.aion.crypto.ECKey;
 import org.aion.crypto.ed25519.ECKeyEd25519;
 import org.aion.wallet.exception.ValidationException;
+import org.libsodium.jni.Sodium;
 import org.spongycastle.crypto.digests.SHA256Digest;
 import org.spongycastle.crypto.generators.PKCS5S2ParametersGenerator;
 import org.spongycastle.crypto.params.KeyParameter;
 
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.spec.InvalidKeySpecException;
+import java.util.Arrays;
 
 public final class CryptoUtils {
 
-    private static final String PBKDF2_ALGORITHM = "PBKDF2WithHmacSHA265";
-
-    private static final int KEY_SIZE = 256;
     private static final int PBKDF2_ITERATIONS = 4096;
 
     private static final byte[] SALT_KEY = "salt".getBytes();
@@ -36,6 +29,11 @@ public final class CryptoUtils {
     private static final String DEFAULT_MNEMONIC_PASSPHRASE = "";
     private static final int HARDENED_KEY_MULTIPLIER = 0x80000000;
     private static final ECKeyEd25519 EC_KEY_FACTORY = new ECKeyEd25519();
+
+    private static final int MACBYTES = Sodium.crypto_secretbox_macbytes();
+    private static final int NONCEBYTES = Sodium.crypto_secretbox_noncebytes();
+    private static final int KEYBYTES = Sodium.crypto_secretbox_keybytes();
+    private static final byte[] NONCE = new byte[NONCEBYTES];
 
     private CryptoUtils() {}
 
@@ -70,18 +68,32 @@ public final class CryptoUtils {
     }
 
     public static void preloadNatives() {
-        //no need to do anything here, we just want the EC_KEY_FACTORY to be initialized
+        Arrays.fill(NONCE, (byte) 0);
     }
 
-    public static String getKDFPassword(final String password) throws ValidationException {
+//      buyer glide join fire bacon antique orbit smile trophy before ask chat
+//      0xa087e13b5f3cad8833ab1858728fe3557d26fcf4e05231ff2fcae2fadd592a67
+
+    public static String getEncryptedText(final String mnemonic, final String password) throws ValidationException {
+        final byte[] kdfPassword = getKDFPassword(password);
+        final byte[] mnemonicBytes = mnemonic.getBytes(StandardCharsets.UTF_8);
+        final byte[] encrypted = new byte[MACBYTES + mnemonicBytes.length];
+        Sodium.crypto_secretbox_easy(encrypted, mnemonicBytes, mnemonicBytes.length, NONCE, kdfPassword);
+        return new String(encrypted);
+    }
+
+    public static String decryptMnemonic(final String encryptedMnemonic, final String password) throws ValidationException {
+        final byte[] mnemonicBytes = encryptedMnemonic.getBytes();
+        final byte[] kdfPassword = getKDFPassword(password);
+        final byte[] decrypted = new byte[mnemonicBytes.length - MACBYTES];
+        Sodium.crypto_secretbox_open_easy(decrypted, mnemonicBytes, mnemonicBytes.length, NONCE, kdfPassword);
+        return new String(decrypted, StandardCharsets.UTF_8);
+    }
+
+    private static byte[] getKDFPassword(final String password) throws ValidationException {
         final PKCS5S2ParametersGenerator gen = new PKCS5S2ParametersGenerator(new SHA256Digest());
         final byte[] salt = getSha512(SALT_KEY, password.getBytes());
         gen.init(password.getBytes(StandardCharsets.UTF_8), salt, PBKDF2_ITERATIONS);
-        final byte[] derivedKey = ((KeyParameter) gen.generateDerivedParameters(KEY_SIZE)).getKey();
-        return Hex.toHexString(derivedKey);
-    }
-
-    public static String getEncryptedText(final String mnemonic, final String password) {
-        return null;
+        return ((KeyParameter) gen.generateDerivedParameters(KEYBYTES)).getKey();
     }
 }

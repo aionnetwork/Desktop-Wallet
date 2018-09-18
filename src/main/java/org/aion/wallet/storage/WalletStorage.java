@@ -160,7 +160,7 @@ public class WalletStorage {
         try {
             return decryptMnemonic(encodedMnemonic, password);
         } catch (Exception e) {
-            throw new ValidationException("Cannot decrypt your seed");
+            throw new ValidationException("Cannot decrypt your seed", e);
         }
     }
 
@@ -215,18 +215,21 @@ public class WalletStorage {
     }
 
     private String encryptMnemonic(final String mnemonic, final String password) throws Exception {
-        final String kdfPassword = CryptoUtils.getKDFPassword(password);
-        return CryptoUtils.getEncryptedText(mnemonic, kdfPassword);
+        return CryptoUtils.getEncryptedText(mnemonic, password);
     }
 
     private String decryptMnemonic(final String encryptedMnemonic, final String password) throws Exception {
-        byte[] decrypted = new byte[0];
+        String result;
         try {
-            decrypted = decryptLegacyMnemonic(encryptedMnemonic, password);
-        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException | UnsupportedEncodingException e) {
-
+            result = new String(decryptLegacyMnemonic(encryptedMnemonic, password));
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException | BadPaddingException | IllegalBlockSizeException | InvalidKeyException | NoSuchPaddingException e) {
+            result = decryptNewMnemonic(encryptedMnemonic, password);
         }
-        return new String(decrypted);
+        return result;
+    }
+
+    private String decryptNewMnemonic(final String encryptedMnemonic, final String password) throws Exception {
+        return CryptoUtils.decryptMnemonic(encryptedMnemonic, password);
     }
 
     private byte[] decryptLegacyMnemonic(final String encryptedMnemonic, final String password) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, UnsupportedEncodingException {

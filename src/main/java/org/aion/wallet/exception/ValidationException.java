@@ -10,6 +10,10 @@ public class ValidationException extends Exception{
         super(cause);
     }
 
+    public ValidationException(final String message, final Throwable cause) {
+        super(message, cause);
+    }
+
     @Override
     public String getMessage() {
         return getCause() != null ? getCause().getMessage() : super.getMessage();
