@@ -6,18 +6,22 @@ import org.aion.wallet.dto.ConnectionProvider;
 import org.aion.wallet.dto.LightAppSettings;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
+import org.aion.wallet.util.CryptoUtils;
 import org.slf4j.Logger;
 
 import javax.annotation.Nonnull;
+import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Properties;
@@ -36,9 +40,7 @@ public class WalletStorage {
 
     private static final String MASTER_MNEMONIC_PROP = "master.mnemonic";
 
-    private static final String MNEMONIC_ENCRYPTION_ALGORITHM = "Blowfish";
-
-    private static final String MNEMONIC_STRING_CONVERSION_CHARSET_NAME = "ISO-8859-1";
+    private static final String LEGACY_ENCRYPTION_ALGORITHM = "Blowfish";
 
     private static final WalletStorage INST;
 
@@ -155,9 +157,9 @@ public class WalletStorage {
         }
 
         try {
-            return decryptMnemonic(encodedMnemonic, password);
+            return decryptMnemonic(encodedMnemonic.getBytes(StandardCharsets.ISO_8859_1), password);
         } catch (Exception e) {
-            throw new ValidationException("Cannot decrypt your seed");
+            throw new ValidationException("Cannot decrypt your seed!");
         }
     }
 
@@ -211,19 +213,29 @@ public class WalletStorage {
         saveSettings();
     }
 
-    private String encryptMnemonic(String mnemonic, String password) throws Exception {
-        SecretKeySpec key = new SecretKeySpec(password.getBytes(), MNEMONIC_ENCRYPTION_ALGORITHM);
-        Cipher cipher = Cipher.getInstance(MNEMONIC_ENCRYPTION_ALGORITHM);
-        cipher.init(Cipher.ENCRYPT_MODE, key);
-        byte[] encrypted = cipher.doFinal(mnemonic.getBytes());
-        return new String(encrypted, MNEMONIC_STRING_CONVERSION_CHARSET_NAME);
+    private String encryptMnemonic(final String mnemonic, final String password) throws Exception {
+        return CryptoUtils.getEncryptedText(mnemonic, password);
     }
 
-    private String decryptMnemonic(String encryptedMnemonic, String password) throws Exception {
-        SecretKeySpec skeyspec = new SecretKeySpec(password.getBytes(), MNEMONIC_ENCRYPTION_ALGORITHM);
-        Cipher cipher = Cipher.getInstance(MNEMONIC_ENCRYPTION_ALGORITHM);
-        cipher.init(Cipher.DECRYPT_MODE, skeyspec);
-        byte[] decrypted = cipher.doFinal(encryptedMnemonic.getBytes(MNEMONIC_STRING_CONVERSION_CHARSET_NAME));
-        return new String(decrypted);
+    private String decryptMnemonic(final byte[] encryptedMnemonicBytes, final String password) throws ValidationException {
+        String result;
+        boolean isLegacy = false;
+        try {
+            result = new String(decryptLegacyMnemonic(encryptedMnemonicBytes, password));
+            isLegacy = true;
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException | BadPaddingException | IllegalBlockSizeException | InvalidKeyException | NoSuchPaddingException e) {
+            result = CryptoUtils.decryptMnemonic(encryptedMnemonicBytes, password);
+        }
+        if (isLegacy) {
+            setMasterAccountMnemonic(result, password);
+        }
+        return result;
+    }
+
+    private byte[] decryptLegacyMnemonic(final byte[] encryptedMnemonicBytes, final String password) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, UnsupportedEncodingException {
+        SecretKeySpec keySpec = new SecretKeySpec(password.getBytes(), LEGACY_ENCRYPTION_ALGORITHM);
+        Cipher cipher = Cipher.getInstance(LEGACY_ENCRYPTION_ALGORITHM);
+        cipher.init(Cipher.DECRYPT_MODE, keySpec);
+        return cipher.doFinal(encryptedMnemonicBytes);
     }
 }

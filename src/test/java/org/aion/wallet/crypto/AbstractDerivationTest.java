@@ -17,16 +17,16 @@ public class AbstractDerivationTest {
 
     private static final byte[] MESSAGE = "dadakaaakaksadfasdfaasd8123".getBytes();
 
-    protected ECKey getRootKey(final String mnemonic) throws ValidationException {
-        return CryptoUtils.getBip39ECKey(mnemonic);
+    protected final byte[] getRootKey(final String mnemonic) throws ValidationException {
+        return CryptoUtils.getBip39ECKey(mnemonic).getPrivKeyBytes();
     }
 
-    protected void verifyECKey(final ECKey ecKey) {
+    protected final void verifyECKey(final ECKey ecKey) {
         final ISignature sig = ecKey.sign(MESSAGE);
         Assert.assertTrue(ECKeyEd25519.verify(MESSAGE, sig.getSignature(), sig.getPubkey(null)));
     }
 
-    protected void verifyArraysEqual(final byte[] expected, final byte[] actual) {
+    protected final void verifyArraysEqual(final byte[] expected, final byte[] actual) {
         assertEquals(TypeConverter.toJsonHex(expected), TypeConverter.toJsonHex(actual));
     }
 }

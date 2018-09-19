@@ -8,21 +8,17 @@ import java.util.Arrays;
 
 public class MasterKey {
 
-    private final ECKey ecKey;
+    private final byte[] ecKey;
 
-    public MasterKey(ECKey ecKey) {
+    public MasterKey(final byte[] ecKey) {
         this.ecKey = ecKey;
-    }
-
-    public ECKey getEcKey() {
-        return ecKey;
     }
 
     public ECKey deriveHardened(int[] derivationPath) throws ValidationException {
         if (derivationPath.length == 0) {
             throw new ValidationException("Derivation path is incorrect");
         }
-        byte[] key = ecKey.getPrivKeyBytes();
+        byte[] key = ecKey;
         for (final int pathElement : derivationPath) {
             key = getChild(pathElement, key);
         }

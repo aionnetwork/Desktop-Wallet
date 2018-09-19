@@ -96,7 +96,7 @@ public class AccountManager {
     private AccountDTO processMasterAccount(final String mnemonic, final String password) throws ValidationException {
         final ECKey rootEcKey = CryptoUtils.getBip39ECKey(mnemonic);
 
-        root = new MasterKey(rootEcKey);
+        root = new MasterKey(rootEcKey.getPrivKeyBytes());
         walletStorage.setMasterAccountMnemonic(mnemonic, password);
         final AccountDTO accountDTO = addInternalAccount();
         EventPublisher.fireAccountAdded(accountDTO);
@@ -110,7 +110,7 @@ public class AccountManager {
         isWalletLocked = false;
 
         final ECKey rootEcKey = CryptoUtils.getBip39ECKey(walletStorage.getMasterAccountMnemonic(password));
-        root = new MasterKey(rootEcKey);
+        root = new MasterKey(rootEcKey.getPrivKeyBytes());
 
         final int accountDerivations = walletStorage.getMasterAccountDerivations();
         Set<String> recoveredAddresses = new LinkedHashSet<>(accountDerivations);
