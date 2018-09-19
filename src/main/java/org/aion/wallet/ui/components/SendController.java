@@ -3,7 +3,9 @@ package org.aion.wallet.ui.components;
 import com.google.common.eventbus.Subscribe;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import org.aion.api.impl.internal.Message;
@@ -35,12 +37,16 @@ public class SendController extends AbstractController {
 
     private static final String SUCCESS_MESSAGE = "Transaction finished";
 
-    private static final Tooltip NRG_LIMIT_TOOLTIP = new Tooltip("NRG limit");
+    private static final Tooltip TO_ADDRESS_TOOLTIP = new Tooltip("This is the address that will receive the funds that you are sending");
 
-    private static final Tooltip NRG_PRICE_TOOLTIP = new Tooltip("NRG price");
+    private static final Tooltip NRG_LIMIT_TOOLTIP = new Tooltip("Energy limit represents the amount of energy applied to this transaction");
+
+    private static final Tooltip NRG_PRICE_TOOLTIP = new Tooltip("Energy price expressed in nAmp");
+
+    private static final Tooltip AMOUNT_TOOLTIP = new Tooltip("This is the amount that the address specified above will recieve");
 
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
-
+    private final TransactionResubmissionDialog transactionResubmissionDialog = new TransactionResubmissionDialog();
     @FXML
     private PasswordField passwordInput;
     @FXML
@@ -63,11 +69,7 @@ public class SendController extends AbstractController {
     private Label timedoutTransactionsLabel;
 
     private AccountDTO account;
-
     private boolean connected;
-
-    private final TransactionResubmissionDialog transactionResubmissionDialog = new TransactionResubmissionDialog();
-
     private SendTransactionDTO transactionToResubmit;
 
     @Override
@@ -80,8 +82,19 @@ public class SendController extends AbstractController {
 
     @Override
     protected void internalInit(final URL location, final ResourceBundle resources) {
+        TO_ADDRESS_TOOLTIP.setPrefWidth(200);
+        TO_ADDRESS_TOOLTIP.setWrapText(true);
+        NRG_LIMIT_TOOLTIP.setPrefWidth(200);
+        NRG_LIMIT_TOOLTIP.setWrapText(true);
+        NRG_PRICE_TOOLTIP.setPrefWidth(200);
+        NRG_PRICE_TOOLTIP.setWrapText(true);
+        AMOUNT_TOOLTIP.setPrefWidth(200);
+        AMOUNT_TOOLTIP.setWrapText(true);
+
+        toInput.setTooltip(TO_ADDRESS_TOOLTIP);
         nrgInput.setTooltip(NRG_LIMIT_TOOLTIP);
         nrgPriceInput.setTooltip(NRG_PRICE_TOOLTIP);
+        valueInput.setTooltip(AMOUNT_TOOLTIP);
         setDefaults();
         if (!ConfigUtils.isEmbedded()) {
             passwordInput.setVisible(false);
@@ -203,10 +216,9 @@ public class SendController extends AbstractController {
         }
         final SendTransactionDTO dto;
         try {
-            if(transactionToResubmit != null) {
+            if (transactionToResubmit != null) {
                 dto = transactionToResubmit;
-            }
-            else {
+            } else {
                 dto = mapFormData();
             }
         } catch (ValidationException e) {
@@ -287,9 +299,9 @@ public class SendController extends AbstractController {
     }
 
     private void setTimedoutTransactionsLabelText() {
-        if(account != null) {
+        if (account != null) {
             final List<SendTransactionDTO> timedoutTransactions = blockchainConnector.getAccountManager().getTimedOutTransactions(account.getPublicAddress());
-            if(!timedoutTransactions.isEmpty()) {
+            if (!timedoutTransactions.isEmpty()) {
                 timedoutTransactionsLabel.setVisible(true);
                 timedoutTransactionsLabel.getStyleClass().add("warning-link-style");
                 timedoutTransactionsLabel.setText("You have transactions that require your attention!");
@@ -360,7 +372,8 @@ public class SendController extends AbstractController {
                     account.setBalance(getBalanceTask.getValue());
                     setAccountBalanceText();
                 },
-                getErrorEvent(t -> {}, getBalanceTask),
+                getErrorEvent(t -> {
+                }, getBalanceTask),
                 getEmptyEvent()
         );
     }
@@ -421,5 +434,39 @@ public class SendController extends AbstractController {
             throw new ValidationException("Amount must be a number");
         }
         return value;
+    }
+
+    public void showInfoTooltip(final MouseEvent mouseEvent) {
+        switch (((Node) mouseEvent.getSource()).getId()) {
+            case "toAddressInfoPane":
+                TO_ADDRESS_TOOLTIP.show((Node) mouseEvent.getSource(), ((Node) mouseEvent.getSource()).getScene().getWindow().getX() + 600, ((Node) mouseEvent.getSource()).getScene().getWindow().getY() + 220);
+                break;
+            case "energyInfoPane":
+                NRG_LIMIT_TOOLTIP.show((Node) mouseEvent.getSource(), ((Node) mouseEvent.getSource()).getScene().getWindow().getX() + 600, ((Node) mouseEvent.getSource()).getScene().getWindow().getY() + 265);
+                break;
+            case "energyPriceInfoPane":
+                NRG_PRICE_TOOLTIP.show((Node) mouseEvent.getSource(), ((Node) mouseEvent.getSource()).getScene().getWindow().getX() + 600, ((Node) mouseEvent.getSource()).getScene().getWindow().getY() + 315);
+                break;
+            case "amountInfoPane":
+                AMOUNT_TOOLTIP.show((Node) mouseEvent.getSource(), ((Node) mouseEvent.getSource()).getScene().getWindow().getX() + 600, ((Node) mouseEvent.getSource()).getScene().getWindow().getY() + 330);
+                break;
+        }
+    }
+
+    public void hideInfoTooltip(final MouseEvent mouseEvent) {
+        switch (((Node) mouseEvent.getSource()).getId()) {
+            case "toAddressInfoPane":
+                TO_ADDRESS_TOOLTIP.hide();
+                break;
+            case "energyInfoPane":
+                NRG_LIMIT_TOOLTIP.hide();
+                break;
+            case "energyPriceInfoPane":
+                NRG_PRICE_TOOLTIP.hide();
+                break;
+            case "amountInfoPane":
+                AMOUNT_TOOLTIP.hide();
+                break;
+        }
     }
 }
