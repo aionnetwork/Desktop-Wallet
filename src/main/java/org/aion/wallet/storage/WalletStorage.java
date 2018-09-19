@@ -16,6 +16,7 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -40,8 +41,6 @@ public class WalletStorage {
     private static final String MASTER_MNEMONIC_PROP = "master.mnemonic";
 
     private static final String LEGACY_ENCRYPTION_ALGORITHM = "Blowfish";
-
-    private static final String MNEMONIC_STRING_CONVERSION_CHARSET_NAME = "ISO-8859-1";
 
     private static final WalletStorage INST;
 
@@ -158,9 +157,9 @@ public class WalletStorage {
         }
 
         try {
-            return decryptMnemonic(encodedMnemonic, password);
+            return decryptMnemonic(encodedMnemonic.getBytes(StandardCharsets.ISO_8859_1), password);
         } catch (Exception e) {
-            throw new ValidationException("Cannot decrypt your seed", e);
+            throw new ValidationException("Can't unlock master account!");
         }
     }
 
@@ -218,24 +217,20 @@ public class WalletStorage {
         return CryptoUtils.getEncryptedText(mnemonic, password);
     }
 
-    private String decryptMnemonic(final String encryptedMnemonic, final String password) throws Exception {
+    private String decryptMnemonic(final byte[] encryptedMnemonicBytes, final String password) throws ValidationException {
         String result;
         try {
-            result = new String(decryptLegacyMnemonic(encryptedMnemonic, password));
+            result = new String(decryptLegacyMnemonic(encryptedMnemonicBytes, password));
         } catch (NoSuchAlgorithmException | UnsupportedEncodingException | BadPaddingException | IllegalBlockSizeException | InvalidKeyException | NoSuchPaddingException e) {
-            result = decryptNewMnemonic(encryptedMnemonic, password);
+            result = CryptoUtils.decryptMnemonic(encryptedMnemonicBytes, password);
         }
         return result;
     }
 
-    private String decryptNewMnemonic(final String encryptedMnemonic, final String password) throws Exception {
-        return CryptoUtils.decryptMnemonic(encryptedMnemonic, password);
-    }
-
-    private byte[] decryptLegacyMnemonic(final String encryptedMnemonic, final String password) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, UnsupportedEncodingException {
+    private byte[] decryptLegacyMnemonic(final byte[] encryptedMnemonicBytes, final String password) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, UnsupportedEncodingException {
         SecretKeySpec keySpec = new SecretKeySpec(password.getBytes(), LEGACY_ENCRYPTION_ALGORITHM);
         Cipher cipher = Cipher.getInstance(LEGACY_ENCRYPTION_ALGORITHM);
         cipher.init(Cipher.DECRYPT_MODE, keySpec);
-        return cipher.doFinal(encryptedMnemonic.getBytes(MNEMONIC_STRING_CONVERSION_CHARSET_NAME));
+        return cipher.doFinal(encryptedMnemonicBytes);
     }
 }

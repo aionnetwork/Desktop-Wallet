@@ -79,21 +79,30 @@ public final class CryptoUtils {
         final byte[] mnemonicBytes = mnemonic.getBytes(StandardCharsets.UTF_8);
         final byte[] encrypted = new byte[MACBYTES + mnemonicBytes.length];
         Sodium.crypto_secretbox_easy(encrypted, mnemonicBytes, mnemonicBytes.length, NONCE, kdfPassword);
-        return new String(encrypted);
+        return new String(encrypted, StandardCharsets.ISO_8859_1);
     }
 
-    public static String decryptMnemonic(final String encryptedMnemonic, final String password) throws ValidationException {
-        final byte[] mnemonicBytes = encryptedMnemonic.getBytes();
+    public static String decryptMnemonic(final byte[] encryptedMnemonicBytes, final String password) throws ValidationException {
         final byte[] kdfPassword = getKDFPassword(password);
-        final byte[] decrypted = new byte[mnemonicBytes.length - MACBYTES];
-        Sodium.crypto_secretbox_open_easy(decrypted, mnemonicBytes, mnemonicBytes.length, NONCE, kdfPassword);
-        return new String(decrypted, StandardCharsets.UTF_8);
+        final byte[] decrypted = new byte[encryptedMnemonicBytes.length - MACBYTES];
+        final int result = Sodium.crypto_secretbox_open_easy(
+                decrypted,
+                encryptedMnemonicBytes,
+                encryptedMnemonicBytes.length,
+                NONCE,
+                kdfPassword
+        );
+        if (result == 0) {
+            return new String(decrypted, StandardCharsets.UTF_8);
+        } else {
+            throw new IllegalArgumentException("Unable to decrypt mnemonic");
+        }
     }
 
     private static byte[] getKDFPassword(final String password) throws ValidationException {
         final PKCS5S2ParametersGenerator gen = new PKCS5S2ParametersGenerator(new SHA256Digest());
         final byte[] salt = getSha512(SALT_KEY, password.getBytes());
         gen.init(password.getBytes(StandardCharsets.UTF_8), salt, PBKDF2_ITERATIONS);
-        return ((KeyParameter) gen.generateDerivedParameters(KEYBYTES)).getKey();
+        return ((KeyParameter) gen.generateDerivedParameters(KEYBYTES * 8)).getKey();
     }
 }
