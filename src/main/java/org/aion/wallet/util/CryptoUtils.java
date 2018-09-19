@@ -71,9 +71,6 @@ public final class CryptoUtils {
         Arrays.fill(NONCE, (byte) 0);
     }
 
-//      buyer glide join fire bacon antique orbit smile trophy before ask chat
-//      0xa087e13b5f3cad8833ab1858728fe3557d26fcf4e05231ff2fcae2fadd592a67
-
     public static String getEncryptedText(final String mnemonic, final String password) throws ValidationException {
         final byte[] kdfPassword = getKDFPassword(password);
         final byte[] mnemonicBytes = mnemonic.getBytes(StandardCharsets.UTF_8);

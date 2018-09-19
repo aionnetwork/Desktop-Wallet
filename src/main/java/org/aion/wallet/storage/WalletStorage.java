@@ -159,7 +159,7 @@ public class WalletStorage {
         try {
             return decryptMnemonic(encodedMnemonic.getBytes(StandardCharsets.ISO_8859_1), password);
         } catch (Exception e) {
-            throw new ValidationException("Can't unlock master account!");
+            throw new ValidationException("Cannot decrypt your seed!");
         }
     }
 
@@ -219,10 +219,15 @@ public class WalletStorage {
 
     private String decryptMnemonic(final byte[] encryptedMnemonicBytes, final String password) throws ValidationException {
         String result;
+        boolean isLegacy = false;
         try {
             result = new String(decryptLegacyMnemonic(encryptedMnemonicBytes, password));
+            isLegacy = true;
         } catch (NoSuchAlgorithmException | UnsupportedEncodingException | BadPaddingException | IllegalBlockSizeException | InvalidKeyException | NoSuchPaddingException e) {
             result = CryptoUtils.decryptMnemonic(encryptedMnemonicBytes, password);
+        }
+        if (isLegacy) {
+            setMasterAccountMnemonic(result, password);
         }
         return result;
     }
