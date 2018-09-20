@@ -29,8 +29,9 @@
         </VBox>
         <VBox alignment="CENTER_LEFT" spacing="6.0">
             <Label styleClass="main-text" text="Please select the address you would like to import"/>
-            <ProgressBar fx:id="loadingLedgerAccountsProgressBar" visible="false" prefWidth="250"/>
+
         </VBox>
+        <ProgressBar fx:id="loadingLedgerAccountsProgressBar" visible="false" prefWidth="250"/>
         <VBox fx:id="ledgerAccountList" alignment="CENTER_LEFT" spacing="6.0">
 
         </VBox>
@@ -40,7 +41,7 @@
         <HBox spacing="10">
             <Label fx:id="previousAddressesLink" text="Previous" styleClass="link-style-paragraph-text"
                    onMouseClicked="#previousAddresses" visible="false"/>
-            <Label text="Next" styleClass="link-style-paragraph-text" onMouseClicked="#nextAddresses"/>
+            <Label fx:id="nextAddressesLink" text="Next" styleClass="link-style-paragraph-text" onMouseClicked="#nextAddresses"/>
         </HBox>
     </AnchorPane>
 
