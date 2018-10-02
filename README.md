@@ -6,9 +6,15 @@ Manage your AION coins using a local desktop application.
 
 The Aion Desktop Wallet is a local application that allows you to create an Aion address and receive coins. The wallet is available for Linux, Mac, and Windows operating systems.
 
-## Latest Release
 
-This release contains major changes to how _keystore_ files are managed, the method by which transactions are set, and how transaction history is maintained. You can download the wallet from the [Releases tab](https://github.com/aionnetwork/Desktop-Wallet/releases).
+## Installation
+
+Installation instructions and user guides can be found on the [Aion website](https://docs.aion.network/v1.1/docs/aion-desktop-wallet).
+
+### Requirements
+
+1. [Ubuntu 16.04](http://releases.ubuntu.com/16.04.5/)
+1. [Aion v0.2.8 or higher](https://github.com/aionnetwork/aion/releases/tag/v0.2.8)
 
 ## Features
 
@@ -19,11 +25,6 @@ This release contains major changes to how _keystore_ files are managed, the met
 * Ability to view transaction history
 * Ability to view the sync status of the node
 
-## Installation
+## Latest Release
 
-Installation instructions and user guides can be found on the [Aion website](https://docs.aion.network/v1.1/docs/aion-desktop-wallet).
-
-### Requirements
-
-1. [Ubuntu 16.04](http://releases.ubuntu.com/16.04.5/)
-1. [Aion v0.2.8 or higher](https://github.com/aionnetwork/aion/releases/tag/v0.2.8)
+This release contains major changes to how _keystore_ files are managed, the method by which transactions are set, and how transaction history is maintained. You can download the wallet from the [Releases tab](https://github.com/aionnetwork/Desktop-Wallet/releases).
