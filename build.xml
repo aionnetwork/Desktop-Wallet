@@ -20,6 +20,7 @@
     <property name="dir.mod" value="./mod"/>
     <property name="dir.pack" value="./pack"/>
     <property name="dir.script" value="./scripts"/>
+    <property name="dir.rt" value="./rt"/>
     <property name="dir.cfg" value="./config"/>
     <property name="dir.main" value="./src/main"/>
     <property name="src.main" value="${dir.main}/java"/>
@@ -221,6 +222,9 @@
             </zipfileset>
             <zipfileset dir="${dir.pack}" filemode="755" prefix="${project.name}/mod">
                 <include name="*.jar"/>
+            </zipfileset>
+            <zipfileset dir="${dir.rt}" filemode="755" prefix="${project.name}/rt">
+                <include name="**/*"/>
             </zipfileset>
             <zipfileset dir="${dir.cfg}" filemode="755" prefix="${project.name}/config">
                 <include name="*.xml"/>
