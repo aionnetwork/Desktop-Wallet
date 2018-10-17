@@ -12,11 +12,7 @@ JAVA_CMD=${JAVA_INSTALL}/bin/java
 if [ ! -f ${JAVA_CMD} ] || [ $(${JAVA_CMD} -version 2>&1 | grep "10.0.2" | wc -l) -lt 1 ]
  then
   mkdir -p ${JAVA_INSTALL}
-  wget --no-check-certificate --no-cookies --header "Cookie: oraclelicense=accept-securebackup-cookie" \
-   https://download.oracle.com/otn-pub/java/jdk/10.0.2+13/19aef61b38124481863b1413dce1855f/jre-10.0.2_linux-x64_bin.tar.gz \
-   -O java.tar.gz
-   tar -xzf java.tar.gz -C ${STORAGE_DIR}
-   rm java.tar.gz
+  cp -r rt/linux/* ${JAVA_INSTALL}
 fi
 
 MOD_DIR=${SCRIPT_PATH}/mod/*
