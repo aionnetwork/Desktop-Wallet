@@ -13,7 +13,7 @@ User guide and documentation available [here](http://docs.aion.network/Account%2
 
 ## Requirements
 
-The wallet is coupled to releases of the Aion kernel, we strongly recommend that this wallet be used with a local node running [v0.2.8](https://github.com/aionnetwork/aion/releases/tag/v0.2.8). Please only submit bug reports if you're running the wallet with this configuration.
+The wallet is coupled to releases of the Aion kernel, we strongly recommend that this wallet be used with the latest Aion release, under the following configuration:
 
 * Ubuntu 16.04
-* [Aion v0.2.8](https://github.com/aionnetwork/aion/releases/tag/v0.2.8)
+* (Aion Latest Release)[https://github.com/aionnetwork/aion/releases/latest]
