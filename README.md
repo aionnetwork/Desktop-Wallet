@@ -28,4 +28,3 @@ Installation instructions and user guides can be found on the [Aion website](htt
 ## Latest Release
 
 This release contains major changes to how _keystore_ files are managed, the method by which transactions are set, and how transaction history is maintained. You can download the wallet from the [Releases tab](https://github.com/aionnetwork/Desktop-Wallet/releases).
->>>>>>> 700ecf9ad8451162daafb1794a2a02d6e3b1027d
