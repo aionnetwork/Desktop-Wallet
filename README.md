@@ -16,4 +16,4 @@ User guide and documentation available [here](http://docs.aion.network/Account%2
 The wallet is coupled to releases of the Aion kernel, we strongly recommend that this wallet be used with the latest Aion release, under the following configuration:
 
 * Ubuntu 16.04
-* (Aion Latest Release)[https://github.com/aionnetwork/aion/releases/latest]
+* [Aion Latest Release](https://github.com/aionnetwork/aion/releases/latest)
