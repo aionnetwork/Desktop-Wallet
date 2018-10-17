@@ -1,2 +1,0 @@
-JAVA_VERSION="10.0.2"
-MODULES="java.base java.datatransfer java.xml java.prefs java.desktop java.logging java.management java.security.sasl java.naming java.scripting java.sql javafx.base javafx.graphics javafx.controls javafx.fxml javafx.swing jdk.sctp jdk.unsupported"

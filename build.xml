@@ -73,6 +73,7 @@
         <delete dir="${dir.out}" includeEmptyDirs="true" includes="**/*/"/>
         <delete dir="${test.report.dir}"/>
         <delete dir="${dir.pack}"/>
+        <delete dir="${dir.rt}"/>
         <delete dir="${dir.mod}/updated/"/>
     </target>
 
@@ -189,6 +190,10 @@
 
     <target name="pack" depends="build_standalone">
         <mkdir dir="${dir.pack}"/>
+        <exec executable="/bin/bash"  failonerror="true">
+            <arg value="${dir.script}/prepack.sh" />
+        </exec>
+
         <if>
             <os family="mac"/>
             <then>
