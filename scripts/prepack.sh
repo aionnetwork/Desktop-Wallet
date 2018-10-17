@@ -11,13 +11,17 @@ echo "Your JAVA_HOME path: "$JAVA_HOME
 jdk_version() {
   local result
   local java_cmd
-  if [[ -n $(type -p java) ]]
-  then
-    java_cmd=java
-  elif [[ (-n "$JAVA_HOME") && (-x "$JAVA_HOME/bin/java") ]]
+
+  # reasoning behind checking $JAVA_HOME first is ant defers to it for builds
+  # fixes some issues with our CI
+  if [[ (-n "$JAVA_HOME") && (-x "$JAVA_HOME/bin/java") ]]
   then
     java_cmd="$JAVA_HOME/bin/java"
+  elif [[ -n $(type -p java) ]]
+  then
+    java_cmd=java
   fi
+
   local IFS=$'\n'
   # remove \r for Cygwin
   local lines=$("$java_cmd" -Xms32M -Xmx32M -version 2>&1 | tr '\r' '\n')
