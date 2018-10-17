@@ -13,7 +13,6 @@ if [ ! -f ${JAVA_CMD} ] || [ $(${JAVA_CMD} -version 2>&1 | grep "10.0.2" | wc -l
  then
   mkdir -p ${JAVA_INSTALL}
   cp -r rt/linux/* ${JAVA_INSTALL}
-  rm -r rt
 fi
 
 MOD_DIR=${SCRIPT_PATH}/mod/*
