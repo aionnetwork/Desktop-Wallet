@@ -13,8 +13,9 @@ Installation instructions and user guides can be found on the [Aion website](htt
 
 ### Requirements
 
-1. [Ubuntu 16.04](http://releases.ubuntu.com/16.04.5/)
-1. [Aion v0.2.8 or higher](https://github.com/aionnetwork/aion/releases/latest)
+- Windows : Windows 10 64-bit
+- Linux : Ubuntu 16.04 LTS 64-bit
+- MacOS : Mac OS High Sierra
 
 ## Features
 
