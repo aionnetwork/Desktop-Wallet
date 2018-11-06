@@ -11,19 +11,17 @@ import org.aion.api.type.core.tx.AionTransaction;
 import org.aion.base.type.Address;
 import org.aion.base.type.Hash256;
 import org.aion.base.util.ByteArrayWrapper;
-import org.aion.base.util.TypeConverter;
 import org.aion.wallet.connector.BlockchainConnector;
+import org.aion.wallet.connector.TokenManager;
 import org.aion.wallet.connector.dto.*;
 import org.aion.wallet.console.ConsoleManager;
-import org.aion.wallet.dto.AccountDTO;
-import org.aion.wallet.dto.ConnectionDetails;
-import org.aion.wallet.dto.ConnectionProvider;
-import org.aion.wallet.dto.LightAppSettings;
+import org.aion.wallet.dto.*;
 import org.aion.wallet.events.*;
 import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.storage.ApiType;
+import org.aion.wallet.util.AddressUtils;
 import org.aion.wallet.util.AionConstants;
 import org.slf4j.Logger;
 
@@ -50,7 +48,13 @@ public class ApiBlockchainConnector extends BlockchainConnector {
             .r_tx_Init_VALUE, Message.Retcode.r_tx_Recved_VALUE, Message.Retcode.r_tx_NewPending_VALUE, Message
             .Retcode.r_tx_Pending_VALUE, Message.Retcode.r_tx_Included_VALUE);
 
+    private static final String FAILED_TOKEN_TRANSFER_FORMAT = "Transaction: %s was registered but the Token transfer has failed due to a small energy limit";
+
+    private final TokenManager tokenManager;
+
     private final ExecutorService backgroundExecutor;
+
+    private final Map<String, TokenDetails> tokenAddressToDetails = new HashMap<>();
 
     private LightAppSettings lightAppSettings = getLightweightWalletSettings(ApiType.JAVA);
 
@@ -67,6 +71,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         connect();
         EventPublisher.fireApplicationSettingsChanged(lightAppSettings);
         registerEventBusConsumer();
+        tokenManager = new TokenManager(API);
     }
 
     private int getCores() {
@@ -87,7 +92,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         connect(getConnectionDetails());
     }
 
-    public void connect(final ConnectionDetails newConnectionDetails) {
+    private void connect(final ConnectionDetails newConnectionDetails) {
         connectionDetails = newConnectionDetails;
         if (connectionFuture != null) {
             if (!connectionFuture.isDone()) {
@@ -97,11 +102,17 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         connectionFuture = backgroundExecutor.submit(() -> {
             final String connectionKey = newConnectionDetails.getSecureKey();
             Platform.runLater(() -> EventPublisher.fireConnectAttmpted(newConnectionDetails.isSecureConnection()));
-            final ApiMsg connect = API.connect(newConnectionDetails.toConnectionString(), true, 1, 60_000,
-                    connectionKey);
+            final ApiMsg connect = API.connect(
+                    newConnectionDetails.toConnectionString(),
+                    true,
+                    1,
+                    60_000,
+                    connectionKey
+            );
             if (connect.getObject()) {
-                Platform.runLater(() -> EventPublisher.fireConnectionEstablished(newConnectionDetails
-                        .isSecureConnection()));
+                Platform.runLater(
+                        () -> EventPublisher.fireConnectionEstablished(newConnectionDetails.isSecureConnection())
+                );
                 final Block latestBlock = getLatestBlock();
                 startingBlock = Math.max(0, latestBlock.getNumber() - 30 * BLOCK_BATCH_SIZE);
                 processTransactionsOnReconnect();
@@ -140,6 +151,46 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     }
 
     @Override
+    public BigInteger getTokenBalance(final String tokenAddress, final String accountAddress) throws ValidationException {
+        lock();
+        try {
+            return new BigInteger(String.valueOf(tokenManager.getBalance(tokenAddress, accountAddress)));
+        } finally {
+            unLock();
+        }
+    }
+
+    public byte[] getTokenSendData(final String tokenAddress, final String accountAddress, final String destinationAddress, final BigInteger value) {
+        return tokenManager.getEncodedSendTokenData(tokenAddress, accountAddress, destinationAddress, value);
+    }
+
+    @Override
+    public TokenDetails getTokenDetails(final String tokenAddress, final String accountAddress) throws ValidationException {
+        if (!AddressUtils.isValid(tokenAddress)) {
+            throw new ValidationException("Invalid token address");
+        }
+        TokenDetails tokenDetails = tokenAddressToDetails.get(tokenAddress);
+        if (tokenDetails == null) {
+            tokenDetails = createTokenDetails(tokenAddress, accountAddress);
+            tokenAddressToDetails.put(tokenAddress, tokenDetails);
+        }
+        return tokenDetails;
+    }
+
+    private TokenDetails createTokenDetails(String tokenAddress, String accountAddress) throws ValidationException {
+        final String name;
+        final String symbol;
+        lock();
+        try {
+            name = tokenManager.getName(tokenAddress, accountAddress);
+            symbol = tokenManager.getSymbol(tokenAddress, accountAddress);
+        } finally {
+            unLock();
+        }
+        return new TokenDetails(tokenAddress, name, symbol);
+    }
+
+    @Override
     protected TransactionResponseDTO sendTransactionInternal(final SendTransactionDTO dto) throws ValidationException {
         final String fromAddress = dto.getFrom().getPublicAddress();
         final BigInteger latestTransactionNonce = getLatestTransactionNonce(fromAddress);
@@ -155,8 +206,9 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         final MsgRsp response;
         lock();
         try {
-            ConsoleManager.addLog("Sending transaction", ConsoleManager.LogType.TRANSACTION, ConsoleManager.LogLevel
-                    .INFO);
+            ConsoleManager.addLog(
+                    "Sending transaction", ConsoleManager.LogType.TRANSACTION, ConsoleManager.LogLevel.INFO
+            );
             response = API.getTx().sendRawTransaction(ByteArrayWrapper.wrap(encodedTransaction)).getObject();
         } finally {
             unLock();
@@ -166,12 +218,17 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         final int responseStatus = transactionResponseDTO.getStatus();
         if (!ACCEPTED_TRANSACTION_RESPONSE_STATUSES.contains(responseStatus)) {
             getAccountManager().addTimedOutTransaction(dto);
+        } else if (response.getError() != null && response.getError().equals("OUT_OF_NRG")) {
+            final String message = String.format(FAILED_TOKEN_TRANSFER_FORMAT, transactionResponseDTO.getTxHash());
+            ConsoleManager.addLog(message, ConsoleManager.LogType.TRANSACTION, ConsoleManager.LogLevel.ERROR);
+            log.error(message);
+            throw new ValidationException("Token Transfer failed. See logs for details");
         }
         return transactionResponseDTO;
     }
 
     private TransactionResponseDTO mapTransactionResponse(final MsgRsp response) {
-        return new TransactionResponseDTO(response.getStatus(), response.getTxHash(), response.getError());
+        return new TransactionResponseDTO(response.getStatus(), response.getTxHash().toString(), response.getError());
     }
 
     @Override
@@ -343,8 +400,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
 
     private void processTransactionsOnReconnect() {
         final Set<String> addresses = getAccountManager().getAddresses();
-        final BlockDTO oldestSafeBlock = getOldestSafeBlock(addresses, i -> {
-        });
+        final BlockDTO oldestSafeBlock = getOldestSafeBlock(addresses, i -> {});
         processTransactionsFromBlock(oldestSafeBlock, addresses);
     }
 
@@ -383,8 +439,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
                         latest, addresses);
                 if (previousSafe > startingBlock) {
                     final Block lastSupposedSafe = getBlock(previousSafe);
-                    if (lastSafeBlock == null || !Arrays.equals(lastSafeBlock.getHash(), (lastSupposedSafe.getHash()
-                            .toBytes()))) {
+                    if (lastSafeBlock == null || !Arrays.equals(lastSafeBlock.getHash(), (lastSupposedSafe.getHash().toBytes()))) {
                         EventPublisher.fireFatalErrorEncountered("A re-organization happened too far back. Please " +
                                 "restart Wallet!");
                     }
@@ -396,14 +451,10 @@ public class ApiBlockchainConnector extends BlockchainConnector {
                     List<BlockDetails> blk = getBlockDetailsByNumbers(blockBatch);
                     blk.forEach(getBlockDetailsConsumer(addresses));
                 }
-                final long newSafeBlockNumber = latest - BLOCK_BATCH_SIZE;
-                final Block newSafe;
-                if (newSafeBlockNumber > 0) {
-                    newSafe = getBlock(newSafeBlockNumber);
-                    for (String address : addresses) {
-                        getAccountManager().updateLastSafeBlock(address, new BlockDTO(newSafe.getNumber(), newSafe
-                                .getHash().toBytes()));
-                    }
+                long newSafeBlockNumber = Math.max(1, latest - BLOCK_BATCH_SIZE);
+                final Block newSafe = getBlock(newSafeBlockNumber);
+                for (String address : addresses) {
+                    getAccountManager().updateLastSafeBlock(address, new BlockDTO(newSafe.getNumber(), newSafe.getHash().toBytes()));
                 }
                 log.debug("finished processing for addresses: {}", addresses);
             }
@@ -452,14 +503,18 @@ public class ApiBlockchainConnector extends BlockchainConnector {
                 final long blockNumber = blockDetails.getNumber();
                 for (final String address : addresses) {
                     final List<TransactionDTO> newTxs = blockDetails.getTxDetails().stream()
-                            .filter(t -> TypeConverter.toJsonHex(t.getFrom().toString()).equals(address)
-                                    || TypeConverter.toJsonHex(t.getTo().toString()).equals(address))
+                            .filter(t -> isMatchingTransaction(address, t))
                             .map(t -> mapTransaction(t, timestamp, blockNumber))
                             .collect(Collectors.toList());
                     getAccountManager().addTransactions(address, newTxs);
                 }
             }
         };
+    }
+
+    private boolean isMatchingTransaction(String address, TxDetails t) {
+        SendData sendData = getSendData(t.getFrom().toString(), t.getTo().toString(), t.getValue(), t.getData().getData());
+        return AddressUtils.equals(sendData.getFrom(), address) || AddressUtils.equals(sendData.getTo(), address);
     }
 
     private Block getLatestBlock() {
@@ -504,34 +559,44 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         if (transaction == null) {
             return null;
         }
-        return new TransactionDTO(
+        final SendData sendData = getSendData(
                 transaction.getFrom().toString(),
                 transaction.getTo().toString(),
+                transaction.getValue(),
+                transaction.getData().getData()
+        );
+        return new TransactionDTO(
+                sendData.getFrom(), sendData.getTo(), sendData.getValue(), sendData.getCoin(),
                 transaction.getTxHash().toString(),
-                TypeConverter.StringHexToBigInteger(TypeConverter.toJsonHex(transaction.getValue())),
                 transaction.getNrgConsumed(),
                 transaction.getNrgPrice(),
                 transaction.getTimeStamp(),
                 transaction.getBlockNumber(),
                 transaction.getNonce(),
-                transaction.getTransactionIndex());
+                transaction.getTransactionIndex()
+        );
     }
 
     private TransactionDTO mapTransaction(final TxDetails transaction, final long timeStamp, final long blockNumber) {
         if (transaction == null) {
             return null;
         }
-        return new TransactionDTO(
+        final SendData sendData = getSendData(
                 transaction.getFrom().toString(),
                 transaction.getTo().toString(),
+                transaction.getValue(),
+                transaction.getData().getData()
+        );
+        return new TransactionDTO(
+                sendData.getFrom(), sendData.getTo(), sendData.getValue(), sendData.getCoin(),
                 transaction.getTxHash().toString(),
-                TypeConverter.StringHexToBigInteger(TypeConverter.toJsonHex(transaction.getValue())),
                 transaction.getNrgConsumed(),
                 transaction.getNrgPrice(),
                 timeStamp,
                 blockNumber,
                 transaction.getNonce(),
-                transaction.getTxIndex());
+                transaction.getTxIndex()
+        );
     }
 
     private ConnectionDetails getConnectionDetails() {

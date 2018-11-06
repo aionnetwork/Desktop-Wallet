@@ -178,8 +178,7 @@ public class AccountCellItem extends ListCell<AccountDTO> {
             } catch (ValidationException e) {
                 final HardwareWalletDisconnectedDialog warningDialog = getWarningDialog(modifiedAccount.getType());
                 warningDialog.open(mouseEvent, e);
-                ConsoleManager.addLog(e.getMessage(), ConsoleManager.LogType.ACCOUNT, ConsoleManager.LogLevel
-                        .ERROR);
+                ConsoleManager.addLog(e.getMessage(), ConsoleManager.LogType.ACCOUNT, ConsoleManager.LogLevel.ERROR);
             }
         }
     }

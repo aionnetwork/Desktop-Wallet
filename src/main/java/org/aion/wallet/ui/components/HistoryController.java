@@ -280,9 +280,9 @@ public class HistoryController extends AbstractController {
 
     public class TxRow {
 
-        private static final String OUT = "outgoing";
-        private static final String IN = "incoming";
-        private static final String CREATE = "contract";
+        private static final String OUT = "OUT";
+        private static final String IN = "IN";
+        private static final String CREATE = "CREATE";
 
         private final TransactionDTO transaction;
         private final SimpleStringProperty type;
@@ -293,16 +293,16 @@ public class HistoryController extends AbstractController {
         private final SimpleStringProperty txHash;
 
         private TxRow(final String requestingAddress, final TransactionDTO dto) {
-            transaction = dto;
-            final AccountDTO fromAccount = blockchainConnector.getAccount(dto.getFrom());
-            final String balance = BalanceUtils.formatBalance(dto.getValue());
+            this.transaction = dto;
+            final AccountDTO fromAccount = blockchainConnector.getAccount(transaction.getFrom());
             boolean isFromTx = AddressUtils.equals(requestingAddress, fromAccount.getPublicAddress());
-            final String out = dto.getTo().equals("0x") ? CREATE : OUT;
+            final String stringValue = BalanceUtils.formatBalance(transaction.getValue()) + " " + transaction.getCoin();
+            final String out = transaction.getTo().equals("0x") ? CREATE : OUT;
             this.type = new SimpleStringProperty(isFromTx ? out : IN);
-            this.date = new SimpleStringProperty(SIMPLE_DATE_FORMAT.format(new Date(dto.getTimeStamp() * 1000)));
-            this.status = new SimpleStringProperty(getTransactionStatus(dto));
-            this.value = new SimpleStringProperty(balance);
-            this.txHash = new SimpleStringProperty(dto.getHash());
+            this.date = new SimpleStringProperty(SIMPLE_DATE_FORMAT.format(new Date(transaction.getTimeStamp() * 1000)));
+            this.status = new SimpleStringProperty(getTransactionStatus(transaction));
+            this.value = new SimpleStringProperty(stringValue);
+            this.txHash = new SimpleStringProperty(transaction.getHash());
         }
 
         private String getTransactionStatus(TransactionDTO dto) {

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Button?>
+<?import java.net.URL?>
+<?import javafx.scene.control.ScrollPane?>
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="org.aion.wallet.ui.components.partials.TokenBalanceController"
+            prefHeight="250.0" prefWidth="200" styleClass="anchor-pane"
+            fx:id="tokenBalancePane">
+
+    <stylesheets>
+        <URL value="@dialog.css" />
+        <URL value="@../contentPane.css" />
+    </stylesheets>
+
+    <VBox spacing="10" layoutX="15" layoutY="5" prefWidth="200">
+        <HBox spacing="5">
+            <ImageView fitHeight="24.0" pickOnBounds="true" preserveRatio="true">
+                <Image url="@../icons/triangle-arrow-up.png"/>
+            </ImageView>
+            <Label text="Token balances" styleClass="token-balance-label" onMouseClicked="#close"/>
+        </HBox>
+        <ScrollPane fx:id="tokenBalancesScrollPane" hbarPolicy="NEVER" styleClass="custom-scrollbar"
+                    style="-fx-background-color: white; -fx-background-insets: 0; -fx-border-insets: 0; -fx-border-color: white; -fx-border-width: 0;">
+            <VBox fx:id="tokenBalances" spacing="10" prefHeight="190" style="-fx-background-color: white;"/>
+        </ScrollPane>
+    </VBox>
+
+    <VBox fx:id="customTokenForm" AnchorPane.bottomAnchor="5" AnchorPane.leftAnchor="5" spacing="5" prefWidth="200" visible="false">
+        <Label text="Token Address"/>
+        <TextField fx:id="customTokenContractAddress" promptText="Contract address"/>
+        <HBox spacing="10">
+            <Button text="Save" onMouseClicked="#saveCustomToken"/>
+            <Button text="Cancel" onMouseClicked="#cancelCustomToken"/>
+        </HBox>
+        <Label fx:id="customTokenValidation" visible="false" style="-fx-text-fill: red;"/>
+    </VBox>
+
+    <Label fx:id="customTokenLink" text="+ Add custom token" AnchorPane.leftAnchor="5" AnchorPane.topAnchor="275" styleClass="link" onMouseClicked="#addCustomToken"/>
+
+</AnchorPane>

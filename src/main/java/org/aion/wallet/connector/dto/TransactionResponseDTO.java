@@ -1,13 +1,11 @@
 package org.aion.wallet.connector.dto;
 
-import org.aion.base.type.Hash256;
-
 public class TransactionResponseDTO {
     private final byte status;
-    private final Hash256 txHash;
+    private final String txHash;
     private final String error;
 
-    public TransactionResponseDTO(final byte status, final Hash256 txHash, final String error){
+    public TransactionResponseDTO(final byte status, final String txHash, final String error){
         this.status = status;
         this.txHash = txHash;
         this.error = error;
@@ -17,7 +15,7 @@ public class TransactionResponseDTO {
         return status;
     }
 
-    public Hash256 getTxHash() {
+    public String getTxHash() {
         return txHash;
     }
 

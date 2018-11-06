@@ -1,5 +1,7 @@
 package org.aion.wallet.util;
 
+import org.aion.mcf.vm.Constants;
+
 import java.math.BigInteger;
 
 public final class AionConstants {
@@ -12,7 +14,9 @@ public final class AionConstants {
 
     public final static String CCY = "AION";
 
-    public static final String DEFAULT_NRG = "22000";
+    public static final int DEFAULT_NRG = Constants.NRG_TRANSACTION;
+
+    public static final int DEFAULT_TOKEN_NRG = 65_000;
 
     public static final BigInteger DEFAULT_NRG_PRICE = BigInteger.valueOf(10 * AMP);
 

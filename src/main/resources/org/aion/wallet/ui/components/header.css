@@ -19,7 +19,7 @@
     -fx-text-alignment: CENTER;
     -fx-font-family: 'Open Sans Regular';
     -fx-font-size: 18px;
-    -fx-padding: 0 0 10 0;
+    -fx-padding: 0 0 5 0;
 }
 
 .header-account-label {
@@ -62,4 +62,11 @@
     -fx-display-caret: false;
     -fx-border-color: #4221CC;
     -fx-border-width: 0 0 1 0;
+}
+
+.token-balance-label {
+    -fx-cursor: hand;
+    -fx-text-fill: BLACK;
+    -fx-font-family: 'Open Sans Light';
+    -fx-font-size: 18px;
 }

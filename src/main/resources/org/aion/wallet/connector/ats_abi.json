@@ -1,0 +1,558 @@
+[
+  {
+    "outputs": [],
+    "payable": false,
+    "inputs": [
+      {
+        "name": "_name",
+        "type": "string"
+      },
+      {
+        "name": "_symbol",
+        "type": "string"
+      },
+      {
+        "name": "_granularity",
+        "type": "uint128"
+      },
+      {
+        "name": "_initialSupply",
+        "type": "uint128"
+      }
+    ],
+    "name": "",
+    "type": "constructor"
+  },
+
+  {
+    "outputs": [
+      {
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "constant": true,
+    "payable": false,
+    "inputs": [],
+    "name": "name",
+    "type": "function"
+  },
+  {
+    "outputs": [
+      {
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "constant": true,
+    "payable": false,
+    "inputs": [],
+    "name": "symbol",
+    "type": "function"
+  },
+  {
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint128"
+      }
+    ],
+    "constant": true,
+    "payable": false,
+    "inputs": [],
+    "name": "granularity",
+    "type": "function"
+  },
+  {
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint128"
+      }
+    ],
+    "constant": true,
+    "payable": false,
+    "inputs": [],
+    "name": "totalSupply",
+    "type": "function"
+  },
+
+  {
+    "outputs": [
+      {
+        "name": "",
+        "type": "bytes16"
+      }
+    ],
+    "constant": true,
+    "payable": false,
+    "inputs": [
+      {
+        "name": "_tokenHolder",
+        "type": "address"
+      }
+    ],
+    "name": "balanceOf",
+    "type": "function"
+  },
+  {
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "constant": true,
+    "payable": false,
+    "inputs": [
+      {
+        "name": "_operator",
+        "type": "address"
+      },
+      {
+        "name": "_tokenHolder",
+        "type": "address"
+      }
+    ],
+    "name": "isOperatorFor",
+    "type": "function"
+  },
+
+  {
+    "outputs": [],
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "name": "_operator",
+        "type": "address"
+      }
+    ],
+    "name": "authorizeOperator",
+    "type": "function"
+  },
+  {
+    "outputs": [],
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "name": "_operator",
+        "type": "address"
+      }
+    ],
+    "name": "revokeOperator",
+    "type": "function"
+  },
+
+  {
+    "outputs": [],
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "name": "_to",
+        "type": "address"
+      },
+      {
+        "name": "_amount",
+        "type": "uint128"
+      },
+      {
+        "name": "_userData",
+        "type": "bytes"
+      }
+    ],
+    "name": "send",
+    "type": "function"
+  },
+  {
+    "outputs": [],
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "name": "_amount",
+        "type": "uint128"
+      },
+      {
+        "name": "_holderData",
+        "type": "bytes"
+      }
+    ],
+    "name": "burn",
+    "type": "function"
+  },
+
+  {
+    "outputs": [],
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "name": "_from",
+        "type": "address"
+      },
+      {
+        "name": "_to",
+        "type": "address"
+      },
+      {
+        "name": "_amount",
+        "type": "uint128"
+      },
+      {
+        "name": "_senderData",
+        "type": "bytes"
+      },
+      {
+        "name": "_operatorData",
+        "type": "bytes"
+      }
+    ],
+    "name": "operatorSend",
+    "type": "function"
+  },
+  {
+    "outputs": [],
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "name": "from",
+        "type": "address"
+      },
+      {
+        "name": "amount",
+        "type": "uint128"
+      },
+      {
+        "name": "senderData",
+        "type": "bytes"
+      },
+      {
+        "name": "operatorData",
+        "type": "bytes"
+      }
+    ],
+    "name": "operatorBurn",
+    "type": "function"
+  },
+
+  {
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint128"
+      }
+    ],
+    "constant": true,
+    "payable": false,
+    "inputs": [],
+    "name": "liquidSupply",
+    "type": "function"
+  },
+  {
+    "outputs": [],
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "name": "localRecipient",
+        "type": "address"
+      },
+      {
+        "name": "amount",
+        "type": "uint128"
+      },
+      {
+        "name": "bridgeId",
+        "type": "bytes32"
+      },
+      {
+        "name": "bridgeData",
+        "type": "bytes"
+      },
+      {
+        "name": "remoteSender",
+        "type": "bytes32"
+      },
+      {
+        "name": "remoteBridgeId",
+        "type": "bytes32"
+      },
+      {
+        "name": "remoteData",
+        "type": "bytes"
+      }
+    ],
+    "name": "thaw",
+    "type": "function"
+  },
+  {
+    "outputs": [],
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "name": "remoteRecipient",
+        "type": "bytes32"
+      },
+      {
+        "name": "amount",
+        "type": "uint128"
+      },
+      {
+        "name": "bridgeId",
+        "type": "bytes32"
+      },
+      {
+        "name": "localData",
+        "type": "bytes"
+      }
+    ],
+    "name": "freeze",
+    "type": "function"
+  },
+  {
+    "outputs": [],
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "name": "localSender",
+        "type": "address"
+      },
+      {
+        "name": "remoteRecipient",
+        "type": "bytes32"
+      },
+      {
+        "name": "amount",
+        "type": "uint128"
+      },
+      {
+        "name": "bridgeId",
+        "type": "bytes32"
+      },
+      {
+        "name": "localData",
+        "type": "bytes"
+      }
+    ],
+    "name": "operatorFreeze",
+    "type": "function"
+  },
+
+  {
+    "outputs": [],
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "operator",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "name": "from",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "amount",
+        "type": "uint128"
+      },
+      {
+        "indexed": false,
+        "name": "senderData",
+        "type": "bytes"
+      },
+      {
+        "indexed": false,
+        "name": "operatorData",
+        "type": "bytes"
+      }
+    ],
+    "name": "Sent",
+    "anonymous": false,
+    "type": "event"
+  },
+  {
+    "outputs": [],
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "localRecipient",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "amount",
+        "type": "uint128"
+      },
+      {
+        "indexed": true,
+        "name": "bridgeId",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "name": "bridgeData",
+        "type": "bytes"
+      },
+      {
+        "indexed": true,
+        "name": "remoteSender",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "name": "remoteBridgeId",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "name": "remoteData",
+        "type": "bytes"
+      }
+    ],
+    "name": "Thawed",
+    "anonymous": false,
+    "type": "event"
+  },
+  {
+    "outputs": [],
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "localSender",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "name": "remoteRecipient",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "name": "amount",
+        "type": "uint128"
+      },
+      {
+        "indexed": true,
+        "name": "bridgeId",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "name": "localData",
+        "type": "bytes"
+      }
+    ],
+    "name": "Froze",
+    "anonymous": false,
+    "type": "event"
+  },
+  {
+    "outputs": [],
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "operator",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "amount",
+        "type": "uint128"
+      },
+      {
+        "indexed": false,
+        "name": "operatorData",
+        "type": "bytes"
+      }
+    ],
+    "name": "Minted",
+    "anonymous": false,
+    "type": "event"
+  },
+  {
+    "outputs": [],
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "operator",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "name": "from",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "amount",
+        "type": "uint128"
+      },
+      {
+        "indexed": false,
+        "name": "senderData",
+        "type": "bytes"
+      },
+      {
+        "indexed": false,
+        "name": "operatorData",
+        "type": "bytes"
+      }
+    ],
+    "name": "Burned",
+    "anonymous": false,
+    "type": "event"
+  },
+  {
+    "outputs": [],
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "operator",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "name": "tokenHolder",
+        "type": "address"
+      }
+    ],
+    "name": "AuthorizedOperator",
+    "anonymous": false,
+    "type": "event"
+  },
+  {
+    "outputs": [],
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "operator",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "name": "tokenHolder",
+        "type": "address"
+      }
+    ],
+    "name": "RevokedOperator",
+    "anonymous": false,
+    "type": "event"
+  }
+]

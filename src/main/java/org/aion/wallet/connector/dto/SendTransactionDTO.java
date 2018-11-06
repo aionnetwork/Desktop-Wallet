@@ -6,22 +6,26 @@ import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.util.AddressUtils;
 
 import java.math.BigInteger;
+import java.util.Arrays;
 
 public class SendTransactionDTO {
     private final AccountDTO from;
     private final String to;
     private final Long nrg;
     private final BigInteger value;
-    private final byte[] data = ByteArrayWrapper.NULL_BYTE;
     private final BigInteger nonce = BigInteger.ZERO;
+    private final byte[] data;
     private BigInteger nrgPrice;
 
-    public SendTransactionDTO(final AccountDTO from, final String to, final Long nrg, final BigInteger nrgPrice, final BigInteger value) {
+    public SendTransactionDTO(
+            final AccountDTO from, final String to, final Long nrg, final BigInteger nrgPrice, final BigInteger value, final byte[] data
+    ) {
         this.from = from;
         this.to = to;
         this.nrg = nrg;
         this.nrgPrice = nrgPrice;
         this.value = value;
+        this.data = data;
     }
 
     public AccountDTO getFrom() {
@@ -63,8 +67,10 @@ public class SendTransactionDTO {
         if (!AddressUtils.isValid(to)) {
             throw new ValidationException("Invalid to address");
         }
-        if (value == null || value.compareTo(BigInteger.ZERO) <= 0) {
-            throw new ValidationException("A value greater than zero must be provided");
+        if (Arrays.equals(ByteArrayWrapper.NULL_BYTE, data)) {
+            if (value == null || value.compareTo(BigInteger.ZERO) <= 0) {
+                throw new ValidationException("A value greater than zero must be provided");
+            }
         }
         if (nrg == null || nrg < 0) {
             throw new ValidationException("Invalid nrg value");
