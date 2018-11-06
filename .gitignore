@@ -13,3 +13,5 @@ Output
 /.idea
 .DS_Store
 
+# Java Runtime Folder
+rt/
