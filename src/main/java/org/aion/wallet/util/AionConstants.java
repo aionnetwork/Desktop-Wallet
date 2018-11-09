@@ -10,7 +10,9 @@ public final class AionConstants {
 
     public static final String AION_URL = "https://mainnet.aion.network";
 
-    private static final long AMP = (long) 1E9;
+    public static final BigInteger AMP = BigInteger.valueOf((long) 1E9);
+
+    public static final BigInteger NAMP = AMP.multiply(AMP);
 
     public final static String CCY = "AION";
 
@@ -18,7 +20,7 @@ public final class AionConstants {
 
     public static final int DEFAULT_TOKEN_NRG = 65_000;
 
-    public static final BigInteger DEFAULT_NRG_PRICE = BigInteger.valueOf(10 * AMP);
+    public static final BigInteger DEFAULT_NRG_PRICE = BigInteger.TEN.multiply(AMP);
 
     public static final int BLOCK_MINING_TIME_SECONDS = 10;
 

@@ -442,7 +442,18 @@ public class SendController extends AbstractController {
             if (!matchingTokenOptional.isPresent()) {
                 throw new ValidationException("The selected currency is not valid!");
             } else {
-                if (getTokenBalance(matchingTokenOptional.get()).compareTo(getValue()) < 0) {
+                final TokenDetails token = matchingTokenOptional.get();
+                final BigInteger value = getValue();
+                final long granularity = token.getGranularity();
+                if (!value.mod(BigInteger.valueOf(granularity)).equals(BigInteger.ZERO)) {
+                    final String error = String.format(
+                            "Attempting to send %s %ss, but granularity is %d!",
+                            BalanceUtils.formatBalanceWithNumberOfDecimals(value, 18),
+                            tokenSymbol,
+                            granularity);
+                    ConsoleManager.addLog(error, ConsoleManager.LogType.TRANSACTION, ConsoleManager.LogLevel.ERROR);
+                    throw new ValidationException("You are trying to send too few " + tokenSymbol + "s");
+                } else if (getTokenBalance(token).compareTo(value) < 0) {
                     throw new ValidationException("There are not enough " + tokenSymbol + " tokens");
                 } else {
                     return matchingTokenOptional;

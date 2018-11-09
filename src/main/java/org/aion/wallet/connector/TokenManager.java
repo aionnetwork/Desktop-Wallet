@@ -31,6 +31,7 @@ public class TokenManager {
     private static final String BALANCE = "balanceOf";
     private static final String NAME = "name";
     private static final String SYMBOL = "symbol";
+    private static final String GRANULARITY = "granularity";
     private static final String ABI_JSON = "ats_abi.json";
 
     private final Map<Address, IContract> addressToContract = new HashMap<>();
@@ -63,6 +64,11 @@ public class TokenManager {
     public final String getSymbol(final String tokenAddress, final String accountAddress) throws ValidationException {
         final ContractResponse response = callTokenFunction(tokenAddress, accountAddress, SYMBOL);
         return getStringResponse(response);
+    }
+
+    public long getGranularity(final String tokenAddress, final String accountAddress) throws ValidationException {
+        final ContractResponse response = callTokenFunction(tokenAddress, accountAddress, GRANULARITY);
+        return getResponseContent(response);
     }
 
     public final BigInteger getBalance(final String tokenAddress, final String accountAddress) throws ValidationException {

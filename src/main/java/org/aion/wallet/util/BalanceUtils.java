@@ -13,7 +13,7 @@ public final class BalanceUtils {
 
     private static final int PRECISION = 18;
 
-    private static final BigDecimal WEI_MULTIPLIER = BigDecimal.valueOf(1E18);
+    private static final BigDecimal NAMP = BigDecimal.valueOf(AionConstants.NAMP.longValue());
 
     private BalanceUtils() {}
 
@@ -22,7 +22,7 @@ public final class BalanceUtils {
     }
 
     public static BigInteger extractBalance(final String formattedBalance) {
-        return new BigDecimal(formattedBalance).multiply(WEI_MULTIPLIER).toBigInteger();
+        return new BigDecimal(formattedBalance).multiply(NAMP).toBigInteger();
     }
 
     public static String formatBalanceWithNumberOfDecimals(final BigInteger balance, final int decimalPlaces) {
@@ -38,7 +38,7 @@ public final class BalanceUtils {
             return String.valueOf(0);
         }
         BigDecimal bigDecimalBalance = new BigDecimal(balance);
-        BigDecimal decimal = bigDecimalBalance.divide(WEI_MULTIPLIER, PRECISION, RoundingMode.HALF_EVEN);
+        BigDecimal decimal = bigDecimalBalance.divide(NAMP, PRECISION, RoundingMode.HALF_EVEN);
         if (skipTrailingZeros) {
             decimal = decimal.stripTrailingZeros();
         }

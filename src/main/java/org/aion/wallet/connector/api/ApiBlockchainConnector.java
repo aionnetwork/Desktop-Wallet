@@ -180,14 +180,16 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     private TokenDetails createTokenDetails(String tokenAddress, String accountAddress) throws ValidationException {
         final String name;
         final String symbol;
+        final long granularity;
         lock();
         try {
             name = tokenManager.getName(tokenAddress, accountAddress);
             symbol = tokenManager.getSymbol(tokenAddress, accountAddress);
+            granularity = tokenManager.getGranularity(tokenAddress, accountAddress);
         } finally {
             unLock();
         }
-        return new TokenDetails(tokenAddress, name, symbol);
+        return new TokenDetails(tokenAddress, name, symbol, granularity);
     }
 
     @Override
