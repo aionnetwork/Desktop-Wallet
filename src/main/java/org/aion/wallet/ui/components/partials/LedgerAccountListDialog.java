@@ -136,6 +136,12 @@ public class LedgerAccountListDialog implements Initializable {
             RadioButton radioButton = new RadioButton();
             radioButton.setUserData(accountDetails);
             radioButton.setToggleGroup(ledgerAccountsToggleGroup);
+
+            TextField offset = new TextField(String.valueOf(accountDetails.getDerivationIndex()));
+            offset.setPrefWidth(40);
+            offset.setEditable(false);
+            offset.getStyleClass().add("copyable-textfield");
+
             TextField address = new TextField(accountDetails.getAddress());
             address.setPrefWidth(550);
             address.setEditable(false);
@@ -146,7 +152,7 @@ public class LedgerAccountListDialog implements Initializable {
                             + " AION");
             balance.getStyleClass().add("copyable-label");
             balance.setPrefWidth(100);
-            account.getChildren().addAll(radioButton, address, balance);
+            account.getChildren().addAll(radioButton, offset, address, balance);
 
             ledgerAccountList.getChildren().add(account);
         }
