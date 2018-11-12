@@ -33,6 +33,8 @@ public class UiMessageEvent extends AbstractEvent<UiMessageEvent.Type> {
     public enum Type {
         MNEMONIC_CREATED,
         LEDGER_CONNECTED,
-        LEDGER_ACCOUNT_SELECTED
+        LEDGER_ACCOUNT_SELECTED,
+        TOKEN_BALANCES_SHOW,
+        TOKEN_ADDED
     }
 }

@@ -21,14 +21,20 @@
                 <Image url="@icons/aion-icon.png"/>
             </ImageView>
         </HBox>
-        <VBox alignment="BOTTOM_CENTER" spacing="25">
+        <VBox alignment="BOTTOM_CENTER" spacing="27">
             <AnchorPane>
-                <VBox alignment="CENTER_LEFT" AnchorPane.topAnchor="25" AnchorPane.leftAnchor="0">
+                <VBox alignment="CENTER_LEFT" AnchorPane.topAnchor="20" AnchorPane.leftAnchor="0">
                     <Label fx:id="activeAccountLabel" text="Account" styleClass="header-account-label" visible="false"/>
                     <TextField fx:id="activeAccount" styleClass="header-account-info" editable="false"/>
                 </VBox>
-                <VBox alignment="CENTER_RIGHT" AnchorPane.topAnchor="30" AnchorPane.rightAnchor="10">
+                <VBox alignment="CENTER_RIGHT" AnchorPane.topAnchor="20" AnchorPane.rightAnchor="10">
                     <TextField fx:id="accountBalance" styleClass="balance-value" editable="false" visible="false"/>
+                    <HBox fx:id="toggleTokenBalance" spacing="5" visible="false">
+                        <ImageView fitHeight="24.0" pickOnBounds="true" preserveRatio="true">
+                            <Image url="@icons/triangle-arrow-down.png"/>
+                        </ImageView>
+                        <Label text="Token balances" styleClass="token-balance-label" onMouseClicked="#openTokenBalance" />
+                    </HBox>
                 </VBox>
             </AnchorPane>
             <HBox alignment="BOTTOM_CENTER">
@@ -54,7 +60,6 @@
         </VBox>
 
     </HBox>
-
 
     <fx:include source="partials/WindowControls.fxml"/>
 </AnchorPane>

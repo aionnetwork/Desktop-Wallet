@@ -1,15 +1,13 @@
 package org.aion.wallet.connector;
 
+import org.aion.base.util.TypeConverter;
 import org.aion.wallet.account.AccountManager;
 import org.aion.wallet.connector.api.ApiBlockchainConnector;
 import org.aion.wallet.connector.dto.SendTransactionDTO;
 import org.aion.wallet.connector.dto.SyncInfoDTO;
 import org.aion.wallet.connector.dto.TransactionDTO;
 import org.aion.wallet.connector.dto.TransactionResponseDTO;
-import org.aion.wallet.dto.AccountDTO;
-import org.aion.wallet.dto.AccountType;
-import org.aion.wallet.dto.ConnectionProvider;
-import org.aion.wallet.dto.LightAppSettings;
+import org.aion.wallet.dto.*;
 import org.aion.wallet.events.EventPublisher;
 import org.aion.wallet.exception.NotFoundException;
 import org.aion.wallet.exception.ValidationException;
@@ -26,6 +24,8 @@ import java.util.concurrent.locks.ReentrantLock;
 public abstract class BlockchainConnector {
 
     private static final String CORE_CONNECTOR_CLASS = "org.aion.wallet.connector.core.CoreBlockchainConnector";
+
+    private static final String SEND = "f0a147ad";
 
     private static BlockchainConnector INST;
 
@@ -147,6 +147,12 @@ public abstract class BlockchainConnector {
 
     public abstract BigInteger getBalance(final String address);
 
+    public abstract BigInteger getTokenBalance(final String tokenAddress, final String accountAddress) throws ValidationException;
+
+    public abstract byte[] getTokenSendData(final String tokenAddress, final String accountAddress, final String destinationAddress, final BigInteger value);
+
+    public abstract TokenDetails getTokenDetails(final String tokenAddress, final String accountAddress) throws ValidationException;
+
     public abstract TransactionDTO getTransaction(final String txHash) throws NotFoundException;
 
     public abstract Set<TransactionDTO> getLatestTransactions(final String address);
@@ -159,14 +165,14 @@ public abstract class BlockchainConnector {
 
     public abstract LightAppSettings getSettings();
 
-    public final TransactionResponseDTO sendTransaction(final SendTransactionDTO dto) throws ValidationException {
-        if (dto == null || !dto.validate()) {
+    public final TransactionResponseDTO sendTransaction(final SendTransactionDTO transactionWrapper) throws ValidationException {
+        if (transactionWrapper == null || !transactionWrapper.validate()) {
             throw new ValidationException("Invalid transaction request data");
         }
-        if (dto.estimateValue().compareTo(getBalance(dto.getFrom().getPublicAddress())) >= 0) {
+        if (transactionWrapper.estimateValue().compareTo(getBalance(transactionWrapper.getFrom().getPublicAddress())) >= 0) {
             throw new ValidationException("Insufficient funds");
         }
-        return sendTransactionInternal(dto);
+        return sendTransactionInternal(transactionWrapper);
     }
 
     protected abstract TransactionResponseDTO sendTransactionInternal(final SendTransactionDTO dto) throws ValidationException;
@@ -205,5 +211,77 @@ public abstract class BlockchainConnector {
 
     public void storeConnectionKeys(final ConnectionProvider connectionProvider) {
         walletStorage.saveConnectionProperties(connectionProvider);
+    }
+
+    public final void saveToken(final TokenDetails newTokenDetails) {
+        walletStorage.saveToken(newTokenDetails);
+    }
+
+    public List<TokenDetails> getAccountTokenDetails(final String address) {
+        return walletStorage.getAccountTokenDetails(address);
+    }
+
+    public final void addAccountToken(final String address, final String tokenSymbol) {
+        walletStorage.addAccountToken(address, tokenSymbol);
+    }
+
+    protected final SendData getSendData(String initialFrom, String initialTo, BigInteger initialValue, byte[] data) {
+        BigInteger value = initialValue;
+        String coin;
+        String to = initialTo;
+        if (BigInteger.ZERO.equals(value)) {
+            try {
+                final String dataString = TypeConverter.toJsonHex(data);
+                final String function = dataString.substring(2, 10);
+                if (SEND.equalsIgnoreCase(function)) {
+                    to = dataString.substring(10, 74);
+                    value = TypeConverter.StringHexToBigInteger(dataString.substring(74, 106));
+                    final TokenDetails tokenDetails = getTokenDetails(initialTo, initialFrom);
+                    coin = tokenDetails.getSymbol();
+                } else {
+                    coin = "";
+                }
+            } catch (Exception e) {
+                value = BigInteger.ZERO;
+                if (data.length == 0) {
+                    coin = getCurrency();
+                } else {
+                    coin = "";
+                }
+            }
+        } else {
+            coin = getCurrency();
+        }
+        return new SendData(initialFrom, to, coin, value);
+    }
+
+    protected static class SendData {
+        private final String from;
+        private final String to;
+        private final String coin;
+        private final BigInteger value;
+
+        private SendData(String from, String to, String coin, BigInteger value) {
+            this.from = from;
+            this.coin = coin;
+            this.to = to;
+            this.value = value;
+        }
+
+        public String getFrom() {
+            return from;
+        }
+
+        public String getTo() {
+            return to;
+        }
+
+        public String getCoin() {
+            return coin;
+        }
+
+        public BigInteger getValue() {
+            return value;
+        }
     }
 }

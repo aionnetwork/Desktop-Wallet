@@ -7,14 +7,13 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.HBox;
 import org.aion.api.log.LogEnum;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.console.ConsoleManager;
 import org.aion.wallet.dto.AccountDTO;
-import org.aion.wallet.events.AccountEvent;
-import org.aion.wallet.events.EventBusFactory;
-import org.aion.wallet.events.HeaderPaneButtonEvent;
-import org.aion.wallet.events.RefreshEvent;
+import org.aion.wallet.events.*;
 import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.ui.components.partials.AddAccountDialog;
@@ -38,12 +37,12 @@ public class OverviewController extends AbstractController {
     private Button unlockMasterAccountButton;
     @FXML
     private ListView<AccountDTO> accountListView;
+
     private AddAccountDialog addAccountDialog;
     private ImportAccountDialog importAccountDialog;
     private UnlockMasterAccountDialog unlockMasterAccountDialog;
 
     private AccountDTO account;
-
 
     @Override
     public void internalInit(final URL location, final ResourceBundle resources) {

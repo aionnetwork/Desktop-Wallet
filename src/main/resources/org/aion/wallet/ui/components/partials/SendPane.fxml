@@ -23,7 +23,6 @@
             </VBox>
             <VBox spacing="5" prefWidth="400.0">
                 <Label text="New transaction" styleClass="header-text"/>
-                <PasswordField fx:id="passwordInput" promptText="Password" styleClass="input-fields"/>
                 <HBox spacing="5">
                     <TextField fx:id="toInput" promptText="To address" styleClass="input-fields"
                                onKeyPressed="#addressPressed" prefWidth="360"/>
@@ -50,7 +49,8 @@
                     </Pane>
                 </HBox>
                 <HBox spacing="5">
-                    <TextField fx:id="valueInput" promptText="Amount to send" styleClass="input-fields" onKeyPressed="#valuePressed" prefWidth="360"/>
+                    <TextField fx:id="valueInput" promptText="Amount to send" styleClass="input-fields" onKeyPressed="#valuePressed" prefWidth="260"/>
+                    <ComboBox fx:id="currencySelect" prefHeight="30" prefWidth="95" onAction="#coinChanged"/>
                     <Pane id="amountInfoPane" onMouseEntered="#showInfoTooltip" onMouseExited="#hideInfoTooltip">
                         <ImageView preserveRatio="true" fitHeight="20" translateY="5">
                             <Image url="@../icons/more-info-icon.png"/>
@@ -63,7 +63,7 @@
                             onMouseClicked="#sendAion" onKeyPressed="#sendPressed" text="Generate transaction"
                             styleClass="button"/>
                 </HBox>
-                <Label fx:id="timedoutTransactionsLabel" onMouseClicked="#onTimedOutTransactionsClick"/>
+                <Label fx:id="timedOutTransactionsLabel" onMouseClicked="#onTimedOutTransactionsClick"/>
             </VBox>
         </HBox>
     </VBox>

@@ -171,6 +171,12 @@
                 excludes="src/main/java/org/aion/wallet/connector/core/**/*.java"
                 includes="src/main/java/**/*.java"
         >
+            <compilerarg value="--add-exports=aion.api.client/org.aion.api.log=aion.wallet"/>
+            <compilerarg value="--add-exports=aion.api.client/org.aion.api.sol=aion.wallet"/>
+            <compilerarg value="--add-exports=aion.api.client/org.aion.api.sol.impl=aion.wallet"/>
+            <compilerarg value="--add-exports=aion.api.client/org.aion.api.impl.internal=aion.wallet"/>
+            <compilerarg value="--add-exports=aion.api.client/org.aion.api.type.core.account=aion.wallet"/>
+            <compilerarg value="--add-exports=aion.api.client/org.aion.api.type.core.tx=aion.wallet"/>
             <modulepath>
                 <fileset dir="${dir.lib}" includes="*.jar"/>
                 <fileset dir="${dir.mod}" includes="*.jar"/>
@@ -196,9 +202,6 @@
 
     <target name="pack" depends="build_standalone">
         <mkdir dir="${dir.pack}"/>
-        <exec executable="/bin/bash"  failonerror="true">
-            <arg value="${dir.script}/prepack.sh" />
-        </exec>
 
         <if>
             <os family="mac"/>
@@ -217,6 +220,9 @@
             <elseif>
                 <os family="unix"/>
                 <then>
+                    <exec executable="/bin/bash"  failonerror="true">
+                        <arg value="${dir.script}/prepack.sh" />
+                    </exec>
                     <property name="native.source" value="${res.main}/native/linux"/>
                     <property name="native.dest" value="${project.name}/native/linux"/>
                     <property name="launcher" value="aion_ui.sh"/>

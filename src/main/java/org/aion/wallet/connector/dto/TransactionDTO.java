@@ -6,6 +6,7 @@ import java.math.BigInteger;
 import java.util.Objects;
 
 public class TransactionDTO implements Comparable<TransactionDTO> {
+    private final String coin;
     private final String from;
     private final String to;
     private final String hash;
@@ -17,7 +18,11 @@ public class TransactionDTO implements Comparable<TransactionDTO> {
     private final BigInteger nonce;
     private final int txIndex;
 
-    public TransactionDTO(final String from, final String to, final String hash, final BigInteger value, final long nrg, final long nrgPrice, final long timeStamp, final long blockNumber, BigInteger nonce, final int txIndex) {
+    public TransactionDTO(
+            final String from, final String to, final BigInteger value, String coin, final String hash, final long nrg, final long nrgPrice, final long timeStamp,
+            final long blockNumber, BigInteger nonce, final int txIndex
+    ) {
+        this.coin = coin;
         this.from = TypeConverter.toJsonHex(from);
         this.to = TypeConverter.toJsonHex(to);
         this.hash = hash;
@@ -28,6 +33,10 @@ public class TransactionDTO implements Comparable<TransactionDTO> {
         this.blockNumber = blockNumber;
         this.nonce = nonce;
         this.txIndex = txIndex;
+    }
+
+    public String getCoin() {
+        return coin;
     }
 
     public String getFrom() {

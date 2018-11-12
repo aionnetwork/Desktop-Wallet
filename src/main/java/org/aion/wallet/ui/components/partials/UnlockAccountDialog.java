@@ -21,7 +21,6 @@ import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.events.AccountEvent;
 import org.aion.wallet.events.EventBusFactory;
 import org.aion.wallet.exception.ValidationException;
-import org.aion.wallet.hardware.ledger.LedgerWallet;
 import org.aion.wallet.log.WalletLoggerFactory;
 import org.slf4j.Logger;
 
