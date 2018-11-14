@@ -1,6 +1,7 @@
 package org.aion.wallet.ui.components;
 
 import com.google.common.eventbus.Subscribe;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -329,9 +330,11 @@ public class SendController extends AbstractController {
                 accountBalance.setVisible(true);
                 setAccountBalanceText();
             }
-            currencySelect.setDisable(false);
-            currencySelect.setItems(getCurrencySymbols(account));
-            currencySelect.getSelectionModel().select(0);
+            Platform.runLater(() -> {
+                currencySelect.setDisable(false);
+                currencySelect.setItems(getCurrencySymbols(account));
+                currencySelect.getSelectionModel().select(0);
+            });
         } else if (AccountEvent.Type.LOCKED.equals(event.getType())) {
             if (account.equals(this.account)) {
                 this.account = null;

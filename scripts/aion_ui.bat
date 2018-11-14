@@ -41,4 +41,4 @@ set LOG_DIR="%STORAGE_DIR%\log"
 
 mkdir "%LOG_DIR%"
 
-java -Dfile.encoding=UTF-8 -Dlocal.storage.dir=%STORAGE_DIR% -classpath %CLASSPATH% -Xms300m -Xmx500m org.aion.wallet.WalletApplication > "%LOG_DIR%\log" 2>&1
+%USERPROFILE%\.aion\java\bin\java.exe -Dfile.encoding=UTF-8 -Dlocal.storage.dir=%STORAGE_DIR% -classpath %CLASSPATH% -Xms300m -Xmx500m org.aion.wallet.WalletApplication > "%LOG_DIR%\log" 2>&1

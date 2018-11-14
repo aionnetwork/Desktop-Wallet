@@ -2,7 +2,6 @@ package org.aion.wallet.connector;
 
 import org.aion.api.IAionAPI;
 import org.aion.api.IContract;
-import org.aion.api.IContractController;
 import org.aion.api.impl.internal.ApiUtils;
 import org.aion.api.sol.IDynamicBytes;
 import org.aion.api.sol.ISolidityArg;
@@ -36,10 +35,10 @@ public class TokenManager {
 
     private final Map<Address, IContract> addressToContract = new HashMap<>();
     private final String abiDescription = getAbiDescription();
-    private final IContractController contractController;
+    private final IAionAPI api;
 
     public TokenManager(final IAionAPI api) {
-        this.contractController = api.getContractController();
+        this.api = api;
     }
 
     private String getAbiDescription() {
@@ -116,7 +115,8 @@ public class TokenManager {
     private IContract getTokenAtAddress(final String tokenAddressString, final String accountAddressString) {
         final Address tokenAddress = Address.wrap(tokenAddressString);
         final Address accountAddress = Address.wrap(accountAddressString);
-        return addressToContract.computeIfAbsent(tokenAddress, s -> contractController.getContractAt(accountAddress, tokenAddress, abiDescription));
+        return addressToContract.computeIfAbsent(tokenAddress, s -> api.getContractController()
+                .getContractAt(accountAddress, tokenAddress, abiDescription));
     }
 
     private BigInteger getBigIntegerResponse(final ContractResponse response) throws ValidationException {

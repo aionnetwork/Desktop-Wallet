@@ -12,16 +12,17 @@ SCRIPT_PATH="$( cd -P "$( dirname "$SOURCE" )" >/dev/null && pwd )"
 echo "Located script directory: ${SCRIPT_PATH}"
 cd ${SCRIPT_PATH}
 
+JAVA_VERSION=11.0.1
 STORAGE_DIR=${HOME}/.aion
 LOG_DIR=${STORAGE_DIR}/log
-JAVA_INSTALL=${STORAGE_DIR}/jre-10.0.2.jre/Contents/Home
+JAVA_INSTALL=${STORAGE_DIR}/java
 JAVA_CMD=${JAVA_INSTALL}/bin/java
 
-if [ ! -f ${JAVA_CMD} ] || [ $(${JAVA_CMD} -version 2>&1 | grep "10.0.2" | wc -l) -lt 1 ]; then
+if [ ! -f ${JAVA_CMD} ] || [ $(${JAVA_CMD} -version 2>&1 | grep "${JAVA_VERSION}" | wc -l) -lt 1 ]; then
   echo "Could not find Java Install directory. Creating it now ..."
   mkdir -p ${JAVA_INSTALL}
   echo "Unzipping packaged JRE ..."
-  tar -xzf jre-10.0.2.tar.gz -C ${STORAGE_DIR}
+  unzip java.zip -d ${STORAGE_DIR}
 fi
 
 LEDGER=${SCRIPT_PATH}/native/mac/ledger
@@ -41,18 +42,19 @@ if [ ! -d ${HID} ]; then
 
   echo "Installing npm dependencies"
   npm install
-
+  npm i -g npm 
+  npm rebuild usb_bindings --update-binary
   echo "In the driver directory $(pwd)"
+  pwd
   popd
   popd
   echo "Back in the binary directory $(pwd)"
 
   open -a AionWallet
+else
+  # run the program
+  LIB_DIR=$(cd ../Java && pwd)/*
+  mkdir -p ${LOG_DIR}
+  ${JAVA_CMD} -cp "${LIB_DIR}" -Dlocal.storage.dir=${STORAGE_DIR} -Xms300m -Xmx500m org.aion.wallet.WalletApplication &> ${LOG_DIR}/log
 fi
-
-# run the program
-LIB_DIR=$(cd ../Java && pwd)/*
-mkdir -p ${LOG_DIR}
-${JAVA_CMD} -cp "${LIB_DIR}" -Dlocal.storage.dir=${STORAGE_DIR} -Xms300m -Xmx500m org.aion.wallet.WalletApplication &> ${LOG_DIR}/log
-
 

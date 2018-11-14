@@ -21,7 +21,7 @@
                 <Image url="@icons/aion-icon.png"/>
             </ImageView>
         </HBox>
-        <VBox alignment="BOTTOM_CENTER" spacing="27">
+        <VBox alignment="BOTTOM_CENTER" spacing="25">
             <AnchorPane>
                 <VBox alignment="CENTER_LEFT" AnchorPane.topAnchor="20" AnchorPane.leftAnchor="0">
                     <Label fx:id="activeAccountLabel" text="Account" styleClass="header-account-label" visible="false"/>

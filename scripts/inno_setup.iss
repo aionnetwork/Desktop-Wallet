@@ -51,11 +51,11 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "C:\Projects\aion_ui\pack\aion_ui\*"; DestDir: "{app}"; Excludes: "cert.pfx, unzip.exe, cygwin1.dll, cygbz2-1.dll, cygintl-8.dll, wget.exe, tar.exe, Bat_To_Exe.exe, *.zip, "; Flags: ignoreversion recursesubdirs createallsubdirs;
+Source: "C:\Projects\aion_ui\pack\aion_ui\*"; DestDir: "{app}"; Excludes: "cert.pfx, unzip.exe, cygwin1.dll, cygbz2-1.dll, cygintl-8.dll, Bat_To_Exe.exe, *.zip, "; Flags: ignoreversion recursesubdirs createallsubdirs;
 Source: "C:\Projects\aion_ui\pack\aion_ui\unzip.exe"; DestDir: "{tmp}"; Flags: ignoreversion
 Source: "C:\Projects\aion_ui\pack\aion_ui\cert.pfx"; DestDir: "{tmp}"; Flags: ignoreversion
 Source: "C:\Projects\aion_ui\pack\aion_ui\*.dll"; DestDir: "{tmp}"; Flags: ignoreversion
-Source: "C:\Projects\aion_ui\pack\aion_ui\wget.exe"; DestDir: "{tmp}"; Flags: ignoreversion
+Source: "C:\Projects\aion_ui\pack\aion_ui\java.zip"; DestDir: "{tmp}"; Flags: ignoreversion
 Source: "C:\Projects\aion_ui\pack\aion_ui\native\win\ledger\Aion-HID.zip"; DestDir: "{tmp}";  Flags: deleteafterinstall
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
@@ -66,8 +66,7 @@ Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: 
 [Run]
 Filename: "certutil.exe"; Parameters: "-addstore ""TrustedPublisher"" {tmp}\cert.pfx"; StatusMsg: "Adding trusted publisher..."
 Filename: "{tmp}\unzip.exe"; Parameters: "-n ""{tmp}\Aion-HID.zip"" ""-d"" ""{app}\native\win\ledger"""; Flags: runhidden; StatusMsg: "Installing additional resources..."
-Filename: "{tmp}\wget.exe"; Parameters: """-nc"" ""--no-check-certificate"" ""--no-cookies"" ""--header"" ""Cookie: oraclelicense=accept-securebackup-cookie"" ""http://download.oracle.com/otn-pub/java/jdk/10.0.2+13/19aef61b38124481863b1413dce1855f/jre-10.0.2_windows-x64_bin.exe""  ""-O"" ""{tmp}\java.exe"""; Flags: runhidden; StatusMsg: "Downloading dependencies..."
-Filename: "{tmp}\java.exe"; StatusMsg: "Installing dependencies..."
+Filename: "{tmp}\unzip.exe"; Parameters: "-n ""{tmp}\java.zip"" ""-d"" ""{%USERPROFILE}\{#MyAppUserDataDirName}"""; Flags: runhidden; StatusMsg: "Installing additional resources..."
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
 
 [UninstallRun]
