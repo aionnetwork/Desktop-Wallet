@@ -7,22 +7,27 @@
             visible="false" xmlns="http://javafx.com/javafx/8.0.121"
             fx:controller="org.aion.wallet.ui.components.SendController" fx:id="parent">
 
-    <VBox alignment="TOP_CENTER" spacing="10" AnchorPane.leftAnchor="10" AnchorPane.rightAnchor="10" AnchorPane.topAnchor="15">
+    <VBox alignment="TOP_CENTER" spacing="5" AnchorPane.leftAnchor="10" AnchorPane.rightAnchor="10" AnchorPane.topAnchor="15">
         <Label text="Send" styleClass="tile-label" alignment="CENTER"/>
         <HBox spacing="10" alignment="CENTER">
             <VBox prefWidth="415.0" spacing="5">
-                <Label text="Account information" styleClass="header-text"/>
-                <Label text="Account address" styleClass="paragraph-text"/>
+                <!--<Label text="Account information" styleClass="header-text"/>-->
+                <VBox spacing="5">
+                    <Label text="Currency"/>
+                    <ComboBox fx:id="currencySelect" prefHeight="30" onAction="#currencyChanged" disable="true"/>
+                </VBox>
+                <Label text="Account address"/>
                 <HBox>
                     <TextArea fx:id="accountAddress" editable="false" styleClass="address-textarea" wrapText="true" prefRowCount="2" prefColumnCount="25"/>
                 </HBox>
-                <Label text="Account balance" styleClass="header-text"/>
+                <Label text="Balance"/>
                 <HBox>
                     <TextField fx:id="accountBalance" editable="false" styleClass="balance-value" visible="false"/>
                 </HBox>
             </VBox>
             <VBox spacing="5" prefWidth="400.0">
-                <Label text="New transaction" styleClass="header-text"/>
+                <!--<Label text="New transaction" styleClass="header-text"/>-->
+                <Label text="To:" />
                 <HBox spacing="5">
                     <TextField fx:id="toInput" promptText="To address" styleClass="input-fields"
                                onKeyPressed="#addressPressed" prefWidth="360"/>
@@ -32,6 +37,7 @@
                         </ImageView>
                     </Pane>
                 </HBox>
+                <Label text="Energy limit:" />
                 <HBox spacing="5">
                     <TextField fx:id="nrgInput" promptText="Energy" styleClass="input-fields" onKeyPressed="#nrgPressed" prefWidth="360"/>
                     <Pane id="energyInfoPane" onMouseEntered="#showInfoTooltip" onMouseExited="#hideInfoTooltip">
@@ -40,17 +46,22 @@
                         </ImageView>
                     </Pane>
                 </HBox>
+                <Label text="Energy price:" />
                 <HBox spacing="5">
-                    <TextField fx:id="nrgPriceInput" promptText="Energy price" styleClass="input-fields" onKeyPressed="#nrgPricePressed" prefWidth="360"/>
+                    <TextField fx:id="nrgPriceInput" promptText="Energy price" styleClass="input-fields" onKeyPressed="#nrgPricePressed" prefWidth="210"/>
+                    <ComboBox fx:id="nrgPriceUnitSelect" prefHeight="30" prefWidth="150"/>
                     <Pane id="energyPriceInfoPane" onMouseEntered="#showInfoTooltip" onMouseExited="#hideInfoTooltip">
                         <ImageView preserveRatio="true" fitHeight="20" translateY="5">
                             <Image url="@../icons/more-info-icon.png"/>
                         </ImageView>
                     </Pane>
                 </HBox>
+                <HBox spacing="250">
+                    <Label text="Amount:" />
+                    <Label text="Send all" styleClass="link-style" onMouseClicked="#populateAmountWithAllFunds"/>
+                </HBox>
                 <HBox spacing="5">
-                    <TextField fx:id="valueInput" promptText="Amount to send" styleClass="input-fields" onKeyPressed="#valuePressed" prefWidth="260"/>
-                    <ComboBox fx:id="currencySelect" prefHeight="30" prefWidth="95" onAction="#coinChanged"/>
+                    <TextField fx:id="valueInput" promptText="Amount to send" styleClass="input-fields" onKeyPressed="#valuePressed" prefWidth="360"/>
                     <Pane id="amountInfoPane" onMouseEntered="#showInfoTooltip" onMouseExited="#hideInfoTooltip">
                         <ImageView preserveRatio="true" fitHeight="20" translateY="5">
                             <Image url="@../icons/more-info-icon.png"/>
@@ -59,11 +70,9 @@
                 </HBox>
                 <Label fx:id="txStatusLabel"/>
                 <HBox>
-                    <Button fx:id="sendButton" prefWidth="400.0" mnemonicParsing="false"
-                            onMouseClicked="#sendAion" onKeyPressed="#sendPressed" text="Generate transaction"
-                            styleClass="button"/>
+                    <Button fx:id="sendButton" prefWidth="400.0" mnemonicParsing="false" onMouseClicked="#sendAion" onKeyPressed="#sendPressed" text="Generate transaction" styleClass="button"/>
                 </HBox>
-                <Label fx:id="timedOutTransactionsLabel" onMouseClicked="#onTimedOutTransactionsClick"/>
+                <Label fx:id="timedOutTransactionsLabel" onMouseClicked="#onTimedOutTransactionsClick" />
             </VBox>
         </HBox>
     </VBox>

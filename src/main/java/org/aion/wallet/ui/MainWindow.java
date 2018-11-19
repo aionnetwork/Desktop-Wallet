@@ -27,7 +27,6 @@ import org.aion.wallet.util.OSUtils;
 import org.slf4j.Logger;
 
 import javax.swing.*;
-import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;

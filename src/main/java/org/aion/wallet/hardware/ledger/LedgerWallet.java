@@ -195,7 +195,7 @@ public class LedgerWallet implements HardwareWallet {
         if (!result.isEmpty() && result.length() == 2 * HEX_KEY_SIZE) {
             return result;
         } else {
-            throw new LedgerException("Error wile communicating with the ledger..." + result);
+            throw new LedgerException("Error wile communicating with the ledger..." + output);
         }
     }
 
@@ -337,20 +337,26 @@ public class LedgerWallet implements HardwareWallet {
         public void accept(final ProcessBuilder processBuilder) {
             if (!Files.exists(Paths.get(WINDOWS_DRIVER_PATH_HID + "\\node_modules"))) {
                 String[] commands = new String[]{WINDOWS_NPM_LOCATION + "\\npm.cmd", "install"};
-                processBuilder.directory(new File(WINDOWS_DRIVER_PATH_HID));
-                try {
-                    Process process = processBuilder.command(commands).start();
-                    final BufferedReader lineReader = new BufferedReader(new InputStreamReader(process.getInputStream
-                            ()));
-                    String line;
-                    while ((line = lineReader.readLine()) != null) {
-                        log.info(line);
-                    }
-                } catch (IOException e) {
-                    log.error(e.getMessage(), e);
-                }
+                String[] setupNodeCommand = new String[]{WINDOWS_NPM_LOCATION + "\\npm.cmd", "config set scripts-prepend-node-path true"};
+                executeCommands(processBuilder, setupNodeCommand);
+                executeCommands(processBuilder, commands);
             } else {
                 log.debug("The node_modules folder already exists");
+            }
+        }
+
+        private void executeCommands(ProcessBuilder processBuilder, String[] commands) {
+            processBuilder.directory(new File(WINDOWS_DRIVER_PATH_HID));
+            try {
+                Process process = processBuilder.command(commands).start();
+                final BufferedReader lineReader = new BufferedReader(new InputStreamReader(process.getInputStream
+                        ()));
+                String line;
+                while ((line = lineReader.readLine()) != null) {
+                    log.info(line);
+                }
+            } catch (IOException e) {
+                log.error(e.getMessage(), e);
             }
         }
     }

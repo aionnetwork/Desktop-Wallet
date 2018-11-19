@@ -12,7 +12,9 @@ public final class AionConstants {
 
     public static final BigInteger AMP = BigInteger.valueOf((long) 1E9);
 
-    public static final BigInteger NAMP = AMP.multiply(AMP);
+    public static final BigInteger AION = AMP.multiply(AMP);
+
+    public static final BigInteger NAMP = BigInteger.ONE;
 
     public final static String CCY = "AION";
 

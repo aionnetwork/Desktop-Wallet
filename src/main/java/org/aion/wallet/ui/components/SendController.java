@@ -1,6 +1,7 @@
 package org.aion.wallet.ui.components;
 
 import com.google.common.eventbus.Subscribe;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -32,9 +33,7 @@ import org.slf4j.Logger;
 
 import java.math.BigInteger;
 import java.net.URL;
-import java.util.List;
-import java.util.Optional;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class SendController extends AbstractController {
@@ -49,13 +48,15 @@ public class SendController extends AbstractController {
 
     private static final Tooltip NRG_LIMIT_TOOLTIP = new Tooltip("Energy limit represents the amount of energy applied to this transaction");
 
-    private static final Tooltip NRG_PRICE_TOOLTIP = new Tooltip("Energy price expressed in nAmp");
+    private static final Tooltip NRG_PRICE_TOOLTIP = new Tooltip("Energy price used to determine the priority of your transaction. Use the dropdown to select the unit.");
 
-    private static final Tooltip AMOUNT_TOOLTIP = new Tooltip("This is the amount that the address specified above will receive");
+    private static final Tooltip AMOUNT_TOOLTIP = new Tooltip("This is the amount that the address specified above will receive.\nPlease be aware that when sending all the coins from an address, from the total amount the energy limit will be deducted!\nIn case of sending tokens the energy limit is deducted from the the coin balance of the current address.");
 
     private static final String SEPARATOR = "-----";
 
     private static final String EMPTY = "";
+    private static final String AMP_DESCRIPTION = "Amp (1e-9 AION)";
+    private static final String NAMP_DESCRIPTION = "nAmp (1e-18 AION)";
 
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
 
@@ -81,6 +82,8 @@ public class SendController extends AbstractController {
     private Label timedOutTransactionsLabel;
     @FXML
     private ComboBox<String> currencySelect;
+    @FXML
+    private ComboBox<String> nrgPriceUnitSelect;
 
     private AccountDTO account;
     private boolean connected;
@@ -296,12 +299,21 @@ public class SendController extends AbstractController {
 
     private void setDefaults() {
         nrgInput.setText(String.valueOf(Constants.NRG_TRANSACTION));
-        nrgPriceInput.setText(AionConstants.DEFAULT_NRG_PRICE.toString());
+        nrgPriceUnitSelect.setItems(getNrgPriceUnits());
+        nrgPriceUnitSelect.getSelectionModel().select(0);
+        nrgPriceInput.setText(AionConstants.DEFAULT_NRG_PRICE.divide(getNrgPriceUnitValue()).toString());
 
         toInput.setText(EMPTY);
         valueInput.setText(EMPTY);
 
         setTimedOutTransactionsLabelText();
+    }
+
+    private ObservableList<String> getNrgPriceUnits() {
+        ObservableList<String> result = FXCollections.observableArrayList();
+        result.add(AMP_DESCRIPTION);
+        result.add(NAMP_DESCRIPTION);
+        return result;
     }
 
     private void setTimedOutTransactionsLabelText() {
@@ -327,11 +339,13 @@ public class SendController extends AbstractController {
                 sendButton.setDisable(!connected);
                 accountAddress.setText(this.account.getPublicAddress());
                 accountBalance.setVisible(true);
-                setAccountBalanceText();
+                setAccountBalanceText(account.getFormattedBalance(), account.getCurrency());
             }
-            currencySelect.setDisable(false);
-            currencySelect.setItems(getCurrencySymbols(account));
-            currencySelect.getSelectionModel().select(0);
+            Platform.runLater(() -> {
+                currencySelect.setDisable(false);
+                currencySelect.setItems(getCurrencySymbols(account));
+                currencySelect.getSelectionModel().select(0);
+            });
         } else if (AccountEvent.Type.LOCKED.equals(event.getType())) {
             if (account.equals(this.account)) {
                 this.account = null;
@@ -341,6 +355,7 @@ public class SendController extends AbstractController {
                 setDefaults();
                 txStatusLabel.setText(EMPTY);
             }
+            currencySelect.setItems(null);
             currencySelect.setDisable(true);
         }
     }
@@ -357,9 +372,7 @@ public class SendController extends AbstractController {
 
     @Subscribe
     private void handleHeaderPaneButtonEvent(final HeaderPaneButtonEvent event) {
-        if (event.getType().equals(HeaderPaneButtonEvent.Type.SEND)) {
-            refreshAccountBalance();
-        }
+
     }
 
     @Subscribe
@@ -385,11 +398,14 @@ public class SendController extends AbstractController {
     }
 
     private List<String> getTokens(final AccountDTO account) {
-        return blockchainConnector.getAccountTokenDetails(account.getPublicAddress()).stream().map(TokenDetails::getSymbol).collect(Collectors.toList());
+        if(account != null) {
+            return blockchainConnector.getAccountTokenDetails(account.getPublicAddress()).stream().map(TokenDetails::getSymbol).collect(Collectors.toList());
+        }
+        return Collections.emptyList();
     }
 
-    private void setAccountBalanceText() {
-        accountBalance.setText(account.getFormattedBalance() + " " + AionConstants.CCY);
+    private void setAccountBalanceText(final String balance, final String currency) {
+        accountBalance.setText(balance + " " + currency);
         UIUtils.setWidth(accountBalance);
     }
 
@@ -402,7 +418,7 @@ public class SendController extends AbstractController {
                 getBalanceTask,
                 evt -> {
                     account.setBalance(getBalanceTask.getValue());
-                    setAccountBalanceText();
+                    setAccountBalanceText(account.getFormattedBalance(), account.getCurrency());
                 },
                 getErrorEvent(t -> {}, getBalanceTask),
                 getEmptyEvent()
@@ -430,6 +446,17 @@ public class SendController extends AbstractController {
             data = ByteUtil.EMPTY_BYTE_ARRAY;
         }
         return new SendTransactionDTO(account, toAddress, nrg, nrgPrice, value, data);
+    }
+
+    private BigInteger getNrgPriceUnitValue() {
+        switch (nrgPriceUnitSelect.getSelectionModel().getSelectedItem()) {
+            case (AMP_DESCRIPTION) :
+                return AionConstants.AMP;
+            case (NAMP_DESCRIPTION) :
+                return AionConstants.NAMP;
+            default:
+                return AionConstants.AION;
+        }
     }
 
     private Optional<TokenDetails> getTokenDetailsOptional() throws ValidationException {
@@ -490,9 +517,9 @@ public class SendController extends AbstractController {
     private BigInteger getNrgPrice() throws ValidationException {
         final BigInteger nrgPrice;
         try {
-            nrgPrice = TypeConverter.StringNumberAsBigInt(nrgPriceInput.getText());
+            nrgPrice = TypeConverter.StringNumberAsBigInt(nrgPriceInput.getText()).multiply(getNrgPriceUnitValue());
             if (nrgPrice.compareTo(AionConstants.DEFAULT_NRG_PRICE) < 0) {
-                throw new ValidationException(String.format("Nrg price must be greater than %s!", AionConstants.DEFAULT_NRG_PRICE));
+                throw new ValidationException(String.format("Nrg price must be greater than %s nAmp!", AionConstants.DEFAULT_NRG_PRICE));
             }
         } catch (NumberFormatException e) {
             throw new ValidationException("Nrg price must be a valid number!");
@@ -551,14 +578,65 @@ public class SendController extends AbstractController {
     }
 
     @FXML
-    private void coinChanged() {
+    private void currencyChanged() {
         final String selectedItem = currencySelect.getSelectionModel().getSelectedItem();
         if (SEPARATOR.equals(selectedItem)) {
             nrgInput.setText(EMPTY);
+            accountBalance.setText("");
+            accountBalance.setVisible(false);
         } else if (getTokens(account).contains(selectedItem)) {
             nrgInput.setText(String.valueOf(AionConstants.DEFAULT_TOKEN_NRG));
+            accountBalance.setVisible(true);
+            try {
+                List<TokenDetails> tokenDetails = blockchainConnector.getAccountTokenDetails(account.getPublicAddress());
+                TokenDetails selectedTokenDetails = tokenDetails.stream().filter(p -> p.getSymbol().equals(currencySelect.getSelectionModel().getSelectedItem())).findFirst().get();
+                String selectedTokenBalance = BalanceUtils.formatBalanceWithNumberOfDecimals(getTokenBalance(selectedTokenDetails), 6);
+                setAccountBalanceText(selectedTokenBalance, selectedTokenDetails.getSymbol());
+            } catch (ValidationException e) {
+                log.info(e.getMessage());
+                setAccountBalanceText("0", currencySelect.getSelectionModel().getSelectedItem());
+            }
+
         } else {
+            accountBalance.setVisible(true);
             nrgInput.setText(String.valueOf(AionConstants.DEFAULT_NRG));
+            setAccountBalanceText(account.getFormattedBalance(), account.getCurrency());
+        }
+        valueInput.setText("");
+    }
+
+    public void populateAmountWithAllFunds() {
+        if(account != null) {
+            String selectedItem = currencySelect.getSelectionModel().getSelectedItem();
+            if(selectedItem.equals(SEPARATOR)) {
+                valueInput.setText("0");
+            }
+            else if(getTokens(account).contains(selectedItem)) {
+                List<TokenDetails> tokenDetails = blockchainConnector.getAccountTokenDetails(account.getPublicAddress());
+                TokenDetails selectedTokenDetails = tokenDetails.stream().filter(p -> p.getSymbol().equals(currencySelect.getSelectionModel().getSelectedItem())).findFirst().get();
+                try {
+                    String selectedTokenBalance = BalanceUtils.formatBalanceWithNumberOfDecimals(getTokenBalance(selectedTokenDetails), 6);
+                    valueInput.setText(selectedTokenBalance);
+                } catch (ValidationException e) {
+                    log.error(e.getMessage());
+                    displayStatus(e.getMessage(), true);
+                    valueInput.setText("0");
+                }
+            }
+            else {
+                try {
+                    BigInteger amountWithDeductedEnergy = BalanceUtils.extractBalance(account.getFormattedBalance()).subtract(BigInteger.valueOf(getNrg()).multiply(getNrgPrice()));
+                    if (amountWithDeductedEnergy.compareTo(BigInteger.ZERO) > 0) {
+                        valueInput.setText(BalanceUtils.formatBalance(amountWithDeductedEnergy));
+                    } else {
+                        valueInput.setText("0");
+                    }
+                } catch (ValidationException e) {
+                    log.error(e.getMessage());
+                    displayStatus(e.getMessage(), true);
+                    valueInput.setText("0");
+                }
+            }
         }
     }
 }

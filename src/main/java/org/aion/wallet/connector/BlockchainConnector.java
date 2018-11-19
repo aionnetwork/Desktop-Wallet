@@ -169,7 +169,7 @@ public abstract class BlockchainConnector {
         if (transactionWrapper == null || !transactionWrapper.validate()) {
             throw new ValidationException("Invalid transaction request data");
         }
-        if (transactionWrapper.estimateValue().compareTo(getBalance(transactionWrapper.getFrom().getPublicAddress())) >= 0) {
+        if (transactionWrapper.estimateValue().compareTo(getBalance(transactionWrapper.getFrom().getPublicAddress())) > 0) {
             throw new ValidationException("Insufficient funds");
         }
         return sendTransactionInternal(transactionWrapper);
