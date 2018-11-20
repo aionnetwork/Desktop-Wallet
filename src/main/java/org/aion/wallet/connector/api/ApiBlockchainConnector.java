@@ -380,13 +380,8 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     private void handleAccountListEvent(final AccountListEvent event) {
         if (AbstractAccountEvent.Type.RECOVERED.equals(event.getType())) {
             final Set<String> addresses = event.getPayload();
-            final BlockDTO oldestSafeBlock = getOldestSafeBlock(addresses, i -> {
-            });
+            final BlockDTO oldestSafeBlock = getOldestSafeBlock(addresses, i -> {});
             backgroundExecutor.submit(() -> processTransactionsFromBlock(oldestSafeBlock, addresses));
-            final Iterator<String> addressesIterator = addresses.iterator();
-            AccountDTO account = getAccount(addressesIterator.next());
-            account.setActive(true);
-            EventPublisher.fireAccountChanged(account);
         }
     }
 
