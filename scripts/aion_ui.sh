@@ -2,15 +2,15 @@
 
 # directories
 JAVA_VERSION=11.0.1
-STORAGE_DIR=${HOME}/.aion
-LOG_DIR=${STORAGE_DIR}/log
-JAVA_INSTALL=${STORAGE_DIR}/java
-JAVA_CMD=${JAVA_INSTALL}/bin/java
+STORAGE_DIR="${HOME}/.aion"
+LOG_DIR="${STORAGE_DIR}/log"
+JAVA_INSTALL="${STORAGE_DIR}/java"
+JAVA_CMD="${JAVA_INSTALL}/bin/java"
 
 CURRENT_DATE=`date '+%Y-%m-%d_%H:%M:%S'`
-LOG_FILE=${LOG_DIR}/log_${CURRENT_DATE}
+LOG_FILE="${LOG_DIR}/log_${CURRENT_DATE}"
 
-mkdir -p ${LOG_DIR}
+mkdir -p "${LOG_DIR}"
 
 # get the directory of the currently executing script
 SOURCE="${BASH_SOURCE[0]}"
@@ -22,13 +22,13 @@ done
 
 SCRIPT_PATH="$( cd -P "$( dirname "$SOURCE" )" >/dev/null && pwd )"
 echo "Located script directory: ${SCRIPT_PATH}"
-cd ${SCRIPT_PATH}
+cd "${SCRIPT_PATH}"
 
-if [[ ! -f ${JAVA_CMD} ]] || [[ $(${JAVA_CMD} -version 2>&1 | grep "${JAVA_VERSION}" | wc -l) -lt 1 ]]; then
-  unzip java.zip -d ${STORAGE_DIR}
+if [[ ! -f "${JAVA_CMD}" ]] || [[ $("${JAVA_CMD}" -version 2>&1 | grep "${JAVA_VERSION}" | wc -l) -lt 1 ]]; then
+  unzip java.zip -d "${STORAGE_DIR}"
 fi
 
-MOD_DIR=${SCRIPT_PATH}/mod/*
-LIB_DIR=${SCRIPT_PATH}/lib/*
+MOD_DIR="${SCRIPT_PATH}/mod/*"
+LIB_DIR="${SCRIPT_PATH}/lib/*"
 
-${JAVA_CMD} -cp "${MOD_DIR}:${LIB_DIR}" -Dlocal.storage.dir=${STORAGE_DIR} -Xms300m -Xmx500m org.aion.wallet.WalletApplication &>> ${LOG_FILE} &
+"${JAVA_CMD}" -cp "${MOD_DIR}:${LIB_DIR}" -Dlocal.storage.dir="${STORAGE_DIR}" -Xms300m -Xmx500m org.aion.wallet.WalletApplication &>> "${LOG_FILE}" &

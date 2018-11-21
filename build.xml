@@ -273,7 +273,6 @@
                 <include name="blake2b/**"/>
                 <include name="sodium/**"/>
                 <include name="zmq/**"/>
-                <include name="ledger/**"/>
             </zipfileset>
             <zipfileset dir="${dir.script}" filemode="755" prefix="${project.name}">
                 <include name="${launcher}"/>
@@ -342,10 +341,6 @@
                     <exec executable="chmod">
                         <arg value="755"/>
                         <arg value="${mac.dir}/MacOS/AionWalletLauncher"/>
-                    </exec>
-                    <exec executable="chmod">
-                        <arg value="755"/>
-                        <arg value="${mac.dir}/MacOS/native/mac/ledger/hid.tar.gz"/>
                     </exec>
                     <move todir='${mac.dir}/MacOS/'>
                         <fileset dir="${dir.pack}/aion_ui">
