@@ -48,7 +48,8 @@
                 </HBox>
                 <Label text="Energy price:" />
                 <HBox spacing="5">
-                    <TextField fx:id="nrgPriceInput" promptText="Energy price" styleClass="input-fields" onKeyPressed="#nrgPricePressed" prefWidth="210"/>
+                    <TextField fx:id="nrgPriceInput" promptText="Energy price" styleClass="input-fields"
+                               onKeyPressed="#nrgPricePressed" prefWidth="205"/>
                     <ComboBox fx:id="nrgPriceUnitSelect" prefHeight="30" prefWidth="150"/>
                     <Pane id="energyPriceInfoPane" onMouseEntered="#showInfoTooltip" onMouseExited="#hideInfoTooltip">
                         <ImageView preserveRatio="true" fitHeight="20" translateY="5">
