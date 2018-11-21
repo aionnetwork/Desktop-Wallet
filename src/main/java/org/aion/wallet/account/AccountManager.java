@@ -121,6 +121,8 @@ public class AccountManager {
             }
         }
         EventPublisher.fireAccountsRecovered(recoveredAddresses);
+        final String firstDerivationAddress = recoveredAddresses.iterator().next();
+        EventPublisher.fireAccountChanged(getAccount(firstDerivationAddress));
     }
 
     public boolean isMasterAccountUnlocked() {
@@ -336,7 +338,7 @@ public class AccountManager {
             }
             if (!accountDetails.getAddress().equals(account.getPublicAddress())) {
                 throw new ValidationException("Wrong " + accountType + " device connected. Could not find account!");
-                }
+            }
         }
         account.setActive(true);
         EventPublisher.fireAccountChanged(account);

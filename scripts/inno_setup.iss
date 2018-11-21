@@ -56,7 +56,6 @@ Source: "C:\Projects\aion_ui\pack\aion_ui\unzip.exe"; DestDir: "{tmp}"; Flags: i
 Source: "C:\Projects\aion_ui\pack\aion_ui\cert.pfx"; DestDir: "{tmp}"; Flags: ignoreversion
 Source: "C:\Projects\aion_ui\pack\aion_ui\*.dll"; DestDir: "{tmp}"; Flags: ignoreversion
 Source: "C:\Projects\aion_ui\pack\aion_ui\java.zip"; DestDir: "{tmp}"; Flags: ignoreversion
-Source: "C:\Projects\aion_ui\pack\aion_ui\native\win\ledger\Aion-HID.zip"; DestDir: "{tmp}";  Flags: deleteafterinstall
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
@@ -65,7 +64,6 @@ Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: 
 
 [Run]
 Filename: "certutil.exe"; Parameters: "-addstore ""TrustedPublisher"" {tmp}\cert.pfx"; StatusMsg: "Adding trusted publisher..."
-Filename: "{tmp}\unzip.exe"; Parameters: "-n ""{tmp}\Aion-HID.zip"" ""-d"" ""{app}\native\win\ledger"""; Flags: runhidden; StatusMsg: "Installing additional resources..."
 Filename: "{tmp}\unzip.exe"; Parameters: "-n ""{tmp}\java.zip"" ""-d"" ""{%USERPROFILE}\{#MyAppUserDataDirName}"""; Flags: runhidden; StatusMsg: "Installing additional resources..."
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
 

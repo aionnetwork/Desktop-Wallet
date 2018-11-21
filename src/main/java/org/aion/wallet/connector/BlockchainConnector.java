@@ -149,7 +149,7 @@ public abstract class BlockchainConnector {
 
     public abstract BigInteger getTokenBalance(final String tokenAddress, final String accountAddress) throws ValidationException;
 
-    public abstract byte[] getTokenSendData(final String tokenAddress, final String accountAddress, final String destinationAddress, final BigInteger value);
+    public abstract byte[] getTokenSendData(final String tokenAddress, final String accountAddress, final String destinationAddress, final BigInteger value) throws ValidationException;
 
     public abstract TokenDetails getTokenDetails(final String tokenAddress, final String accountAddress) throws ValidationException;
 

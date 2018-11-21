@@ -12,6 +12,7 @@ import org.aion.base.type.Address;
 import org.aion.base.type.Hash256;
 import org.aion.base.util.ByteArrayWrapper;
 import org.aion.wallet.connector.BlockchainConnector;
+import org.aion.wallet.connector.NullTokenManager;
 import org.aion.wallet.connector.TokenManager;
 import org.aion.wallet.connector.dto.*;
 import org.aion.wallet.console.ConsoleManager;
@@ -71,7 +72,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         connect();
         EventPublisher.fireApplicationSettingsChanged(lightAppSettings);
         registerEventBusConsumer();
-        tokenManager = new TokenManager(API);
+        tokenManager = new NullTokenManager();
     }
 
     private int getCores() {
@@ -160,7 +161,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         }
     }
 
-    public byte[] getTokenSendData(final String tokenAddress, final String accountAddress, final String destinationAddress, final BigInteger value) {
+    public byte[] getTokenSendData(final String tokenAddress, final String accountAddress, final String destinationAddress, final BigInteger value) throws ValidationException {
         return tokenManager.getEncodedSendTokenData(tokenAddress, accountAddress, destinationAddress, value);
     }
 
@@ -380,13 +381,8 @@ public class ApiBlockchainConnector extends BlockchainConnector {
     private void handleAccountListEvent(final AccountListEvent event) {
         if (AbstractAccountEvent.Type.RECOVERED.equals(event.getType())) {
             final Set<String> addresses = event.getPayload();
-            final BlockDTO oldestSafeBlock = getOldestSafeBlock(addresses, i -> {
-            });
+            final BlockDTO oldestSafeBlock = getOldestSafeBlock(addresses, i -> {});
             backgroundExecutor.submit(() -> processTransactionsFromBlock(oldestSafeBlock, addresses));
-            final Iterator<String> addressesIterator = addresses.iterator();
-            AccountDTO account = getAccount(addressesIterator.next());
-            account.setActive(true);
-            EventPublisher.fireAccountChanged(account);
         }
     }
 

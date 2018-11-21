@@ -59,8 +59,6 @@ public class HeaderPaneControls extends AbstractController {
     private VBox receiveButton;
     @FXML
     private VBox historyButton;
-    //    @FXML
-//    private VBox contractsButton;
     @FXML
     private VBox settingsButton;
 

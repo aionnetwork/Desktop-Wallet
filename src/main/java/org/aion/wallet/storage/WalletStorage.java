@@ -39,6 +39,7 @@ public class WalletStorage {
     private static final String BLANK = "";
 
     private static final String ACCOUNT_NAME_PROP = ".name";
+
     private static final String ACCOUNT_TOKENS_PROP = ".tokens";
 
     private static final String MASTER_DERIVATIONS_PROP = "master.derivations";
@@ -131,7 +132,7 @@ public class WalletStorage {
     public void save() {
         saveAccounts();
         saveSettings();
-        saveTokenProperties();
+//        saveTokenProperties();
     }
 
     private void saveAccounts() {
@@ -191,20 +192,21 @@ public class WalletStorage {
     }
 
     public List<TokenDetails> getAccountTokenDetails(final String address) {
-        List<TokenDetails> result = new ArrayList<>();
-        for(String tokenSymbol : getAccountTokens(address)) {
-            final Object tokenDetails = tokenProperties.get(tokenSymbol);
-            if (tokenDetails != null) {
-                String serializedTokenDetails = String.valueOf(tokenDetails);
-                try {
-                    result.add(new TokenDetails(tokenSymbol, serializedTokenDetails));
-                } catch (ValidationException e) {
-                    log.error(e.getMessage(), e);
-                    removeAccountToken(tokenSymbol, address);
-                }
-            }
-        }
-        return result;
+        return Collections.emptyList();
+//        List<TokenDetails> result = new ArrayList<>();
+//        for(String tokenSymbol : getAccountTokens(address)) {
+//            final Object tokenDetails = tokenProperties.get(tokenSymbol);
+//            if (tokenDetails != null) {
+//                String serializedTokenDetails = String.valueOf(tokenDetails);
+//                try {
+//                    result.add(new TokenDetails(tokenSymbol, serializedTokenDetails));
+//                } catch (ValidationException e) {
+//                    log.error(e.getMessage(), e);
+//                    removeAccountToken(tokenSymbol, address);
+//                }
+//            }
+//        }
+//        return result;
     }
 
     private void removeAccountToken(final String tokenSymbol, final String address) {
@@ -214,15 +216,15 @@ public class WalletStorage {
     }
 
     public final void saveToken(final TokenDetails newTokenDetails) {
-        if(newTokenDetails != null) {
-            tokenProperties.put(newTokenDetails.getSymbol(), newTokenDetails.serialized());
-            saveTokenProperties();
-        }
+//        if(newTokenDetails != null) {
+//            tokenProperties.put(newTokenDetails.getSymbol(), newTokenDetails.serialized());
+//            saveTokenProperties();
+//        }
     }
 
-    private void saveTokenProperties() {
-        savePropertiesToFile(tokenProperties, TOKENS_FILE);
-    }
+//    private void saveTokenProperties() {
+//        savePropertiesToFile(tokenProperties, TOKENS_FILE);
+//    }
 
     public String getMasterAccountMnemonic(final String password) throws ValidationException {
         if (password == null || password.equalsIgnoreCase("")) {
