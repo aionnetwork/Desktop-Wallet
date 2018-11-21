@@ -361,12 +361,14 @@ public class SendController extends AbstractController {
     }
 
     private ObservableList<String> getCurrencySymbols(AccountDTO account) {
-        ObservableList<String> result = FXCollections.observableArrayList();
+        final ObservableList<String> result = FXCollections.observableArrayList();
 
-        List<String> tokenSymbols = getTokens(account);
+        final List<String> tokenSymbols = getTokens(account);
         result.add(account.getCurrency());
-        result.add(SEPARATOR);
-        result.addAll(tokenSymbols);
+        if (!tokenSymbols.isEmpty()) {
+            result.add(SEPARATOR);
+            result.addAll(tokenSymbols);
+        }
         return result;
     }
 

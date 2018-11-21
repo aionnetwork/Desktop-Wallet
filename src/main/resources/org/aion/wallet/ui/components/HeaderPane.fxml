@@ -21,7 +21,7 @@
                 <Image url="@icons/aion-icon.png"/>
             </ImageView>
         </HBox>
-        <VBox alignment="BOTTOM_CENTER" spacing="25">
+        <VBox alignment="BOTTOM_CENTER" spacing="33">
             <AnchorPane>
                 <VBox alignment="CENTER_LEFT" AnchorPane.topAnchor="20" AnchorPane.leftAnchor="0">
                     <Label fx:id="activeAccountLabel" text="Account" styleClass="header-account-label" visible="false"/>
@@ -30,10 +30,10 @@
                 <VBox alignment="CENTER_RIGHT" AnchorPane.topAnchor="20" AnchorPane.rightAnchor="10">
                     <TextField fx:id="accountBalance" styleClass="balance-value" editable="false" visible="false"/>
                     <HBox fx:id="toggleTokenBalance" spacing="5" visible="false">
-                        <ImageView fitHeight="24.0" pickOnBounds="true" preserveRatio="true">
-                            <Image url="@icons/triangle-arrow-down.png"/>
-                        </ImageView>
-                        <Label text="Token balances" styleClass="token-balance-label" onMouseClicked="#openTokenBalance" />
+                        <!--<ImageView fitHeight="24.0" pickOnBounds="true" preserveRatio="true">-->
+                            <!--<Image url="@icons/triangle-arrow-down.png"/>-->
+                        <!--</ImageView>-->
+                        <!--<Label text="Token balances" styleClass="token-balance-label" onMouseClicked="#openTokenBalance" />-->
                     </HBox>
                 </VBox>
             </AnchorPane>
@@ -50,9 +50,6 @@
                 <VBox fx:id="historyButton" prefWidth="150.0" onMouseClicked="#handleButtonPressed">
                     <fx:include source="buttons/HistoryButton.fxml"/>
                 </VBox>
-                <!--<VBox alignment="BOTTOM_CENTER" fx:id="contractsButton" onMouseClicked="#handleButtonPressed">-->
-                    <!--<fx:include source="buttons/ContractsButton.fxml"/>-->
-                <!--</VBox>-->
                 <VBox fx:id="settingsButton" prefWidth="150.0" onMouseClicked="#handleButtonPressed">
                     <fx:include source="buttons/SettingsButton.fxml"/>
                 </VBox>
