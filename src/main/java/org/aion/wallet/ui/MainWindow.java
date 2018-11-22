@@ -62,7 +62,7 @@ public class MainWindow extends Application {
     public void start(final Stage stage) throws IOException {
         ConsoleManager.addLog("Welcome!", ConsoleManager.LogType.SETTINGS);
         this.stage = stage;
-        stage.initStyle(StageStyle.TRANSPARENT);
+        stage.setResizable(false);
         stage.getIcons().add(new Image(getClass().getResourceAsStream(AION_LOGO)));
 
         if(OSUtils.isMac()) {

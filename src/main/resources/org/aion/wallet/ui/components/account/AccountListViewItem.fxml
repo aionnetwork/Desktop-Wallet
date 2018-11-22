@@ -8,15 +8,15 @@
     <graphic>
         <HBox spacing="5">
             <VBox prefWidth="120">
-                <TextField text="Name:" styleClass="copyable-label" editable="false"/>
-                <TextField text="Public address" styleClass="copyable-label" editable="false"/>
+                <TextField text="Name" styleClass="copyable-label" editable="false"/>
+                <TextField text="Address" styleClass="copyable-label" editable="false"/>
                 <TextField text="Balance" styleClass="copyable-label" editable="false"/>
             </VBox>
             <VBox>
                 <HBox fx:id="nameBox">
                     <TextField fx:id="importedLabel" editable="false"
-                               styleClass="name-input-fields" prefWidth="75"/>
-                    <TextField fx:id="name" styleClass="name-input-fields" editable="false" HBox.hgrow="ALWAYS"/>
+                               styleClass="copyable-label" prefWidth="75"/>
+                    <TextField fx:id="name" styleClass="copyable-label" editable="false" HBox.hgrow="ALWAYS"/>
                 </HBox>
                 <TextField fx:id="publicAddress" styleClass="copyable-label" editable="false"/>
                 <TextField fx:id="balance" styleClass="copyable-label" editable="false"/>
@@ -24,7 +24,7 @@
             <HBox>
                 <ImageView fx:id="editNameButton" fitHeight="30.0" fitWidth="30.0"
                            pickOnBounds="true" preserveRatio="true"
-                           styleClass="clickable"
+                           styleClass="clickable, account-action-button"
                            onMouseClicked="#onNameFieldClicked">
                     <Image url="@../icons/pencil-edit-button.png"/>
                 </ImageView>
@@ -32,7 +32,7 @@
             <HBox>
                 <ImageView fx:id="accountSelectButton" fitHeight="30.0" fitWidth="30.0"
                            pickOnBounds="true" preserveRatio="true"
-                           styleClass="clickable"
+                           styleClass="clickable, account-action-button"
                            onMouseClicked="#onDisconnectedClicked">
                     <Image url="@../icons/icon-disconnected-50.png"/>
                 </ImageView>
@@ -40,7 +40,7 @@
             <HBox>
                 <ImageView fx:id="accountExportButton" fitHeight="30.0" fitWidth="30.0"
                            pickOnBounds="true" preserveRatio="true"
-                           styleClass="clickable"
+                           styleClass="clickable, account-action-button"
                            onMouseClicked="#onExportClicked">
                     <Image url="@../icons/icon-export.png"/>
                 </ImageView>

@@ -10,13 +10,13 @@
 
 .main-text {
     -fx-text-fill: BLACK;
-    -fx-font-family: 'Open Sans Light';
+    -fx-font-family: 'Titillium Web';
     -fx-font-size: 26px;
 }
 
 .paragraph-text {
     -fx-text-fill: BLACK;
-    -fx-font-family: 'Open Sans Light';
+    -fx-font-family: 'Titillium Web';
     -fx-font-size: 18px;
 }
 
@@ -24,7 +24,7 @@
     -fx-background-color: #4221cc;
     -fx-background-radius: 0,0,0,0;
     -fx-text-fill: white;
-    -fx-font-family: 'Open Sans Bold';
+    -fx-font-family: 'Titillium Web';
     -fx-font-size: 18px;
 }
 
@@ -32,7 +32,7 @@
     -fx-background-color: #4221cc;
     -fx-background-radius: 0,0,0,0;
     -fx-text-fill: white;
-    -fx-font-family: 'Open Sans Bold';
+    -fx-font-family: 'Titillium Web';
     -fx-font-size: 14px;
 }
 
@@ -40,16 +40,13 @@
     -fx-background-color: #4221cc;
     -fx-background-radius: 0,0,0,0;
     -fx-text-fill: white;
-    -fx-font-family: 'Open Sans Bold';
+    -fx-font-family: 'Titillium Web';
     -fx-font-size: 18px;
 }
 
 .cancel-button {
     -fx-background-color: #eae9fb;
-    -fx-background-radius: 0,0,0,0;
     -fx-text-fill: #4221cc;
-    -fx-font-family: 'Open Sans Bold';
-    -fx-font-size: 18px;
 }
 
 .error-input-fields {
@@ -66,13 +63,13 @@
 
 .transaction-table-header-text {
     -fx-text-fill: BLACK;
-    -fx-font-family: 'Open Sans Light';
+    -fx-font-family: 'Titillium Web';
     -fx-font-size: 18px;
 }
 
 .transaction-row-text {
     -fx-text-fill: BLACK;
-    -fx-font-family: 'Open Sans Light';
+    -fx-font-family: 'Titillium Web';
     -fx-font-size: 14px;
 }
 
@@ -101,18 +98,10 @@
     -fx-cursor: hand;
 }
 
-.button {
-    -fx-background-color: #4221cc;
-    -fx-background-radius: 0,0,0,0;
-    -fx-text-fill: white;
-    -fx-font-family: 'Open Sans Bold';
-    -fx-font-size: 18px;
-}
-
 .token-balance-label {
     -fx-cursor: hand;
     -fx-text-fill: BLACK;
-    -fx-font-family: 'Open Sans Light';
+    -fx-font-family: 'Titillium Web';
     -fx-font-size: 18px;
 }
 
