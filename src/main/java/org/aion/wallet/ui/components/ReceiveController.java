@@ -6,7 +6,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.Tooltip;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
@@ -19,21 +18,20 @@ import java.util.EnumSet;
 import java.util.ResourceBundle;
 
 public class ReceiveController implements Initializable{
+
+    private final Tooltip copiedTooltip = new Tooltip("Copied");
+
     @FXML
     public ImageView qrCode;
 
     @FXML
     private TextArea accountAddress;
 
-    private Tooltip copiedTooltip;
-
     private AccountDTO account;
 
     @Override
     public void initialize(final URL location, final ResourceBundle resources) {
         registerEventBusConsumer();
-        copiedTooltip = new Tooltip();
-        copiedTooltip.setText("Copied");
         copiedTooltip.setAutoHide(true);
         accountAddress.setTooltip(copiedTooltip);
     }
@@ -45,15 +43,17 @@ public class ReceiveController implements Initializable{
     @Subscribe
     private void handleAccountChanged(final AccountEvent event) {
         if (EnumSet.of(AccountEvent.Type.CHANGED, AccountEvent.Type.ADDED).contains(event.getType())) {
-            account = event.getPayload();
-            accountAddress.setText(account.getPublicAddress());
-
-            Image image = SwingFXUtils.toFXImage(account.getQrCode(), null);
-            qrCode.setImage(image);
+            AccountDTO receivedAccount = event.getPayload();
+            if (receivedAccount.isActive()) {
+                account = receivedAccount;
+                accountAddress.setText(account.getPublicAddress());
+                qrCode.setImage(SwingFXUtils.toFXImage(account.getQrCode(), null));
+            }
         } else if (AccountEvent.Type.LOCKED.equals(event.getType())) {
             if (event.getPayload().equals(account)) {
                 account = null;
                 accountAddress.setText("");
+                qrCode.setImage(null);
             }
         }
     }
@@ -64,7 +64,6 @@ public class ReceiveController implements Initializable{
             final ClipboardContent content = new ClipboardContent();
             content.putString(account.getPublicAddress());
             clipboard.setContent(content);
-
             copiedTooltip.show(accountAddress.getScene().getWindow());
         }
     }

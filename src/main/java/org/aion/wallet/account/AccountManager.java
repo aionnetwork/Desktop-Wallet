@@ -122,7 +122,9 @@ public class AccountManager {
         }
         EventPublisher.fireAccountsRecovered(recoveredAddresses);
         final String firstDerivationAddress = recoveredAddresses.iterator().next();
-        EventPublisher.fireAccountChanged(getAccount(firstDerivationAddress));
+        final AccountDTO firstAccount = getAccount(firstDerivationAddress);
+        firstAccount.setActive(true);
+        EventPublisher.fireAccountChanged(firstAccount);
     }
 
     public boolean isMasterAccountUnlocked() {
