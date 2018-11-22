@@ -24,7 +24,13 @@ SCRIPT_PATH="$( cd -P "$( dirname "$SOURCE" )" >/dev/null && pwd )"
 echo "Located script directory: ${SCRIPT_PATH}"
 cd "${SCRIPT_PATH}"
 
+if [[ $("${JAVA_CMD}" -version 2>&1 | grep "${JAVA_VERSION}" | wc -l) -lt 1 ]]; then
+  echo "Removing old local Java version: ${JAVA_INSTALL}"
+  rm -rf "${JAVA_INSTALL}"
+fi
+
 if [[ ! -f "${JAVA_CMD}" ]] || [[ $("${JAVA_CMD}" -version 2>&1 | grep "${JAVA_VERSION}" | wc -l) -lt 1 ]]; then
+  echo "Extracting new packaged Java version to ${STORAGE_DIR}"
   unzip java.zip -d "${STORAGE_DIR}"
 fi
 
