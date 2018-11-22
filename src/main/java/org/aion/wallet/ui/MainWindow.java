@@ -224,12 +224,10 @@ public class MainWindow extends Application {
     }
 
     private void handleMousePressed(final MouseEvent event) {
-        xOffset = event.getSceneX();
-        yOffset = event.getSceneY();
+        // do nothing
     }
 
     private void handleMouseDragged(final MouseEvent event) {
-        stage.setX(event.getScreenX() - xOffset);
-        stage.setY(event.getScreenY() - yOffset);
+        // do nothing
     }
 }
