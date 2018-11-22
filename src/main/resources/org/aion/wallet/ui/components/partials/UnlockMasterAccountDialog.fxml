@@ -13,6 +13,7 @@
             fx:controller="org.aion.wallet.ui.components.partials.UnlockMasterAccountDialog">
 
     <stylesheets>
+        <URL value="@../../style.css"/>
         <URL value="@addAccountDialog.css"/>
     </stylesheets>
     <ImageView fitHeight="80.0" fitWidth="80.0" layoutX="135.0" layoutY="30.0" pickOnBounds="true" preserveRatio="true">
@@ -30,7 +31,7 @@
                visible="false"/>
         <Button layoutX="40.0" layoutY="400.0" mnemonicParsing="false" onMouseClicked="#unlockMasterAccount"
                 prefWidth="275.0"
-                styleClass="add-account-buttons" text="Unlock"/>
+                styleClass="button" text="Unlock"/>
     </VBox>
 
 </AnchorPane>
