@@ -94,6 +94,7 @@
     -fx-background-insets: 0px;
     -fx-text-fill: BLACK;
     -fx-display-caret: false;
+    -fx-font-family: "Titillium Web";
 }
 
 .link-style {
