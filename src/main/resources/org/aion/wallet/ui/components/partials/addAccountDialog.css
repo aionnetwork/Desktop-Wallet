@@ -14,22 +14,6 @@
     -fx-font-size: 26px;
 }
 
-.add-account-buttons {
-    -fx-background-color: #4221cc;
-    -fx-background-radius: 0,0,0,0;
-    -fx-text-fill: white;
-    -fx-font-family: 'Titillium Web';
-    -fx-font-size: 18px;
-}
-
-.cancel-button {
-    -fx-background-color: #eae9fb;
-    -fx-background-radius: 0,0,0,0;
-    -fx-text-fill: #4221cc;
-    -fx-font-family: 'Titillium Web';
-    -fx-font-size: 18px;
-}
-
 .error-input-fields {
     -fx-text-box-border: red ;
     -fx-focus-color: red ;

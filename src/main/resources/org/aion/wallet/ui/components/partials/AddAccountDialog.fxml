@@ -9,6 +9,7 @@
             xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.aion.wallet.ui.components.partials.AddAccountDialog">
 
     <stylesheets>
+        <URL value="@../../style.css"/>
         <URL value="@addAccountDialog.css"/>
     </stylesheets>
 
@@ -26,7 +27,7 @@
                        prefWidth="275.0" promptText="Password" styleClass="add-account-input-fields"
                        onKeyPressed="#submitImport" onMouseClicked="#resetValidation"/>
         <Button mnemonicParsing="false" onMouseClicked="#importMnemonic" prefWidth="275.0"
-                styleClass="add-account-buttons" text="Recover"/>
+                styleClass="button" text="Recover"/>
     </VBox>
     <VBox layoutX="40.0" alignment="CENTER" spacing="6.0" AnchorPane.topAnchor="220.0">
         <Label layoutX="170.0" text="or"/>
@@ -43,7 +44,7 @@
                textFill="orangered"
                visible="false"/>
         <Button layoutX="40.0" layoutY="400.0" mnemonicParsing="false" onMouseClicked="#createAccount" prefWidth="275.0"
-                styleClass="add-account-buttons" text="Create"/>
+                styleClass="button" text="Create"/>
     </VBox>
 
 </AnchorPane>

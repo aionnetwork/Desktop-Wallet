@@ -62,3 +62,23 @@
     -fx-text-fill: BLACK;
     -fx-display-caret: false;
 }
+
+.button {
+    -fx-background-color: #4221cc;
+    -fx-background-radius: 0,0,0,0;
+    -fx-text-fill: white;
+    -fx-font-family: 'Titillium Web';
+    -fx-font-size: 18px;
+}
+
+.button:hover {
+    -fx-background-color: #5228FF;
+}
+
+.button:pressed {
+    -fx-background-color: #28147C;
+}
+
+.button .disabled{
+    -fx-background-color: #ececec;
+}
