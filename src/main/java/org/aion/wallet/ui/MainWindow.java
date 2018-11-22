@@ -33,6 +33,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -199,14 +200,18 @@ public class MainWindow extends Application {
         ((Stage) event.getSource().getScene().getWindow()).setIconified(true);
     }
 
+    private final ExecutorService shutdownExec = Executors.newSingleThreadExecutor();
     private void shutDown(final boolean restart) {
         Platform.exit();
-        BlockchainConnector.getInstance().close();
-        scheduler.shutdown();
-        if (restart) {
-            restartApplication();
-        }
-        Executors.newSingleThreadExecutor().submit(() -> System.exit(0));
+        Executors.newSingleThreadExecutor().submit(() -> {
+            BlockchainConnector.getInstance().close();
+            scheduler.shutdown();
+
+            if (restart) {
+                restartApplication();
+            }
+            System.exit(0);
+        });
     }
 
     private void restartApplication() {

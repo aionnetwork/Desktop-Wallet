@@ -50,7 +50,7 @@
                 <VBox fx:id="historyButton" prefWidth="150.0" onMouseClicked="#handleButtonPressed">
                     <fx:include source="buttons/HistoryButton.fxml"/>
                 </VBox>
-                <VBox fx:id="settingsButton" prefWidth="150.0" onMouseClicked="#handleButtonPressed">
+                <VBox fx:id="settingsButton" prefWidth="149.0" onMouseClicked="#handleButtonPressed">
                     <fx:include source="buttons/SettingsButton.fxml"/>
                 </VBox>
             </HBox>
