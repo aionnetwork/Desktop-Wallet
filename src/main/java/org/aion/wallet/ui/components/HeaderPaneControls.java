@@ -61,7 +61,6 @@ public class HeaderPaneControls extends AbstractController {
     private VBox historyButton;
     @FXML
     private VBox settingsButton;
-
     @FXML
     private HBox toggleTokenBalance;
 
