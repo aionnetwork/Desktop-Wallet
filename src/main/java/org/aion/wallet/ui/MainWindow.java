@@ -200,7 +200,6 @@ public class MainWindow extends Application {
         ((Stage) event.getSource().getScene().getWindow()).setIconified(true);
     }
 
-    private final ExecutorService shutdownExec = Executors.newSingleThreadExecutor();
     private void shutDown(final boolean restart) {
         Platform.exit();
         Executors.newSingleThreadExecutor().submit(() -> {
