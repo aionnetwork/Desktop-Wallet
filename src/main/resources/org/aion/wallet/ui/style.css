@@ -1,31 +1,54 @@
 @font-face {
-    font-family: 'Open Sans Regular';
-    src: url('fonts/OpenSans-Regular.ttf');
+    font-family: 'Inconsolata';
+    src: url('fonts/Inconsolata-Regular.ttf');
 }
 
 @font-face {
-    font-family: 'Open Sans Bold';
-    src: url('fonts/OpenSans-Bold.ttf');
-}
-
-@font-face {``
-    font-family: 'Open Sans Extra Bold Italic';
-    src: url('fonts/OpenSans-ExtraBoldItalic.ttf');
+    src: url('fonts/TitilliumWeb-Black.ttf');
 }
 
 @font-face {
-    font-family: 'Open Sans Light';
-    src: url('fonts/OpenSans-Light.ttf');
+    src: url('fonts/TitilliumWeb-Bold.ttf');
+}
+
+@font-face {
+    src: url('fonts/TitilliumWeb-BoldItalic.ttf');
+}
+
+@font-face {
+    src: url('fonts/TitilliumWeb-ExtraLight.ttf');
+}
+
+@font-face {
+    src: url('fonts/TitilliumWeb-ExtraLightItalic.ttf');
+}
+
+@font-face {
+    src: url('fonts/TitilliumWeb-Italic.ttf');
+}
+
+@font-face {
+    src: url('fonts/TitilliumWeb-Light.ttf');
+}
+
+@font-face {
+    src: url('fonts/TitilliumWeb-LightItalic.ttf');
+}
+
+@font-face {
+    src: url('fonts/TitilliumWeb-Regular.ttf');
+}
+
+@font-face {
+    src: url('fonts/TitilliumWeb-SemiBold.ttf');
+}
+
+@font-face {
+    src: url('fonts/TitilliumWeb-SemiBoldItalic.ttf');
 }
 
 .main-stage {
     -fx-background-color: WHITE;
-    -fx-border-color: #a5a5a5;
-    -fx-border-width: 1 1 1 1;
-    -fx-border-style: solid;
-    -fx-border-radius: 7;
-    -fx-background-radius: 7;
-    -fx-padding: 7;
 }
 
 .label {

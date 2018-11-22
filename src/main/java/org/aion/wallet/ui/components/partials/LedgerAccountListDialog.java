@@ -17,6 +17,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -145,6 +146,7 @@ public class LedgerAccountListDialog implements Initializable {
             TextField address = new TextField(accountDetails.getAddress());
             address.setPrefWidth(550);
             address.setEditable(false);
+            address.setFont(new Font("Inconsolata", 14));
             address.getStyleClass().add("copyable-textfield");
             Label balance = new Label(
                     BalanceUtils.formatBalanceWithNumberOfDecimals(

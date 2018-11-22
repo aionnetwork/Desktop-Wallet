@@ -16,8 +16,8 @@
 
 .main-text {
     -fx-text-fill: black;
-    -fx-font-family: 'Open Sans Light';
-    -fx-font-size: 32px;
+    -fx-font-family: 'Titillium Web';
+    -fx-font-size: 24px;
     -fx-text-alignment: CENTER;
 }
 
@@ -25,7 +25,7 @@
     -fx-background-color: #ececec;
     -fx-background-radius: 0,0,0,0;
     -fx-text-fill: black;
-    -fx-font-family: 'Open Sans Regular';
+    -fx-font-family: 'Titillium Web';
     -fx-font-size: 14px;
     -fx-prompt-text-fill: gray;
 }
@@ -34,8 +34,16 @@
     -fx-background-color: #4221cc;
     -fx-background-radius: 0,0,0,0;
     -fx-text-fill: white;
-    -fx-font-family: 'Open Sans Bold';
+    -fx-font-family: 'Titillium Web';
     -fx-font-size: 18px;
+}
+
+.button:hover {
+    -fx-background-color: #5228FF;
+}
+
+.button:pressed {
+    -fx-background-color: #28147C;
 }
 
 .button .disabled{
@@ -50,7 +58,8 @@
 .tile-label {
     -fx-text-fill: BLACK;
     -fx-text-alignment: CENTER;
-    -fx-font-family: 'Open Sans Light';
+    -fx-font-family: 'Titillium Web';
+    -fx-font-weight: bold;
     -fx-font-size: 32px;
 }
 
@@ -59,12 +68,12 @@
 }
 
 .header-text {
-    -fx-font-family: 'Open Sans Bold';
+    -fx-font-family: 'Titillium Web';
     -fx-font-size: 18px;
 }
 
 .paragraph-text {
-    -fx-font-family: 'Open Sans Regular';
+    -fx-font-family: 'Titillium Web';
     -fx-font-size: 16px;
 }
 
@@ -73,7 +82,7 @@
     -fx-background-insets: 0px;
     -fx-text-fill: BLACK;
     -fx-text-alignment: CENTER;
-    -fx-font-family: 'Open Sans Regular';
+    -fx-font-family: 'Titillium Web';
     -fx-font-size: 16px;
     -fx-display-caret: false;
     -fx-border-color: #4221CC;
@@ -97,7 +106,7 @@
     -fx-text-fill: blue;
     -fx-underline: true ;
     -fx-cursor: hand;
-    -fx-font-family: 'Open Sans Regular';
+    -fx-font-family: 'Titillium Web';
     -fx-font-size: 16px;
 }
 

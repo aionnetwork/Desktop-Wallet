@@ -16,7 +16,7 @@
             <ImageView fitHeight="28.0" pickOnBounds="true" preserveRatio="true">
                 <Image url="@../icons/ledger_logo.png"/>
             </ImageView>
-            <Label text="disconnected!" style="-fx-font-family: 'Open Sans Bold'; -fx-font-size: 24px;"/>
+            <Label text="disconnected!" style="-fx-font-family: 'TitilliumWeb-Light'; -fx-font-size: 24px;"/>
         </HBox>
         <Text id="errorText" styleClass="paragraph-text" wrappingWidth="450"/>
         <Text text="Please make sure that the Ledger is connected to your computer, unlocked and the Aion app is open!"
