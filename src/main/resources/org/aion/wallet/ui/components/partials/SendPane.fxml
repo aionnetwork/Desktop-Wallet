@@ -33,7 +33,7 @@
                                onKeyPressed="#addressPressed" prefWidth="360"/>
                     <Pane id="toAddressInfoPane" onMouseEntered="#showInfoTooltip" onMouseExited="#hideInfoTooltip">
                         <ImageView preserveRatio="true" fitHeight="20" translateY="5">
-                            <Image url="@../icons/more-info-icon.png"/>
+                            <Image url="@../icons/question-mark.png"/>
                         </ImageView>
                     </Pane>
                 </HBox>
@@ -42,7 +42,7 @@
                     <TextField fx:id="nrgInput" promptText="Energy" styleClass="input-fields" onKeyPressed="#nrgPressed" prefWidth="360"/>
                     <Pane id="energyInfoPane" onMouseEntered="#showInfoTooltip" onMouseExited="#hideInfoTooltip">
                         <ImageView preserveRatio="true" fitHeight="20" translateY="5">
-                            <Image url="@../icons/more-info-icon.png"/>
+                            <Image url="@../icons/question-mark.png"/>
                         </ImageView>
                     </Pane>
                 </HBox>
@@ -53,7 +53,7 @@
                     <ComboBox fx:id="nrgPriceUnitSelect" prefHeight="30" prefWidth="150" style="-fx-font-family: 'Titillium Web'"/>
                     <Pane id="energyPriceInfoPane" onMouseEntered="#showInfoTooltip" onMouseExited="#hideInfoTooltip">
                         <ImageView preserveRatio="true" fitHeight="20" translateY="5">
-                            <Image url="@../icons/more-info-icon.png"/>
+                            <Image url="@../icons/question-mark.png"/>
                         </ImageView>
                     </Pane>
                 </HBox>
@@ -65,7 +65,7 @@
                     <TextField fx:id="valueInput" promptText="Amount to send" styleClass="input-fields" onKeyPressed="#valuePressed" prefWidth="360"/>
                     <Pane id="amountInfoPane" onMouseEntered="#showInfoTooltip" onMouseExited="#hideInfoTooltip">
                         <ImageView preserveRatio="true" fitHeight="20" translateY="5">
-                            <Image url="@../icons/more-info-icon.png"/>
+                            <Image url="@../icons/question-mark.png"/>
                         </ImageView>
                     </Pane>
                 </HBox>

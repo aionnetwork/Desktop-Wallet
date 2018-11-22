@@ -22,27 +22,27 @@
                 <TextField fx:id="balance" styleClass="copyable-label" editable="false"/>
             </VBox>
             <HBox>
-                <ImageView fx:id="editNameButton" fitHeight="30.0" fitWidth="30.0"
+                <ImageView fx:id="editNameButton"
                            pickOnBounds="true" preserveRatio="true"
                            styleClass="clickable, account-action-button"
                            onMouseClicked="#onNameFieldClicked">
-                    <Image url="@../icons/pencil-edit-button.png"/>
+                    <Image url="@../icons/pencil.png"/>
                 </ImageView>
             </HBox>
             <HBox>
-                <ImageView fx:id="accountSelectButton" fitHeight="30.0" fitWidth="30.0"
+                <ImageView fx:id="accountSelectButton"
                            pickOnBounds="true" preserveRatio="true"
                            styleClass="clickable, account-action-button"
                            onMouseClicked="#onDisconnectedClicked">
-                    <Image url="@../icons/icon-disconnected-50.png"/>
+                    <Image url="@../icons/lock.png"/>
                 </ImageView>
             </HBox>
             <HBox>
-                <ImageView fx:id="accountExportButton" fitHeight="30.0" fitWidth="30.0"
+                <ImageView fx:id="accountExportButton"
                            pickOnBounds="true" preserveRatio="true"
                            styleClass="clickable, account-action-button"
                            onMouseClicked="#onExportClicked">
-                    <Image url="@../icons/icon-export.png"/>
+                    <Image url="@../icons/export.png"/>
                 </ImageView>
             </HBox>
         </HBox>

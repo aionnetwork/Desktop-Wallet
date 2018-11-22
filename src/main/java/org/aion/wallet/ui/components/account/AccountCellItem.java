@@ -35,13 +35,13 @@ import java.util.EnumSet;
 
 public class AccountCellItem extends ListCell<AccountDTO> {
 
-    private static final String ICON_CONNECTED = "/org/aion/wallet/ui/components/icons/icon-connected-50.png";
+    private static final String ICON_CONNECTED = "/org/aion/wallet/ui/components/icons/unlock.png";
 
-    private static final String ICON_DISCONNECTED = "/org/aion/wallet/ui/components/icons/icon-disconnected-50.png";
+    private static final String ICON_DISCONNECTED = "/org/aion/wallet/ui/components/icons/lock.png";
 
-    private static final String ICON_EDIT = "/org/aion/wallet/ui/components/icons/pencil-edit-button.png";
+    private static final String ICON_EDIT = "/org/aion/wallet/ui/components/icons/pencil.png";
 
-    private static final String ICON_CONFIRM = "/org/aion/wallet/ui/components/icons/icons8-checkmark-50.png";
+    private static final String ICON_CONFIRM = "/org/aion/wallet/ui/components/icons/tick.png";
 
     private static final String NAME_INPUT_FIELDS_SELECTED_STYLE = "name-input-fields-selected";
 
