@@ -33,6 +33,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -201,12 +202,15 @@ public class MainWindow extends Application {
 
     private void shutDown(final boolean restart) {
         Platform.exit();
-        BlockchainConnector.getInstance().close();
-        scheduler.shutdown();
-        if (restart) {
-            restartApplication();
-        }
-        Executors.newSingleThreadExecutor().submit(() -> System.exit(0));
+        Executors.newSingleThreadExecutor().submit(() -> {
+            BlockchainConnector.getInstance().close();
+            scheduler.shutdown();
+
+            if (restart) {
+                restartApplication();
+            }
+            System.exit(0);
+        });
     }
 
     private void restartApplication() {
@@ -224,12 +228,10 @@ public class MainWindow extends Application {
     }
 
     private void handleMousePressed(final MouseEvent event) {
-        xOffset = event.getSceneX();
-        yOffset = event.getSceneY();
+        // do nothing
     }
 
     private void handleMouseDragged(final MouseEvent event) {
-        stage.setX(event.getScreenX() - xOffset);
-        stage.setY(event.getScreenY() - yOffset);
+        // do nothing
     }
 }

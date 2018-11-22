@@ -213,7 +213,6 @@ public class ImportAccountDialog implements Initializable {
         popup.setY(eventSource.getScene().getWindow().getY() + eventSource.getScene().getHeight() / 2 - importAccountDialog.getPrefHeight() / 2);
         popup.initModality(Modality.APPLICATION_MODAL);
         popup.initStyle(StageStyle.TRANSPARENT);
-
         popup.show();
     }
 

@@ -16,7 +16,7 @@
 
     <HBox spacing="10">
         <ImageView fitHeight="24.0" pickOnBounds="true" preserveRatio="true">
-            <Image url="@../icons/peers-256x256.png"/>
+            <Image url="@../icons/connected-peers.png"/>
         </ImageView>
         <Label prefHeight="24.0" fx:id="peerCount" styleClass="footer-pane-text" text="0 peers"/>
     </HBox>

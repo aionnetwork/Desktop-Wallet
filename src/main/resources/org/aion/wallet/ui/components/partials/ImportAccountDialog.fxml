@@ -14,8 +14,8 @@
         <URL value="@addAccountDialog.css"/>
     </stylesheets>
 
-    <VBox alignment="CENTER" prefWidth="300.0" spacing="6.0" style="-fx-padding: 0 25 0 25;">
-        <ImageView fitHeight="80.0" fitWidth="80.0" pickOnBounds="true" preserveRatio="true">
+    <VBox alignment="CENTER" prefWidth="300.0" spacing="6.0" style="-fx-padding: 10 25 0 25;">
+        <ImageView fitHeight="60.0" fitWidth="60.0" pickOnBounds="true" preserveRatio="true">
             <Image url="@../icons/aion-icon.png"/>
         </ImageView>
         <fx:define>

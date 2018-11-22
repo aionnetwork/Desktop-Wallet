@@ -16,8 +16,8 @@
     </stylesheets>
 
     <HBox alignment="CENTER" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
-        <HBox onMouseClicked="#openAionWebSite">
-            <ImageView id="logo" pickOnBounds="true" preserveRatio="true" fitHeight="95">
+        <HBox onMouseClicked="#openAionWebSite" style="-fx-padding: 10 10 10 10">
+            <ImageView id="logo" pickOnBounds="true" preserveRatio="true" fitHeight="80">
                 <Image url="@icons/aion-icon.png"/>
             </ImageView>
         </HBox>
@@ -50,7 +50,7 @@
                 <VBox fx:id="historyButton" prefWidth="150.0" onMouseClicked="#handleButtonPressed">
                     <fx:include source="buttons/HistoryButton.fxml"/>
                 </VBox>
-                <VBox fx:id="settingsButton" prefWidth="150.0" onMouseClicked="#handleButtonPressed">
+                <VBox fx:id="settingsButton" prefWidth="149.0" onMouseClicked="#handleButtonPressed">
                     <fx:include source="buttons/SettingsButton.fxml"/>
                 </VBox>
             </HBox>
