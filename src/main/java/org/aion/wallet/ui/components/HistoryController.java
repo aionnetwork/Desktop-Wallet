@@ -22,6 +22,7 @@ import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.events.AccountEvent;
 import org.aion.wallet.events.EventBusFactory;
 import org.aion.wallet.events.HeaderPaneButtonEvent;
+import org.aion.wallet.events.RefreshEvent;
 import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.util.AddressUtils;
 import org.aion.wallet.util.AionConstants;
@@ -62,7 +63,19 @@ public class HistoryController extends AbstractController {
         initSearchItemDropDown();
         buildTableModel();
         setEventHandlers();
-        reloadWalletView();
+        reloadTransactionHistory();
+    }
+
+    @Override
+    protected void refreshView(final RefreshEvent event) {
+        if (isInView()) {
+            switch (event.getType()) {
+                case TIMER:
+                    reloadTransactionHistory();
+                    break;
+                default:
+            }
+        }
     }
 
     private void initSearchItemDropDown() {
@@ -79,7 +92,7 @@ public class HistoryController extends AbstractController {
     @Subscribe
     private void handleHeaderPaneButtonEvent(final HeaderPaneButtonEvent event) {
         if (event.getType().equals(HeaderPaneButtonEvent.Type.HISTORY)) {
-            reloadWalletView();
+            reloadTransactionHistory();
         }
     }
 
@@ -88,7 +101,7 @@ public class HistoryController extends AbstractController {
         if (EnumSet.of(AccountEvent.Type.CHANGED, AccountEvent.Type.ADDED).contains(event.getType())) {
             this.account = event.getPayload();
             if (isInView()) {
-                reloadWalletView();
+                reloadTransactionHistory();
             } else {
                 txTable.setItems(FXCollections.emptyObservableList());
             }
@@ -106,7 +119,7 @@ public class HistoryController extends AbstractController {
         EventBusFactory.getBus(AccountEvent.ID).register(this);
     }
 
-    private void reloadWalletView() {
+    private void reloadTransactionHistory() {
         if (account == null) {
             return;
         }

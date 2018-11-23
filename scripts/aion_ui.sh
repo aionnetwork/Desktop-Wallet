@@ -4,11 +4,11 @@
 JAVA_VERSION=11.0.1
 STORAGE_DIR="${HOME}/.aion"
 LOG_DIR="${STORAGE_DIR}/log"
-JAVA_INSTALL="${STORAGE_DIR}/java"
-JAVA_CMD="${JAVA_INSTALL}/bin/java"
-
 CURRENT_DATE=`date '+%Y-%m-%d_%H:%M:%S'`
 LOG_FILE="${LOG_DIR}/log_${CURRENT_DATE}"
+
+echo "Removing old home folder jre install" &>> "${LOG_FILE}"
+rm -fr "${STORAGE_DIR}/jre-10.0.2" &>> "${LOG_FILE}"
 
 mkdir -p "${LOG_DIR}"
 
@@ -21,17 +21,15 @@ while [[ -h "$SOURCE" ]]; do # resolve $SOURCE until the file is no longer a sym
 done
 
 SCRIPT_PATH="$( cd -P "$( dirname "$SOURCE" )" >/dev/null && pwd )"
-echo "Located script directory: ${SCRIPT_PATH}"
+echo "Located script directory: ${SCRIPT_PATH}" &>> "${LOG_FILE}"
 cd "${SCRIPT_PATH}"
 
-if [[ $("${JAVA_CMD}" -version 2>&1 | grep "${JAVA_VERSION}" | wc -l) -lt 1 ]]; then
-  echo "Removing old local Java version: ${JAVA_INSTALL}"
-  rm -rf "${JAVA_INSTALL}"
-fi
+JAVA_INSTALL="${SCRIPT_PATH}/java"
+JAVA_CMD="${JAVA_INSTALL}/bin/java"
 
-if [[ ! -f "${JAVA_CMD}" ]] || [[ $("${JAVA_CMD}" -version 2>&1 | grep "${JAVA_VERSION}" | wc -l) -lt 1 ]]; then
-  echo "Extracting new packaged Java version to ${STORAGE_DIR}"
-  unzip java.zip -d "${STORAGE_DIR}"
+if [[ $("${JAVA_CMD}" -version 2>&1 | grep "${JAVA_VERSION}" | wc -l) -lt 1 ]]; then
+  echo "Removing old local Java version: ${JAVA_INSTALL}" &>> "${LOG_FILE}"
+  rm -rf "${JAVA_INSTALL}" &>> "${LOG_FILE}"
 fi
 
 MOD_DIR="${SCRIPT_PATH}/mod/*"
