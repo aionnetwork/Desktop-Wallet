@@ -61,6 +61,18 @@ Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
 
+[InstallDelete]
+; Remove old redundant files, to let us install directly without first uninstalling
+; Remove any old existing 1.2.0 installs
+Type: files; Name: "{app}/AionWallet.exe"
+Type: filesandordirs; Name: "{app}/config"
+Type: filesandordirs; Name: "{app}/java"
+Type: filesandordirs; Name: "{app}/lib"
+Type: filesandordirs; Name: "{app}/mod"
+Type: filesandordirs; Name: "{app}/native"
+; Remove any old existing 1.1.0 installs
+Type: filesandordirs; Name: "{app}/jre-10.0.2"
+
 [UninstallRun]
 Filename: "PowerShell.exe"; Parameters: "-windowstyle hidden -Command ""& {{robocopy /MIR '{app}\lib' '{app}\native'}""";
 
