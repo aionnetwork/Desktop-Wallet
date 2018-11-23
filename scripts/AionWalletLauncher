@@ -23,6 +23,10 @@ SCRIPT_PATH="$( cd -P "$( dirname "$SOURCE" )" >/dev/null && pwd )"
 echo "Located script directory: ${SCRIPT_PATH}" 2>&1 >> "${LOG_FILE}"
 cd "${SCRIPT_PATH}"
 
+if [[ $("${JAVA_CMD}" -version 2>&1 | grep "${JAVA_VERSION}" | wc -l) -lt 1 ]]; then
+  echo "Removing old local Java version: ${JAVA_INSTALL}"
+  rm -rf "${JAVA_INSTALL}"
+fi
 
 if [ ! -f "${JAVA_CMD}" ] || [ $("${JAVA_CMD}" -version 2>&1 | grep "${JAVA_VERSION}" | wc -l) -lt 1 ]; then
   echo "Could not find Java Install directory. Creating it now ..." 2>&1 >> "${LOG_FILE}"
