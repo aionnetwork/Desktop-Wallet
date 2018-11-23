@@ -4,6 +4,7 @@ JAVA_VERSION=11
 STORAGE_DIR="${HOME}/.aion"
 LOG_DIR="${STORAGE_DIR}/log"
 CURRENT_DATE=`date '+%Y-%m-%d_%H:%M:%S'`
+
 mkdir -p "${LOG_DIR}"
 LOG_FILE="${LOG_DIR}/log_${CURRENT_DATE}"
 

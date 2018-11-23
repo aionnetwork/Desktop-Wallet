@@ -5,12 +5,12 @@ JAVA_VERSION=11.0.1
 STORAGE_DIR="${HOME}/.aion"
 LOG_DIR="${STORAGE_DIR}/log"
 CURRENT_DATE=`date '+%Y-%m-%d_%H:%M:%S'`
+
+mkdir -p "${LOG_DIR}"
 LOG_FILE="${LOG_DIR}/log_${CURRENT_DATE}"
 
 echo "Removing old home folder jre install" &>> "${LOG_FILE}"
 rm -fr "${STORAGE_DIR}/jre-10.0.2" &>> "${LOG_FILE}"
-
-mkdir -p "${LOG_DIR}"
 
 # get the directory of the currently executing script
 SOURCE="${BASH_SOURCE[0]}"
