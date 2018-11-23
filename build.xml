@@ -32,6 +32,7 @@
     <property name="out.main" value="./build/main"/>
     <property name="out.test" value="./build/test"/>
     <property name="test.report.dir" value="./build/report"/>
+    <property name="dos2unix" value="./tools/dos2unix/bin/dos2unix.exe"/>
 
     <taskdef resource="net/sf/antcontrib/antcontrib.properties">
         <classpath>
@@ -218,13 +219,15 @@
             <elseif>
                 <os family="windows"/>
                 <then>
+                    <exec executable="${dos2unix}" failonerror="true">
+                        <arg value="${dir.script}/prepack.sh"/>
+                    </exec>
                     <exec executable="C:\cygwin64\bin\bash.exe" failonerror="true">
                         <arg value="${dir.script}/prepack.sh"/>
                     </exec>
                     <property name="native.source" value="${res.main}/native/win"/>
                     <property name="native.dest" value="${project.name}/native/win"/>
                     <property name="jfx.suffix" value="win"/>
-                    <mkdir dir="${dir.rt}"/>
                 </then>
             </elseif>
             <elseif>
@@ -241,12 +244,24 @@
                 </then>
             </elseif>
         </if>
-        <zip destfile="${dir.pack}/java.zip">
-            <zipfileset dir="${dir.rt}" filemode="755">
-                <include name="**/*"/>
-            </zipfileset>
-        </zip>
-        <delete dir="${dir.rt}"/>
+
+        <condition property="notOnWindows">
+            <not>
+                <os family="windows"/>
+            </not>
+        </condition>
+
+        <if>
+            <equals arg1="notOnWindows" arg2="true"/>
+            <then>
+                <zip destfile="${dir.pack}/java.zip">
+                    <zipfileset dir="${dir.rt}" filemode="755">
+                        <include name="**/*"/>
+                    </zipfileset>
+                </zip>
+            </then>
+        </if>
+        
         <echo message="${jfx.suffix}"/>
         <zip destfile="${dir.pack}/aion_ui${suffix}.zip">
             <zipfileset dir="${dir.lib}" filemode="755" prefix="${project.name}/lib">
@@ -284,12 +299,13 @@
             <os family="windows"/>
             <then>
                 <unzip src="${dir.pack}/aion_ui${suffix}.zip" dest="${dir.pack}"/>
-                <copy file="${dir.script}/unzip.exe" todir="${dir.pack}/aion_ui"/>
-                <copy file="${dir.script}/wget.exe" todir="${dir.pack}/aion_ui"/>
                 <copy todir="${dir.pack}/aion_ui" overwrite="true" verbose="true">
                     <fileset dir="${dir.script}">
                         <filename regex="\/*.dll|\/*.pfx"/>
                     </fileset>
+                </copy>
+                <copy todir="${dir.pack}/aion_ui" overwrite="true" verbose="true">
+                    <fileset dir="${dir.rt}"/>
                 </copy>
                 <exec executable="${dir.script}/bat2exe.exe">
                     <arg value="/bat"/>
