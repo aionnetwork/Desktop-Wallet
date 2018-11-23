@@ -41,7 +41,7 @@ DisableProgramGroupPage=yes
 OutputBaseFilename=AionWalletSetup
 Compression=lzma
 SolidCompression=yes
-;PrivilegesRequired=admin
+PrivilegesRequired=admin
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -50,10 +50,8 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "C:\Projects\aion_ui\pack\aion_ui\*"; DestDir: "{app}"; Excludes: "cert.pfx, unzip.exe, cygwin1.dll, cygbz2-1.dll, cygintl-8.dll, Bat_To_Exe.exe, *.zip, "; Flags: ignoreversion recursesubdirs createallsubdirs;
-Source: "C:\Projects\aion_ui\pack\aion_ui\unzip.exe"; DestDir: "{tmp}"; Flags: ignoreversion
-Source: "C:\Projects\aion_ui\pack\aion_ui\*.dll"; DestDir: "{tmp}"; Flags: ignoreversion
-Source: "C:\Projects\aion_ui\pack\aion_ui\java.zip"; DestDir: "{tmp}"; Flags: ignoreversion
+Source: "..\pack\aion_ui\*"; DestDir: "{app}"; Excludes: "cert.pfx, unzip.exe, cygwin1.dll, cygbz2-1.dll, cygintl-8.dll, Bat_To_Exe.exe, *.zip, "; Flags: ignoreversion recursesubdirs createallsubdirs;
+Source: "..\pack\aion_ui\*.dll"; DestDir: "{tmp}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
@@ -61,109 +59,22 @@ Name: "{commonprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]
-Filename: "{tmp}\unzip.exe"; Parameters: "-n ""{tmp}\java.zip"" ""-d"" ""{%USERPROFILE}\{#MyAppUserDataDirName}"""; Flags: runhidden; StatusMsg: "Installing additional resources..."
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+
+[InstallDelete]
+; Remove old redundant files, to let us install directly without first uninstalling
+; Remove any old existing 1.2.0 installs
+Type: files; Name: "{app}/AionWallet.exe"
+Type: filesandordirs; Name: "{app}/config"
+Type: filesandordirs; Name: "{app}/java"
+Type: filesandordirs; Name: "{app}/lib"
+Type: filesandordirs; Name: "{app}/mod"
+Type: filesandordirs; Name: "{app}/native"
+; Remove any old existing 1.1.0 installs
+Type: filesandordirs; Name: "{app}/jre-10.0.2"
 
 [UninstallRun]
 Filename: "PowerShell.exe"; Parameters: "-windowstyle hidden -Command ""& {{robocopy /MIR '{app}\lib' '{app}\native'}""";
 
 [UninstallDelete]
 Type: filesandordirs; Name:"{app}";
-
-[Code]
-
-var
-  UninstallFirstPage: TNewNotebookPage;
-  UninstallNextButton: TNewButton;
-  RemoveDataCheckBox: TNewCheckBox;
-
-procedure UninstallNextButtonClick(Sender: TObject);
-begin
-  UninstallProgressForm.InnerNotebook.ActivePage := UninstallProgressForm.InstallingPage;
-  { Make the "Uninstall" button break the ShowModal loop }
-  UninstallNextButton.Caption := 'Uninstall';
-  UninstallNextButton.ModalResult := mrOK;
-  UninstallNextButton.Enabled := False;
-  UninstallProgressForm.CancelButton.Enabled := True;
-end;
-
-procedure InitializeUninstallProgressForm();
-var
-  PageText: TNewStaticText;
-  PageNameLabel: string;
-  PageDescriptionLabel: string;
-  CancelButtonEnabled: Boolean;
-  CancelButtonModalResult: Integer;
-begin
-  if not UninstallSilent then
-  begin
-    { Create the first page and make it active }
-    UninstallFirstPage := TNewNotebookPage.Create(UninstallProgressForm);
-    UninstallFirstPage.Notebook := UninstallProgressForm.InnerNotebook;
-    UninstallFirstPage.Parent := UninstallProgressForm.InnerNotebook;
-    UninstallFirstPage.Align := alClient;
-
-    PageText := TNewStaticText.Create(UninstallProgressForm);
-    PageText.Parent := UninstallFirstPage;
-    PageText.Top := UninstallProgressForm.StatusLabel.Top;
-    PageText.Left := UninstallProgressForm.StatusLabel.Left;
-    PageText.Width := UninstallProgressForm.StatusLabel.Width;
-    PageText.Height := UninstallProgressForm.StatusLabel.Height;
-    PageText.AutoSize := False;
-    PageText.ShowAccelChar := False;
-    PageText.Caption := 'Press Uninstall to proceeed with uninstallation.';
-
-    UninstallProgressForm.InnerNotebook.ActivePage := UninstallFirstPage;
-
-    PageNameLabel := UninstallProgressForm.PageNameLabel.Caption;
-    PageDescriptionLabel := UninstallProgressForm.PageDescriptionLabel.Caption;
-
-    UninstallNextButton := TNewButton.Create(UninstallProgressForm);
-    UninstallNextButton.Parent := UninstallProgressForm;
-    UninstallNextButton.Left := UninstallProgressForm.CancelButton.Left - UninstallProgressForm.CancelButton.Width - ScaleX(10);
-    UninstallNextButton.Top := UninstallProgressForm.CancelButton.Top;
-    UninstallNextButton.Width := UninstallProgressForm.CancelButton.Width;
-    UninstallNextButton.Height := UninstallProgressForm.CancelButton.Height;
-    UninstallNextButton.Caption := 'Uninstall';
-    UninstallNextButton.OnClick := @UninstallNextButtonClick;
-
-    RemoveDataCheckBox := TNewCheckBox.Create(UninstallProgressForm);
-    RemoveDataCheckBox.Parent := UninstallProgressForm.InnerNotebook.ActivePage;
-    RemoveDataCheckBox.Top := UninstallProgressForm.StatusLabel.Top + ScaleY(20);
-    RemoveDataCheckBox.Left := UninstallProgressForm.StatusLabel.Left;
-    RemoveDataCheckBox.Width := UninstallProgressForm.StatusLabel.Width;
-    RemoveDataCheckBox.Caption := 'Remove application data';
-
-    { Run our wizard pages }
-    UninstallNextButton.Caption := 'Uninstall';
-    UninstallNextButton.ModalResult := mrOK;
-
-    CancelButtonEnabled := UninstallProgressForm.CancelButton.Enabled
-    UninstallProgressForm.CancelButton.Enabled := True;
-    CancelButtonModalResult := UninstallProgressForm.CancelButton.ModalResult;
-    UninstallProgressForm.CancelButton.ModalResult := mrCancel;
-
-    if UninstallProgressForm.ShowModal = mrCancel then Abort;
-
-    { Restore the standard page payout }
-    UninstallProgressForm.CancelButton.Enabled := CancelButtonEnabled;
-    UninstallProgressForm.CancelButton.ModalResult := CancelButtonModalResult;
-
-    UninstallProgressForm.PageNameLabel.Caption := PageNameLabel;
-    UninstallProgressForm.PageDescriptionLabel.Caption := PageDescriptionLabel;
-
-    UninstallProgressForm.InnerNotebook.ActivePage := UninstallProgressForm.InstallingPage;
-  end;
-end;
-
-procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
-begin
-  if CurUninstallStep = usUninstall then { or usPostUninstall }
-  begin
-    if RemoveDataCheckBox.Checked then
-    begin
-      Log('Deleting user data');
-      DelTree(ExpandConstant('{%USERPROFILE}') + '\' + + ExpandConstant('{#MyAppUserDataDirName}'), True, True, True);
-    end;
-  end;
-end;
