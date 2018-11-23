@@ -35,13 +35,12 @@
 REM This file is used to generate an executable file with the bat2exe tool
 
 @ECHO OFF
-set CLASSPATH="%cd%\mod\*;%cd%\lib\*"
+set EXEC_PATH=%~dp0
+set CLASSPATH="%EXEC_PATH%\mod\*;%EXEC_PATH%\lib\*"
 set STORAGE_DIR="%USERPROFILE%\.aion"
 set LOG_DIR=%STORAGE_DIR%\log
 
 set LOG_FILE_SUFFIX=%date%__%time:~0,2%_%time:~3,2%_%time:~6,2%
-
-set EXEC_PATH=%~dp0
 set LOCAL_JAVA_PATH="%EXEC_PATH%\java\bin\java.exe"
 
 mkdir %LOG_DIR%
