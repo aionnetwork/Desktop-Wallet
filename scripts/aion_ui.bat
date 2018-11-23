@@ -43,4 +43,4 @@ set LOG_FILE_SUFFIX="%date%__%time:~0,2%_%time:~3,2%_%time:~6,2%"
 
 mkdir "%LOG_DIR%"
 
-"java\bin\java.exe" -Dfile.encoding=UTF-8 -Dlocal.storage.dir="%STORAGE_DIR%" -classpath %CLASSPATH% -Xms300m -Xmx500m org.aion.wallet.WalletApplication 2>&1 > "%LOG_DIR%\log_%LOG_FILE_SUFFIX%"
+"java\bin\java.exe" -Dfile.encoding=UTF-8 -Dlocal.storage.dir="%STORAGE_DIR%" -classpath %CLASSPATH% -Xms300m -Xmx500m org.aion.wallet.WalletApplication > "%LOG_DIR%\log_%LOG_FILE_SUFFIX%" 2>&1

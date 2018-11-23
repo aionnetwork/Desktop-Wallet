@@ -311,7 +311,12 @@ public class WalletStorage {
             result = CryptoUtils.decryptMnemonic(encryptedMnemonicBytes, password);
         }
         if (isLegacy) {
-            setMasterAccountMnemonic(result, password);
+            try {
+                accountsProperties.setProperty(MASTER_MNEMONIC_PROP, encryptMnemonic(result, password));
+                saveAccounts();
+            } catch (Exception e) {
+                throw new ValidationException("Cannot encode master account key");
+            }
         }
         return result;
     }
