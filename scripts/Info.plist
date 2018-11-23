@@ -11,7 +11,7 @@
         <key>CFBundleIconFile</key>
         <string>aion-icon.icns</string><!-- relative to Contents/Resources -->
         <key>CFBundleInfoDictionaryVersion</key>
-        <string>1.1.0</string>
+        <string>1.2.0</string>
         <key>CFBundleName</key>
         <string>AionWallet</string>
         <key>CFBundlePackageType</key>
@@ -19,7 +19,7 @@
         <key>CFBundleSignature</key>
         <string>????</string>
         <key>CFBundleVersion</key>
-        <string>1.1.0</string>
+        <string>1.2.0</string>
 </dict>
 </plist>
 
