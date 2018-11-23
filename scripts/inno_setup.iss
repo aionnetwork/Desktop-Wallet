@@ -18,7 +18,7 @@
 
 
 #define MyAppName "AionWallet"
-#define MyAppVersion "1.1"
+#define MyAppVersion "1.2.0"
 #define MyAppPublisher "Aion"
 #define MyAppURL "http://www.aion.network/"
 #define MyAppExeName "AionWallet.exe"
@@ -42,7 +42,6 @@ OutputBaseFilename=AionWalletSetup
 Compression=lzma
 SolidCompression=yes
 ;PrivilegesRequired=admin
-SignTool=signtool $p
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -53,7 +52,6 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 [Files]
 Source: "C:\Projects\aion_ui\pack\aion_ui\*"; DestDir: "{app}"; Excludes: "cert.pfx, unzip.exe, cygwin1.dll, cygbz2-1.dll, cygintl-8.dll, Bat_To_Exe.exe, *.zip, "; Flags: ignoreversion recursesubdirs createallsubdirs;
 Source: "C:\Projects\aion_ui\pack\aion_ui\unzip.exe"; DestDir: "{tmp}"; Flags: ignoreversion
-Source: "C:\Projects\aion_ui\pack\aion_ui\cert.pfx"; DestDir: "{tmp}"; Flags: ignoreversion
 Source: "C:\Projects\aion_ui\pack\aion_ui\*.dll"; DestDir: "{tmp}"; Flags: ignoreversion
 Source: "C:\Projects\aion_ui\pack\aion_ui\java.zip"; DestDir: "{tmp}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
@@ -63,7 +61,6 @@ Name: "{commonprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]
-Filename: "certutil.exe"; Parameters: "-addstore ""TrustedPublisher"" {tmp}\cert.pfx"; StatusMsg: "Adding trusted publisher..."
 Filename: "{tmp}\unzip.exe"; Parameters: "-n ""{tmp}\java.zip"" ""-d"" ""{%USERPROFILE}\{#MyAppUserDataDirName}"""; Flags: runhidden; StatusMsg: "Installing additional resources..."
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
 
