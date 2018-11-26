@@ -2,30 +2,45 @@
 
 Manage your AION coins using a local desktop application.
 
-![Screenshot of the Aion Wallet in macOS](aion-wallet-screenshot.png)
+![Git recording of the Aion Wallet in action.](aion-wallet-intro.gif)
 
-The Aion Desktop Wallet is a local application that allows you to create an Aion address and receive coins. The wallet is available for Linux, Mac, and Windows operating systems.
-
+The Aion Desktop Wallet is a local application that allows you to create an Aion address and receive coins. The wallet is available for Linux, Mac, and Windows.
 
 ## Installation
 
-Installation instructions and user guides can be found on the [Aion website](https://docs.aion.network/v1.1/docs/aion-desktop-wallet).
+Installation instructions and user guides can be found on the [Aion Docs website](https://docs.aion.network/docs/aion-desktop-wallet).
 
 ### Requirements
 
-- Windows : Windows 10 64-bit
-- Linux : Ubuntu 16.04 LTS 64-bit
-- MacOS : Mac OS High Sierra
+- Linux: `Ubuntu 16.04 LTS 64-bit` and higher
+- Mac: `Mac OS High Sierra` and higher
+- Windows: `Windows 10 64-bit`
 
 ## Features
 
-* Ability to generate an HD wallet path specific to Aion (m/44'/425'/0'/0')
-* Ability to create, manage and export accounts from HD path
-* Ability to import and export keystore accounts
-* Ability to send and receive Transactions (limited to currency transfers for now)
-* Ability to view transaction history
-* Ability to view the sync status of the node
+- Generate a wallet specific to Aion (`m/44'/425'/0'/0'`).
+- Create, manage, and export accounts.
+- Import and export keystore accounts.
+- Send and receive transactions.
+- View transaction history.
+- View the sync status of the node.
 
-## Latest Release
+## Changelog
 
-This release contains major changes to how _keystore_ files are managed, the method by which transactions are set, and how transaction history is maintained. You can download the wallet from the [Releases tab](https://github.com/aionnetwork/Desktop-Wallet/releases).
+### v1.2.0
+
+- Striped a lot of bloat out of the application. Things run a lot faster now.
+- The Ledger HID Driver has been rewritten. This allows us to directly interact with the JVM.
+- Removed external dependencies related to the JVM.
+- We've done a light rework on the waller UI. This should clear up some of the confusion users had over certain tabs.
+- Included a _Send All_ feature.
+- Updating between wallet versions is now much smoother.
+- A bunch of bugs sumbitted in [Github issues](https://github.com/aionnetwork/Desktop-Wallet/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aclosed+).
+
+### v1.1.0
+
+- Added Mac and Windows support.
+
+### v1.0.0
+
+- Inital release.

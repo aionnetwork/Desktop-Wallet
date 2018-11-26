@@ -14,7 +14,7 @@ public final class UIUtils {
 
     private static final String DEFAULT_TEXT = HELPER.getText();
 
-    private static final int SIZE_BUFFER = 20;
+    private static final int SIZE_BUFFER = 40;
 
     private UIUtils() {}
 

@@ -1,6 +1,7 @@
 package org.aion.wallet.ui.components.partials;
 
 import com.google.common.eventbus.Subscribe;
+import javafx.application.Platform;
 import javafx.beans.Observable;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -16,6 +17,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -41,12 +43,15 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class LedgerAccountListDialog implements Initializable {
     public static final int AION_BALANCE_DECIMAL_PLACES = 6;
     private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
     private final BlockchainConnector blockchainConnector = BlockchainConnector.getInstance();
     private int currentDerivationIndex;
+    private final ExecutorService backgroundExecutor = Executors.newSingleThreadExecutor();
 
     @FXML
     private VBox ledgerAccountList;
@@ -61,6 +66,9 @@ public class LedgerAccountListDialog implements Initializable {
     private Button ledgerContinueButton;
 
     @FXML
+    private Label nextAddressesLink;
+
+    @FXML
     private Label previousAddressesLink;
 
     @Override
@@ -68,7 +76,8 @@ public class LedgerAccountListDialog implements Initializable {
         registerEventBusConsumer();
         ledgerContinueButton.setDisable(true);
         ledgerAccountsToggleGroup.selectedToggleProperty().addListener(this::ledgerAccountChanged);
-        fillLedgerAccountList();
+
+        initializeLedgerAccountList();
     }
 
     private void ledgerAccountChanged(final Observable observable) {
@@ -80,7 +89,7 @@ public class LedgerAccountListDialog implements Initializable {
     @Subscribe
     private void handleLedgerConnected(UiMessageEvent event) {
         if (UiMessageEvent.Type.LEDGER_CONNECTED.equals(event.getType())) {
-            fillLedgerAccountList();
+            initializeLedgerAccountList();
         }
     }
 
@@ -88,23 +97,37 @@ public class LedgerAccountListDialog implements Initializable {
         EventBusFactory.getBus(UiMessageEvent.ID).register(this);
     }
 
-    private void fillLedgerAccountList() {
+    private void initializeLedgerAccountList() {
         loadingLedgerAccountsProgressBar.setVisible(true);
-
-        generateLedgerAddresses(0, 5);
-        loadingLedgerAccountsProgressBar.setVisible(false);
+        ledgerAccountList.setVisible(false);
+        nextAddressesLink.setVisible(false);
+        previousAddressesLink.setVisible(false);
+        backgroundExecutor.submit(() -> {
+            List<AionAccountDetails> aionAccountDetails = generateLedgerAddresses(0,5);
+            Platform.runLater(() -> {
+                updateLedgerAddresses(aionAccountDetails);
+                loadingLedgerAccountsProgressBar.setVisible(false);
+                ledgerAccountList.setVisible(true);
+                nextAddressesLink.setVisible(true);
+                previousAddressesLink.setVisible(false);
+            });
+        });
     }
 
-    private void generateLedgerAddresses(final int startIndex, final int stopIndex) {
+    private List<AionAccountDetails> generateLedgerAddresses(final int startIndex, final int stopIndex) {
         currentDerivationIndex = stopIndex;
         final HardwareWallet hardwareWallet = HardwareWalletFactory.getHardwareWallet(AccountType.LEDGER);
-        List<AionAccountDetails> aionAccountDetails = Collections.emptyList();
+
         try {
-            aionAccountDetails = hardwareWallet.getMultipleAccountDetails(startIndex, stopIndex);
+            return hardwareWallet.getMultipleAccountDetails(startIndex, stopIndex);
         } catch (HardwareWalletException e) {
             log.error(e.getMessage(), e);
         }
+        return Collections.emptyList();
+    }
 
+    private void updateLedgerAddresses(List<AionAccountDetails> aionAccountDetails) {
+        ledgerAccountList.getChildren().clear();
         for (AionAccountDetails accountDetails : aionAccountDetails) {
             HBox account = new HBox();
             account.setSpacing(5);
@@ -114,9 +137,16 @@ public class LedgerAccountListDialog implements Initializable {
             RadioButton radioButton = new RadioButton();
             radioButton.setUserData(accountDetails);
             radioButton.setToggleGroup(ledgerAccountsToggleGroup);
+
+            TextField offset = new TextField(String.valueOf(accountDetails.getDerivationIndex()));
+            offset.setPrefWidth(40);
+            offset.setEditable(false);
+            offset.getStyleClass().add("copyable-textfield");
+
             TextField address = new TextField(accountDetails.getAddress());
             address.setPrefWidth(550);
             address.setEditable(false);
+            address.setFont(new Font("Inconsolata", 14));
             address.getStyleClass().add("copyable-textfield");
             Label balance = new Label(
                     BalanceUtils.formatBalanceWithNumberOfDecimals(
@@ -124,7 +154,7 @@ public class LedgerAccountListDialog implements Initializable {
                             + " AION");
             balance.getStyleClass().add("copyable-label");
             balance.setPrefWidth(100);
-            account.getChildren().addAll(radioButton, address, balance);
+            account.getChildren().addAll(radioButton, offset, address, balance);
 
             ledgerAccountList.getChildren().add(account);
         }
@@ -189,20 +219,43 @@ public class LedgerAccountListDialog implements Initializable {
 
     public void nextAddresses() {
         ledgerContinueButton.setDisable(true);
-        ledgerAccountList.getChildren().clear();
-        generateLedgerAddresses(currentDerivationIndex, currentDerivationIndex + 5);
+        loadingLedgerAccountsProgressBar.setVisible(true);
+        ledgerAccountList.setVisible(false);
+        nextAddressesLink.setVisible(false);
+        previousAddressesLink.setVisible(false);
 
-        previousAddressesLink.setVisible(true);
+        backgroundExecutor.submit(() -> {
+            List<AionAccountDetails> aionAccountDetails = generateLedgerAddresses(currentDerivationIndex, currentDerivationIndex + 5);
+            Platform.runLater(() -> {
+                updateLedgerAddresses(aionAccountDetails);
+                loadingLedgerAccountsProgressBar.setVisible(false);
+                ledgerAccountList.setVisible(true);
+                nextAddressesLink.setVisible(true);
+                if(currentDerivationIndex > 5) {
+                    previousAddressesLink.setVisible(true);
+                }
+            });
+        });
     }
 
     public void previousAddresses() {
         ledgerContinueButton.setDisable(true);
-        ledgerAccountList.getChildren().clear();
+        loadingLedgerAccountsProgressBar.setVisible(true);
+        ledgerAccountList.setVisible(false);
+        nextAddressesLink.setVisible(false);
+        previousAddressesLink.setVisible(false);
 
-        generateLedgerAddresses(currentDerivationIndex-10, currentDerivationIndex-5);
-
-        if(currentDerivationIndex == 5) {
-            previousAddressesLink.setVisible(false);
-        }
+        backgroundExecutor.submit(() -> {
+            List<AionAccountDetails> aionAccountDetails = generateLedgerAddresses(currentDerivationIndex-10, currentDerivationIndex-5);
+            Platform.runLater(() -> {
+                updateLedgerAddresses(aionAccountDetails);
+                loadingLedgerAccountsProgressBar.setVisible(false);
+                ledgerAccountList.setVisible(true);
+                nextAddressesLink.setVisible(true);
+                if(currentDerivationIndex > 5) {
+                    previousAddressesLink.setVisible(true);
+                }
+            });
+        });
     }
 }

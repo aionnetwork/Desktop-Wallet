@@ -1,7 +1,6 @@
 .default{
     -fx-background-color: white;
 }
-
 .header-button-pressed{
     -fx-border-color: #4221CC;
     -fx-border-width: 0 0 5 0;
@@ -10,22 +9,22 @@
 .header-button-label-pressed {
     -fx-text-fill: #4221CC;
     -fx-text-alignment: CENTER;
-    -fx-font-family: 'Open Sans Regular';
+    -fx-font-family: 'Titillium Web';
     -fx-font-size: 18px;
 }
 
 .header-button-label {
     -fx-text-fill: BLACK;
     -fx-text-alignment: CENTER;
-    -fx-font-family: 'Open Sans Regular';
+    -fx-font-family: 'Titillium Web';
     -fx-font-size: 18px;
-    -fx-padding: 0 0 10 0;
+    -fx-padding: 0 0 -20 0;
 }
 
 .header-account-label {
     -fx-text-fill: BLACK;
     -fx-text-alignment: CENTER;
-    -fx-font-family: 'Open Sans Regular';
+    -fx-font-family: 'Titillium Web';
     -fx-font-size: 18px;
     -fx-padding: 0 0 0 10;
 }
@@ -35,7 +34,7 @@
     -fx-background-insets: 0px;
     -fx-text-fill: BLACK;
     -fx-text-alignment: CENTER;
-    -fx-font-family: 'Open Sans Light';
+    -fx-font-family: 'Titillium Web';
     -fx-font-size: 14px;
     -fx-display-caret: false;
 }
@@ -57,9 +56,14 @@
     -fx-background-insets: 0px;
     -fx-text-fill: BLACK;
     -fx-text-alignment: CENTER;
-    -fx-font-family: 'Open Sans Regular';
+    -fx-font-family: 'Titillium Web';
     -fx-font-size: 18px;
     -fx-display-caret: false;
-    -fx-border-color: #4221CC;
-    -fx-border-width: 0 0 1 0;
+}
+
+.token-balance-label {
+    -fx-cursor: hand;
+    -fx-text-fill: BLACK;
+    -fx-font-family: 'Titillium Web';
+    -fx-font-size: 18px;
 }

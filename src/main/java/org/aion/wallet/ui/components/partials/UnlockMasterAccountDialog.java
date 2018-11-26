@@ -16,6 +16,7 @@ import javafx.stage.Popup;
 import org.aion.api.log.LogEnum;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.console.ConsoleManager;
+import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
 import org.slf4j.Logger;
 
@@ -76,7 +77,7 @@ public class UnlockMasterAccountDialog implements Initializable {
             blockchainConnector.unlockMasterAccount(passwordField.getText());
             ConsoleManager.addLog("Master account unlocked", ConsoleManager.LogType.ACCOUNT);
             close(mouseEvent);
-        } catch (Exception e) {
+        } catch (ValidationException e) {
             ConsoleManager.addLog("Could not unlock master account", ConsoleManager.LogType.ACCOUNT, ConsoleManager.LogLevel.WARNING);
             showInvalidFieldsError(e.getMessage());
         }

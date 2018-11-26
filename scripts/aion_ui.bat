@@ -37,8 +37,10 @@ REM This file is used to generate an executable file with the bat2exe tool
 @ECHO OFF
 set CLASSPATH="%cd%\mod\*;%cd%\lib\*"
 set STORAGE_DIR="%USERPROFILE%\.aion"
-set LOG_DIR="%STORAGE_DIR%\log"
+set LOG_DIR=%STORAGE_DIR%\log
 
-mkdir "%LOG_DIR%"
+set LOG_FILE_SUFFIX=%date%__%time:~0,2%_%time:~3,2%_%time:~6,2%
 
-java -Dfile.encoding=UTF-8 -Dlocal.storage.dir=%STORAGE_DIR% -classpath %CLASSPATH% -Xms300m -Xmx500m org.aion.wallet.WalletApplication > "%LOG_DIR%\log" 2>&1
+mkdir %LOG_DIR%
+
+java\bin\java.exe -Dfile.encoding=UTF-8 -Dlocal.storage.dir=%STORAGE_DIR% -classpath %CLASSPATH% -Xms300m -Xmx500m org.aion.wallet.WalletApplication > %LOG_DIR%\log_%LOG_FILE_SUFFIX% 2>&1

@@ -10,5 +10,5 @@ public interface HardwareWallet {
 
     List<AionAccountDetails> getMultipleAccountDetails(final int derivationIndexStart, final int derivationIndexEnd) throws HardwareWalletException;
 
-    String signMessage(final int derivationIndex, final byte[] message) throws HardwareWalletException;
+    byte[] signMessage(final int derivationIndex, final byte[] message) throws HardwareWalletException;
 }

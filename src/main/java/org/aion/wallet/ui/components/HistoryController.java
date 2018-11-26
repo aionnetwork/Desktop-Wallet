@@ -22,6 +22,7 @@ import org.aion.wallet.dto.AccountDTO;
 import org.aion.wallet.events.AccountEvent;
 import org.aion.wallet.events.EventBusFactory;
 import org.aion.wallet.events.HeaderPaneButtonEvent;
+import org.aion.wallet.events.RefreshEvent;
 import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.util.AddressUtils;
 import org.aion.wallet.util.AionConstants;
@@ -62,7 +63,19 @@ public class HistoryController extends AbstractController {
         initSearchItemDropDown();
         buildTableModel();
         setEventHandlers();
-        reloadWalletView();
+        reloadTransactionHistory();
+    }
+
+    @Override
+    protected void refreshView(final RefreshEvent event) {
+        if (isInView()) {
+            switch (event.getType()) {
+                case TIMER:
+                    reloadTransactionHistory();
+                    break;
+                default:
+            }
+        }
     }
 
     private void initSearchItemDropDown() {
@@ -79,7 +92,7 @@ public class HistoryController extends AbstractController {
     @Subscribe
     private void handleHeaderPaneButtonEvent(final HeaderPaneButtonEvent event) {
         if (event.getType().equals(HeaderPaneButtonEvent.Type.HISTORY)) {
-            reloadWalletView();
+            reloadTransactionHistory();
         }
     }
 
@@ -88,7 +101,7 @@ public class HistoryController extends AbstractController {
         if (EnumSet.of(AccountEvent.Type.CHANGED, AccountEvent.Type.ADDED).contains(event.getType())) {
             this.account = event.getPayload();
             if (isInView()) {
-                reloadWalletView();
+                reloadTransactionHistory();
             } else {
                 txTable.setItems(FXCollections.emptyObservableList());
             }
@@ -106,7 +119,7 @@ public class HistoryController extends AbstractController {
         EventBusFactory.getBus(AccountEvent.ID).register(this);
     }
 
-    private void reloadWalletView() {
+    private void reloadTransactionHistory() {
         if (account == null) {
             return;
         }
@@ -169,7 +182,7 @@ public class HistoryController extends AbstractController {
 
         searchItem.valueProperty().addListener((observable, oldValue, newValue) -> {
             final FilteredList<TxRow> filteredData = new FilteredList<>(FXCollections.observableList(completeTransactionList), s -> true);
-            if(!String.valueOf(newValue).equals(String.valueOf(oldValue))) {
+            if (!String.valueOf(newValue).equals(String.valueOf(oldValue))) {
                 filteredData.setPredicate(s -> anyFieldHasString(s, searchField.getText()));
                 SortedList<TxRow> sortedData = new SortedList<>(filteredData);
                 sortedData.comparatorProperty().bind(txTable.comparatorProperty());
@@ -208,7 +221,6 @@ public class HistoryController extends AbstractController {
     }
 
     private static class ContextMenuTableCopyEventHandler extends TableCopyEventHandler<ActionEvent> {
-
 
         private final TableView<TxRow> txTable;
 
@@ -280,9 +292,9 @@ public class HistoryController extends AbstractController {
 
     public class TxRow {
 
-        private static final String OUT = "outgoing";
-        private static final String IN = "incoming";
-        private static final String CREATE = "contract";
+        private static final String OUT = "OUT";
+        private static final String IN = "IN";
+        private static final String CREATE = "CREATE";
 
         private final TransactionDTO transaction;
         private final SimpleStringProperty type;
@@ -293,16 +305,16 @@ public class HistoryController extends AbstractController {
         private final SimpleStringProperty txHash;
 
         private TxRow(final String requestingAddress, final TransactionDTO dto) {
-            transaction = dto;
-            final AccountDTO fromAccount = blockchainConnector.getAccount(dto.getFrom());
-            final String balance = BalanceUtils.formatBalance(dto.getValue());
+            this.transaction = dto;
+            final AccountDTO fromAccount = blockchainConnector.getAccount(transaction.getFrom());
             boolean isFromTx = AddressUtils.equals(requestingAddress, fromAccount.getPublicAddress());
-            final String out = dto.getTo().equals("0x") ? CREATE : OUT;
+            final String stringValue = BalanceUtils.formatBalance(transaction.getValue()) + " " + transaction.getCoin();
+            final String out = transaction.getTo().equals("0x") ? CREATE : OUT;
             this.type = new SimpleStringProperty(isFromTx ? out : IN);
-            this.date = new SimpleStringProperty(SIMPLE_DATE_FORMAT.format(new Date(dto.getTimeStamp() * 1000)));
-            this.status = new SimpleStringProperty(getTransactionStatus(dto));
-            this.value = new SimpleStringProperty(balance);
-            this.txHash = new SimpleStringProperty(dto.getHash());
+            this.date = new SimpleStringProperty(SIMPLE_DATE_FORMAT.format(new Date(transaction.getTimeStamp() * 1000)));
+            this.status = new SimpleStringProperty(getTransactionStatus(transaction));
+            this.value = new SimpleStringProperty(stringValue);
+            this.txHash = new SimpleStringProperty(transaction.getHash());
         }
 
         private String getTransactionStatus(TransactionDTO dto) {

@@ -8,10 +8,12 @@ import org.aion.base.util.TypeConverter;
 import org.aion.wallet.connector.BlockchainConnector;
 import org.aion.wallet.connector.dto.*;
 import org.aion.wallet.dto.LightAppSettings;
+import org.aion.wallet.dto.TokenDetails;
 import org.aion.wallet.events.AccountEvent;
 import org.aion.wallet.events.EventBusFactory;
 import org.aion.wallet.events.EventPublisher;
 import org.aion.wallet.exception.NotFoundException;
+import org.aion.wallet.exception.ValidationException;
 import org.aion.wallet.log.WalletLoggerFactory;
 import org.aion.wallet.storage.ApiType;
 import org.aion.wallet.util.AionConstants;
@@ -43,6 +45,21 @@ public class CoreBlockchainConnector extends BlockchainConnector {
             log.error(e.getMessage(), e);
             return BigInteger.ZERO;
         }
+    }
+
+    @Override
+    public BigInteger getTokenBalance(final String tokenAddress, final String accountAddress) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public byte[] getTokenSendData(final String tokenAddress, final String accountAddress, final String destinationAddress, final BigInteger value) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public TokenDetails getTokenDetails(final String tokenAddress, final String accountAddress) throws ValidationException {
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -136,16 +153,19 @@ public class CoreBlockchainConnector extends BlockchainConnector {
         if (transaction == null) {
             return null;
         }
+        final SendData sendData = getSendData(transaction.getFrom().toString(), transaction.getTo().toString(), new BigInteger(transaction.getValue()), transaction.getData());
         return new TransactionDTO(
-                transaction.getFrom().toString(),
-                transaction.getTo().toString(),
+                sendData.getFrom(),
+                sendData.getTo(),
+                sendData.getValue(),
+                sendData.getCoin(),
                 ByteUtil.toHexString(transaction.getHash()),
-                TypeConverter.StringHexToBigInteger(TypeConverter.toJsonHex(transaction.getValue())),
                 transaction.getNrg(),
                 transaction.getNrgPrice(),
                 transaction.getTimeStampBI().longValue(),
-                0L,
+                transaction.getBlockNumber(),
                 transaction.getNonceBI(),
-                (int) transaction.getTxIndexInBlock());
+                (int) transaction.getTxIndexInBlock()
+        );
     }
 }

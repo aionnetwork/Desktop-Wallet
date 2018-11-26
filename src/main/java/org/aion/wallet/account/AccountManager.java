@@ -96,7 +96,7 @@ public class AccountManager {
     private AccountDTO processMasterAccount(final String mnemonic, final String password) throws ValidationException {
         final ECKey rootEcKey = CryptoUtils.getBip39ECKey(mnemonic);
 
-        root = new MasterKey(rootEcKey);
+        root = new MasterKey(rootEcKey.getPrivKeyBytes());
         walletStorage.setMasterAccountMnemonic(mnemonic, password);
         final AccountDTO accountDTO = addInternalAccount();
         EventPublisher.fireAccountAdded(accountDTO);
@@ -110,7 +110,7 @@ public class AccountManager {
         isWalletLocked = false;
 
         final ECKey rootEcKey = CryptoUtils.getBip39ECKey(walletStorage.getMasterAccountMnemonic(password));
-        root = new MasterKey(rootEcKey);
+        root = new MasterKey(rootEcKey.getPrivKeyBytes());
 
         final int accountDerivations = walletStorage.getMasterAccountDerivations();
         Set<String> recoveredAddresses = new LinkedHashSet<>(accountDerivations);
@@ -121,6 +121,10 @@ public class AccountManager {
             }
         }
         EventPublisher.fireAccountsRecovered(recoveredAddresses);
+        final String firstDerivationAddress = recoveredAddresses.iterator().next();
+        final AccountDTO firstAccount = getAccount(firstDerivationAddress);
+        firstAccount.setActive(true);
+        EventPublisher.fireAccountChanged(firstAccount);
     }
 
     public boolean isMasterAccountUnlocked() {
@@ -336,7 +340,7 @@ public class AccountManager {
             }
             if (!accountDetails.getAddress().equals(account.getPublicAddress())) {
                 throw new ValidationException("Wrong " + accountType + " device connected. Could not find account!");
-                }
+            }
         }
         account.setActive(true);
         EventPublisher.fireAccountChanged(account);

@@ -10,11 +10,12 @@
             fx:controller="org.aion.wallet.ui.components.partials.ImportAccountDialog">
 
     <stylesheets>
+        <URL value="@../../style.css"/>
         <URL value="@addAccountDialog.css"/>
     </stylesheets>
 
-    <VBox alignment="CENTER" prefWidth="300.0" spacing="6.0" style="-fx-padding: 0 25 0 25;">
-        <ImageView fitHeight="80.0" fitWidth="80.0" pickOnBounds="true" preserveRatio="true">
+    <VBox alignment="CENTER" prefWidth="300.0" spacing="6.0" style="-fx-padding: 10 25 0 25;">
+        <ImageView fitHeight="60.0" fitWidth="60.0" pickOnBounds="true" preserveRatio="true">
             <Image url="@../icons/aion-icon.png"/>
         </ImageView>
         <fx:define>
@@ -34,9 +35,7 @@
                 <Label styleClass="create-account-text" text="Import keystore"/>
                 <TextField fx:id="keystoreTextView" onMouseClicked="#uploadKeystoreFile" editable="false"
                            promptText="Keystore UTC File"/>
-                <PasswordField fx:id="keystorePassword"
-                               prefWidth="275.0" promptText="Password" styleClass="add-account-input-fields"
-                               onKeyPressed="#submitOnEnterPressed" onMouseClicked="#resetValidation"/>
+                <PasswordField fx:id="keystorePassword" prefWidth="275.0" promptText="Password" onKeyPressed="#submitOnEnterPressed" onMouseClicked="#resetValidation"/>
             </VBox>
 
             <VBox fx:id="importPrivateKeyView" alignment="CENTER" spacing="6.0" AnchorPane.topAnchor="0"
@@ -66,9 +65,9 @@
             </AnchorPane>
             <AnchorPane AnchorPane.bottomAnchor="0">
                 <HBox spacing="10.0">
-                    <Button fx:id="importButton" prefHeight="50.0" prefWidth="130.0" styleClass="add-account-buttons"
+                    <Button fx:id="importButton" prefHeight="50.0" prefWidth="130.0" styleClass="button"
                             text="Import" onMouseClicked="#importAccount"/>
-                    <Button prefHeight="50.0" prefWidth="130.0" styleClass="cancel-button"
+                    <Button prefHeight="50.0" prefWidth="130.0" styleClass="button, cancel-button"
                             text="Close" onMouseClicked="#close"/>
                 </HBox>
             </AnchorPane>

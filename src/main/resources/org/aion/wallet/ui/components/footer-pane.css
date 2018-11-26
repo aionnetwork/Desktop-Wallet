@@ -11,8 +11,9 @@
     -fx-background-radius: 20 20 20 20;
     -fx-padding: 5 15 5 15;
     -fx-text-fill: #5AF0BD;
-    -fx-font-family: 'Open Sans Bold';
+    -fx-font-family: 'Titillium Web';
     -fx-font-size: 14px;
+    -fx-font-weight: bold;
     -fx-text-alignment: CENTER;
 }
 
@@ -20,7 +21,7 @@
     -fx-background-radius: 20 20 20 20;
     -fx-padding: 5 15 5 15;
     -fx-text-fill: #4221CC;
-    -fx-font-family: 'Open Sans Bold';
+    -fx-font-family: 'Titillium Web';
     -fx-font-size: 14px;
     -fx-text-alignment: CENTER;
     -fx-background-color: #cccc00;
@@ -31,7 +32,7 @@
     -fx-background-radius: 20 20 20 20;
     -fx-padding: 5 15 5 15;
     -fx-text-fill: #FFFFFF;
-    -fx-font-family: 'Open Sans Bold';
+    -fx-font-family: 'Titillium Web';
     -fx-font-size: 14px;
     -fx-text-alignment: CENTER;
     -fx-background-color: #b32d00;
@@ -39,19 +40,19 @@
 
 .footer-pane-text {
     -fx-text-fill: black;
-    -fx-font-family: 'Open Sans Regular';
+    -fx-font-family: 'Titillium Web';
     -fx-font-size: 14px;
 }
 
 .footer-pane-logo-text {
     -fx-text-fill: gray;
-    -fx-font-family: 'Open Sans Regular';
+    -fx-font-family: 'Titillium Web';
     -fx-font-size: 14px;
 }
 
 .version-style {
     -fx-text-fill: black;
-    -fx-font-family: 'Open Sans Regular';
+    -fx-font-family: 'Titillium Web';
     -fx-font-size: 14px;
     -fx-cursor: hand;
 }

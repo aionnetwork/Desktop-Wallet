@@ -27,13 +27,13 @@ import org.aion.wallet.util.OSUtils;
 import org.slf4j.Logger;
 
 import javax.swing.*;
-import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -63,7 +63,7 @@ public class MainWindow extends Application {
     public void start(final Stage stage) throws IOException {
         ConsoleManager.addLog("Welcome!", ConsoleManager.LogType.SETTINGS);
         this.stage = stage;
-        stage.initStyle(StageStyle.TRANSPARENT);
+        stage.setResizable(false);
         stage.getIcons().add(new Image(getClass().getResourceAsStream(AION_LOGO)));
 
         if(OSUtils.isMac()) {
@@ -202,12 +202,15 @@ public class MainWindow extends Application {
 
     private void shutDown(final boolean restart) {
         Platform.exit();
-        BlockchainConnector.getInstance().close();
-        scheduler.shutdown();
-        if (restart) {
-            restartApplication();
-        }
-        Executors.newSingleThreadExecutor().submit(() -> System.exit(0));
+        Executors.newSingleThreadExecutor().submit(() -> {
+            BlockchainConnector.getInstance().close();
+            scheduler.shutdown();
+
+            if (restart) {
+                restartApplication();
+            }
+            System.exit(0);
+        });
     }
 
     private void restartApplication() {
@@ -225,12 +228,10 @@ public class MainWindow extends Application {
     }
 
     private void handleMousePressed(final MouseEvent event) {
-        xOffset = event.getSceneX();
-        yOffset = event.getSceneY();
+        // do nothing
     }
 
     private void handleMouseDragged(final MouseEvent event) {
-        stage.setX(event.getScreenX() - xOffset);
-        stage.setY(event.getScreenY() - yOffset);
+        // do nothing
     }
 }

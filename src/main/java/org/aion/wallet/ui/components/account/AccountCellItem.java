@@ -1,5 +1,6 @@
 package org.aion.wallet.ui.components.account;
 
+import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -34,17 +35,17 @@ import java.util.EnumSet;
 
 public class AccountCellItem extends ListCell<AccountDTO> {
 
-    private static final String ICON_CONNECTED = "/org/aion/wallet/ui/components/icons/icon-connected-50.png";
+    private static final String ICON_CONNECTED = "/org/aion/wallet/ui/components/icons/unlock.png";
 
-    private static final String ICON_DISCONNECTED = "/org/aion/wallet/ui/components/icons/icon-disconnected-50.png";
+    private static final String ICON_DISCONNECTED = "/org/aion/wallet/ui/components/icons/lock.png";
 
-    private static final String ICON_EDIT = "/org/aion/wallet/ui/components/icons/pencil-edit-button.png";
+    private static final String ICON_EDIT = "/org/aion/wallet/ui/components/icons/pencil.png";
 
-    private static final String ICON_CONFIRM = "/org/aion/wallet/ui/components/icons/icons8-checkmark-50.png";
+    private static final String ICON_CONFIRM = "/org/aion/wallet/ui/components/icons/tick.png";
 
     private static final String NAME_INPUT_FIELDS_SELECTED_STYLE = "name-input-fields-selected";
 
-    private static final String NAME_INPUT_FIELDS_STYLE = "name-input-fields";
+    private static final String NAME_INPUT_FIELDS_STYLE = "copyable-label";
 
     private static final Tooltip CONNECT_ACCOUNT_TOOLTIP = new Tooltip("Connect with this account");
 
@@ -92,6 +93,7 @@ public class AccountCellItem extends ListCell<AccountDTO> {
             loader.setRoot(this);
             loader.load();
             name.setOnKeyPressed(this::submitNameOnEnterPressed);
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -117,6 +119,7 @@ public class AccountCellItem extends ListCell<AccountDTO> {
     }
 
     @Override
+    @SuppressWarnings("Duplicates")
     protected void updateItem(AccountDTO item, boolean empty) {
         super.updateItem(item, empty);
         if (empty) {
@@ -124,6 +127,7 @@ public class AccountCellItem extends ListCell<AccountDTO> {
             setContentDisplay(ContentDisplay.TEXT_ONLY);
         } else {
             name.setText(item.getName());
+            name.setStyle("-fx-font-weight: bold");
             UIUtils.setWidth(name);
 
             final ObservableList<Node> children = nameBox.getChildren();
@@ -136,8 +140,7 @@ public class AccountCellItem extends ListCell<AccountDTO> {
             }
 
             publicAddress.setText(item.getPublicAddress());
-            publicAddress.setPadding(new Insets(5, 0, 0, 10));
-
+            publicAddress.setStyle("-fx-font-family: Inconsolata; -fx-font-size: 16");
             balance.setText(item.getFormattedBalance() + BalanceUtils.CCY_SEPARATOR + item.getCurrency());
             UIUtils.setWidth(balance);
 
@@ -178,8 +181,7 @@ public class AccountCellItem extends ListCell<AccountDTO> {
             } catch (ValidationException e) {
                 final HardwareWalletDisconnectedDialog warningDialog = getWarningDialog(modifiedAccount.getType());
                 warningDialog.open(mouseEvent, e);
-                ConsoleManager.addLog(e.getMessage(), ConsoleManager.LogType.ACCOUNT, ConsoleManager.LogLevel
-                        .ERROR);
+                ConsoleManager.addLog(e.getMessage(), ConsoleManager.LogType.ACCOUNT, ConsoleManager.LogLevel.ERROR);
             }
         }
     }
@@ -193,11 +195,12 @@ public class AccountCellItem extends ListCell<AccountDTO> {
         }
     }
 
+    @SuppressWarnings("Duplicates")
     @FXML
     public void onNameFieldClicked() {
         if (!nameInEditMode) {
             name.setEditable(true);
-            name.getStyleClass().clear();
+            name.getStyleClass().remove(NAME_INPUT_FIELDS_STYLE);
             name.getStyleClass().add(NAME_INPUT_FIELDS_SELECTED_STYLE);
 
             final InputStream resource = getClass().getResourceAsStream(ICON_CONFIRM);
@@ -222,9 +225,10 @@ public class AccountCellItem extends ListCell<AccountDTO> {
         }
     }
 
+    @SuppressWarnings("Duplicates")
     private void updateNameFieldOnSave() {
         if (name.getText() != null && getItem() != null && getItem().getName() != null) {
-            name.getStyleClass().clear();
+            name.getStyleClass().remove(NAME_INPUT_FIELDS_SELECTED_STYLE);
             name.getStyleClass().add(NAME_INPUT_FIELDS_STYLE);
 
             final InputStream resource = getClass().getResourceAsStream(ICON_EDIT);

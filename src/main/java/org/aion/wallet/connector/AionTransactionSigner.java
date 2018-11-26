@@ -51,10 +51,10 @@ public class AionTransactionSigner {
                     throw new ValidationException("Wrong " + accountType.getDisplayString() + " connected! Account not found!");
                 }
 
-                final String signature;
+                final byte[] signature;
                 try {
                     signature = wallet.signMessage(account.getDerivationIndex(), transaction.getEncodedRaw());
-                    transaction.setSignature(new Ed25519Signature(TypeConverter.StringHexToByteArray(accountDetails.getPublicKey()), TypeConverter.StringHexToByteArray(signature)));
+                    transaction.setSignature(new Ed25519Signature(TypeConverter.StringHexToByteArray(accountDetails.getPublicKey()), signature));
                 } catch (HardwareWalletException e) {
                     log.error(e.getMessage(), e);
                     throw new ValidationException(accountType.getDisplayString() + " transaction declined by user");

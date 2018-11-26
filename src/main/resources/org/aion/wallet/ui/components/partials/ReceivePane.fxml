@@ -17,7 +17,7 @@
             <Label text="Account address" styleClass="paragraph-text" />
         </HBox>
         <HBox spacing="10" alignment="TOP_CENTER">
-            <TextArea fx:id="accountAddress" styleClass="address-textarea" wrapText="true" prefRowCount="2" prefColumnCount="30" text="No account selected!"/>
+            <TextArea fx:id="accountAddress" editable="false" styleClass="address-textarea" wrapText="true" prefRowCount="2" prefColumnCount="30" text="No account selected!"/>
         </HBox>
         <HBox alignment="TOP_CENTER">
             <Button text="Copy to clipboard" onMouseClicked="#onCopyToClipBoard" styleClass="disabled"/>
