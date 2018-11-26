@@ -19,7 +19,7 @@
             <Image url="@../icons/aion-icon.png"/>
         </ImageView>
         <Label styleClass="main-text" text="AION Wallet"/>
-        <Label styleClass="paragraph-text" text="Current version: 1.2.1"/>
+        <Label styleClass="paragraph-text" text="Current version: 1.2.2"/>
     </VBox>
     <Label AnchorPane.bottomAnchor="0" AnchorPane.rightAnchor="80" styleClass="paragraph-text" text="Powered by"/>
     <ImageView AnchorPane.bottomAnchor="6" AnchorPane.rightAnchor="0" styleClass="link" onMouseClicked="#openDevPage"
