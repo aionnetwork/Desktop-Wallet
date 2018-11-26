@@ -27,12 +27,20 @@ Installation instructions and user guides can be found on the [Aion Docs website
 
 ## Changelog
 
-### New Features
+### v1.2.0
+
+#### New Features
 
 - JKD 11 now supplied and supported. JDK 10 has been depricated.
 
-### Bug Fixes
+#### Bug Fixes
 
 - Fixed NPM depencency issue.
 - Fixed macOS boot issue that affected some users.
 - Resolved JDK issue on Windows machines.
+
+### v1.1.0
+
+#### New Features
+
+- Added Mac and Windows support.
