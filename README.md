@@ -27,7 +27,7 @@ Installation instructions and user guides can be found on the [Aion Docs website
 
 ## Changelog
 
-### Features Added
+### New Features
 
 - JKD 11 now supplied and supported. JDK 10 has been depricated.
 
