@@ -29,18 +29,18 @@ Installation instructions and user guides can be found on the [Aion Docs website
 
 ### v1.2.0
 
-#### New Features
-
-- JKD 11 now supplied and supported. JDK 10 has been depricated.
-
-#### Bug Fixes
-
-- Fixed NPM depencency issue.
-- Fixed macOS boot issue that affected some users.
-- Resolved JDK issue on Windows machines.
+- Striped a lot of bloat out of the application. Things run a lot faster now.
+- The Ledger HID Driver has been rewritten. This allows us to directly interact with the JVM.
+- Removed external dependencies related to the JVM.
+- We've done a light rework on the waller UI. This should clear up some of the confusion users had over certain tabs.
+- Included a _Send All_ feature.
+- Updating between wallet versions is now much smoother.
+- A bunch of bugs sumbitted in [Github issues](https://github.com/aionnetwork/Desktop-Wallet/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aclosed+).
 
 ### v1.1.0
 
-#### New Features
-
 - Added Mac and Windows support.
+
+### v1.0.0
+
+- Inital release.
