@@ -44,13 +44,20 @@ public class SendController extends AbstractController {
 
     private static final String SUCCESS_MESSAGE = "Transaction finished";
 
-    private static final Tooltip TO_ADDRESS_TOOLTIP = new Tooltip("This is the address that will receive the funds that you are sending");
+    private static final Tooltip TO_ADDRESS_TOOLTIP =
+            new Tooltip("This is the address that will receive the funds that you are sending");
 
-    private static final Tooltip NRG_LIMIT_TOOLTIP = new Tooltip("Energy limit represents the amount of energy applied to this transaction");
+    private static final Tooltip NRG_LIMIT_TOOLTIP =
+            new Tooltip("Energy limit represents the amount of energy applied to this transaction. For native coin transfers this value should be kept at 21000.");
 
-    private static final Tooltip NRG_PRICE_TOOLTIP = new Tooltip("Energy price used to determine the priority of your transaction. Use the dropdown to select the unit.");
+    private static final Tooltip NRG_PRICE_TOOLTIP =
+            new Tooltip("Energy price used to determine the priority of your transaction. Use the dropdown to select the unit.\n" +
+                        "Unless there is network congestion, this value should be kept at 10 Amps");
 
-    private static final Tooltip AMOUNT_TOOLTIP = new Tooltip("This is the amount that the address specified above will receive.\nPlease be aware that when sending all the coins from an address, from the total amount the energy limit will be deducted!\nIn case of sending tokens the energy limit is deducted from the the coin balance of the current address.");
+    private static final Tooltip AMOUNT_TOOLTIP =
+            new Tooltip("This is the amount that the address specified above will receive.\n" +
+                        "Please be aware that when sending all the coins from an address, from the total amount the energy limit will be deducted!\n" +
+                        "In case of sending tokens the energy limit is deducted from the the coin balance of the current address.");
 
     private static final String SEPARATOR = "-----";
 
