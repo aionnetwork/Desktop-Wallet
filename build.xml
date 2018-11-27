@@ -56,6 +56,11 @@
         </sequential>
     </macrodef>
 
+    <target name="print-version"> 
+        <echo>Java/JVM version: ${ant.java.version}</echo> 
+        <echo>Java/JVM detail version: ${java.version}</echo> 
+    </target>
+
     <path id="classpath.dependency">
         <pathelement location="${dir.mod}/modAionBase.jar"/>
     </path>
@@ -65,7 +70,8 @@
 
     <target name="get_version_from_git">
         <git command="tag" output="git.version" options="-l --points-at HEAD"/>
-        <condition property="suffix" value="" else="-${git.version}">
+        <git command="rev-parse" output="git.commithash" options="--short HEAD"/>
+        <condition property="suffix" value="" else="-${git.version}.${git.commithash}">
             <equals arg1="${git.version}" arg2=""/>
         </condition>
     </target>
@@ -207,7 +213,7 @@
         <if>
             <os family="mac"/>
             <then>
-                <exec executable="/bin/bash" failonerror="true">
+                <exec executable="/bin/bash" newenvironment="false" failonerror="true">
                     <arg value="-l"/>
                     <arg value="${dir.script}/prepack.sh"/>
                 </exec>
@@ -233,8 +239,7 @@
             <elseif>
                 <os family="unix"/>
                 <then>
-                    <exec executable="/bin/bash" failonerror="true">
-                        <arg value="-l"/>
+                    <exec executable="/bin/bash" newenvironment="false" failonerror="true">
                         <arg value="${dir.script}/prepack.sh"/>
                     </exec>
                     <property name="native.source" value="${res.main}/native/linux"/>
