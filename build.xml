@@ -240,7 +240,6 @@
                 <os family="unix"/>
                 <then>
                     <exec executable="/bin/bash" newenvironment="false" failonerror="true">
-                        <arg value="-l"/>
                         <arg value="${dir.script}/prepack.sh"/>
                     </exec>
                     <property name="native.source" value="${res.main}/native/linux"/>
