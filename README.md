@@ -29,13 +29,13 @@ Installation instructions and user guides can be found on the [Aion Docs website
 
 ### v1.2.0
 
-- Striped a lot of bloat out of the application. Things run a lot faster now.
+- Stripped a lot of bloat out of the application. Things run a lot faster now.
 - The Ledger HID Driver has been rewritten. This allows us to directly interact with the JVM.
 - Removed external dependencies related to the JVM.
-- We've done a light rework on the waller UI. This should clear up some of the confusion users had over certain tabs.
+- We've done a light rework on the wallet UI. This should clear up some of the confusion users had over certain tabs.
 - Included a _Send All_ feature.
 - Updating between wallet versions is now much smoother.
-- A bunch of bugs sumbitted in [Github issues](https://github.com/aionnetwork/Desktop-Wallet/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aclosed+).
+- Fixed a bunch of bugs submitted in [Github issues](https://github.com/aionnetwork/Desktop-Wallet/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aclosed+).
 
 ### v1.1.0
 
