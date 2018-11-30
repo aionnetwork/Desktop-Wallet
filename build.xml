@@ -14,6 +14,7 @@
         <os family="mac"/>
     </condition>
 
+    <property name="exec.version" value="v1.2.2"/>
     <property name="parent.mod" value="../mod"/>
     <property name="project.name" value="aion_ui"/>
     <property name="dir.lib" value="./lib"/>
@@ -207,7 +208,7 @@
         </move>
     </target>
 
-    <target name="pack" depends="build_standalone">
+    <target name="pack" depends="build_standalone, get_version_from_git">
         <mkdir dir="${dir.pack}"/>
 
         <if>
@@ -358,6 +359,19 @@
                           file="${res.main}/org/aion/wallet/ui/components/icons/aion-icon.icns"/>
 
                     <delete dir="${dir.pack}/aion_ui"/>
+
+                    <exec executable="hdiutil">
+                        <arg value="create"/>
+                        <arg value="-srcfolder"/>
+                        <arg value="${dir.pack}/AionWallet"/>
+                        <arg value="-volname"/>
+                        <arg value="AionWallet.${exec.version}.${git.commithash}"/>
+                        <arg value="-fs"/>
+                        <arg value="HFS+"/>
+                        <arg value="-format"/>
+                        <arg value="UDZO"/>
+                        <arg value="AionWallet.${exec.version}.${git.commithash}.dmg"/>
+                    </exec>
                 </then>
             </elseif>
         </if>
