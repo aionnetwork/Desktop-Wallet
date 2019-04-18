@@ -19,3 +19,7 @@ rt/
 
 #native libraries
 /native/**
+
+
+#useful files
+contracts/
