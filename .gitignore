@@ -2,16 +2,20 @@
 .ant-targets-build.xml
 
 #build
-/build
-/pack
+build/
+pack/
 /mod/updated
-/out
+out/
 Output
 
 #IDE
 *.iml
-/.idea
+.idea/
 .DS_Store
 
 # Java Runtime Folder
 rt/
+
+
+#native libraries
+/native/**
