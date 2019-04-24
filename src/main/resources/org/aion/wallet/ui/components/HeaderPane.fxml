@@ -30,10 +30,10 @@
                 <VBox alignment="CENTER_RIGHT" AnchorPane.topAnchor="20" AnchorPane.rightAnchor="10">
                     <TextField fx:id="accountBalance" styleClass="balance-value" editable="false" visible="false"/>
                     <HBox fx:id="toggleTokenBalance" spacing="5" visible="false">
-                        <!--<ImageView fitHeight="24.0" pickOnBounds="true" preserveRatio="true">-->
-                            <!--<Image url="@icons/triangle-arrow-down.png"/>-->
-                        <!--</ImageView>-->
-                        <!--<Label text="Token balances" styleClass="token-balance-label" onMouseClicked="#openTokenBalance" />-->
+                        <ImageView fitHeight="24.0" pickOnBounds="true" preserveRatio="true">
+                            <Image url="@icons/triangle-arrow-down.png"/>
+                        </ImageView>
+                        <Label text="Token balances" styleClass="token-balance-label" onMouseClicked="#openTokenBalance" />
                     </HBox>
                 </VBox>
             </AnchorPane>
