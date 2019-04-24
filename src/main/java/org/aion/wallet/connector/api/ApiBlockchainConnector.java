@@ -11,8 +11,8 @@ import org.aion.api.type.core.tx.AionTransaction;
 import org.aion.base.type.Address;
 import org.aion.base.type.Hash256;
 import org.aion.base.util.ByteArrayWrapper;
+import org.aion.wallet.connector.ATSManager;
 import org.aion.wallet.connector.BlockchainConnector;
-import org.aion.wallet.connector.NullTokenManager;
 import org.aion.wallet.connector.TokenManager;
 import org.aion.wallet.connector.dto.*;
 import org.aion.wallet.console.ConsoleManager;
@@ -72,7 +72,7 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         connect();
         EventPublisher.fireApplicationSettingsChanged(lightAppSettings);
         registerEventBusConsumer();
-        tokenManager = new NullTokenManager();
+        tokenManager = new ATSManager(API);
     }
 
     private int getCores() {
@@ -177,7 +177,6 @@ public class ApiBlockchainConnector extends BlockchainConnector {
         }
         return tokenDetails;
     }
-
     private TokenDetails createTokenDetails(String tokenAddress, String accountAddress) throws ValidationException {
         final String name;
         final String symbol;
