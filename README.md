@@ -35,7 +35,7 @@ Installation instructions and user guides can be found on the [Aion Docs website
 - We've done a light rework on the wallet UI. This should clear up some of the confusion users had over certain tabs.
 - Included a _Send All_ feature.
 - Updating between wallet versions is now much smoother.
-- Fixed a bunch of bugs submitted in [Github issues](https://github.com/aionnetwork/Desktop-Wallet/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aclosed+).
+- Fixed a bunch of bugs submitted in [GitHub issues](https://github.com/aionnetwork/Desktop-Wallet/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aclosed+).
 
 ### v1.1.0
 
