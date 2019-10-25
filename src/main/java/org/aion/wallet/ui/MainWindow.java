@@ -44,7 +44,7 @@ public class MainWindow extends Application {
 
     private static final String TITLE = "Aion Wallet";
     private static final String MAIN_WINDOW_FXML = "MainWindow.fxml";
-    private static final String AION_LOGO = "components/icons/aion-icon.png";
+    private static final String AION_LOGO = "components/icons/aion-unity-icon.png";
     private static final String AION_UI_DIR = System.getProperty("user.dir");
     private static final String AION_EXECUTABLE = "aion_ui.sh";
     private static final BlockchainConnector CONNECTOR = BlockchainConnector.getInstance();

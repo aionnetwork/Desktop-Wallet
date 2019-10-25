@@ -1,5 +1,5 @@
 .anchor-pane {
-    -fx-background-color: white;
+    -fx-background-color: WHITE;
 }
 
 #progressBarLabel {
@@ -7,10 +7,10 @@
 }
 
 .connected-label {
-    -fx-background-color: #4221CC;
+    -fx-background-color: #f54119;
     -fx-background-radius: 20 20 20 20;
     -fx-padding: 5 15 5 15;
-    -fx-text-fill: #5AF0BD;
+    -fx-text-fill: #1c1c1c;
     -fx-font-family: 'Titillium Web';
     -fx-font-size: 14px;
     -fx-font-weight: bold;
@@ -20,7 +20,7 @@
 .connected-insecure {
     -fx-background-radius: 20 20 20 20;
     -fx-padding: 5 15 5 15;
-    -fx-text-fill: #4221CC;
+    -fx-text-fill: #1c1c1c;
     -fx-font-family: 'Titillium Web';
     -fx-font-size: 14px;
     -fx-text-alignment: CENTER;

@@ -1,13 +1,13 @@
 .default{
-    -fx-background-color: white;
+    -fx-background-color: WHITE;
 }
 .header-button-pressed{
-    -fx-border-color: #4221CC;
+    -fx-border-color: #f54119;
     -fx-border-width: 0 0 5 0;
 }
 
 .header-button-label-pressed {
-    -fx-text-fill: #4221CC;
+    -fx-text-fill: #f54119;
     -fx-text-alignment: CENTER;
     -fx-font-family: 'Titillium Web';
     -fx-font-size: 18px;
