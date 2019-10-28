@@ -173,7 +173,7 @@
                 debug="true"
                 debuglevel="source,lines,vars"
                 includeantruntime="false"
-                release="10"
+                release="11"
                 srcdir="./"
                 destdir="${out.main}"
                 excludes="src/main/java/org/aion/wallet/connector/core/**/*.java"
