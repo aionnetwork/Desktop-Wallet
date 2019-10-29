@@ -31,6 +31,10 @@
     -fx-prompt-text-fill: gray;
 }
 
+.input-fields:focus {    
+    -fx-border-color: #f54119;    
+}
+
 .button {
     -fx-background-color: #1c1c1c;
     -fx-background-radius: 0,0,0,0;
@@ -218,5 +222,9 @@
   -fx-background-insets: 0;
   -fx-padding: 0;
   -fx-shape: null;
+}
+.input-box:focus {
+    -fx-border: 1px solid #f54119 !important;
+    -fx-box-shadow: 0 0 3px #f54119 !important;
 }
 

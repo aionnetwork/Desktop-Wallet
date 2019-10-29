@@ -84,3 +84,7 @@
 .button .disabled{
     -fx-background-color: #e1dccd;
 }
+.input-box:focus {
+    -fx-border: 1px solid #f54119 !important;
+    -fx-box-shadow: 0 0 3px #f54119 !important;
+}

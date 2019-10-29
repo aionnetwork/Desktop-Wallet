@@ -19,8 +19,8 @@
             <ImageView pickOnBounds="true" preserveRatio="true" fitHeight="20">
                 <Image url="@../icons/search_icon.png"/>
             </ImageView>
-            <TextField fx:id="searchField" promptText="Search..." prefColumnCount="45"/>
-            <ComboBox fx:id="searchItem" prefWidth="200"/>
+            <TextField fx:id="searchField" promptText="Search..."  styleClass="input-fields"  prefColumnCount="45"/>
+            <ComboBox fx:id="searchItem"  styleClass="input-fields"  prefWidth="200"/>
         </HBox>
         <ScrollPane VBox.vgrow="NEVER" hbarPolicy="NEVER" vbarPolicy="NEVER" prefViewportHeight="250" prefViewportWidth="830">
             <TableView fx:id="txTable" styleClass="custom-scrollbar" prefHeight="250" />
