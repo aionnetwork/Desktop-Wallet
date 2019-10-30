@@ -22,7 +22,7 @@
 }
 
 .input-fields {
-    -fx-background-color: WHITE;
+    -fx-background-color: #e1dccd;
     -fx-border-color: #e1dccd;
     -fx-background-radius: 0,0,0,0;
     -fx-text-fill: black;
