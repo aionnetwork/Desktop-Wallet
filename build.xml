@@ -177,8 +177,7 @@
                 srcdir="./"
                 destdir="${out.main}"
                 excludes="src/main/java/org/aion/wallet/connector/core/**/*.java"
-                includes="src/main/java/**/*.java"
-        >
+                includes="src/main/java/**/*.java">
             <compilerarg value="--add-exports=aion.api.client/org.aion.api.log=aion.wallet"/>
             <compilerarg value="--add-exports=aion.api.client/org.aion.api.sol=aion.wallet"/>
             <compilerarg value="--add-exports=aion.api.client/org.aion.api.sol.impl=aion.wallet"/>

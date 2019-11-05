@@ -18,7 +18,7 @@
     <Label AnchorPane.topAnchor="100" AnchorPane.leftAnchor="90" text="Unlock account" styleClass="main-text"/>
 
     <PasswordField fx:id="unlockPassword" AnchorPane.topAnchor="150" AnchorPane.leftAnchor="90" promptText="Password"
-                   onMouseClicked="#resetValidation" onKeyPressed="#submitOnEnterPressed"/>
+                   onMouseClicked="#resetValidation" onKeyPressed="#submitOnEnterPressed" styleClass="input-fields"/>
 
     <Label fx:id="validationError" AnchorPane.topAnchor="180" AnchorPane.leftAnchor="90" textFill="orangered" text="Validation error!" visible="false"/>
 

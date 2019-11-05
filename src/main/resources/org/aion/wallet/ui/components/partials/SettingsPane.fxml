@@ -52,8 +52,8 @@
             <VBox>
                 <Label text="Account lock timeout" styleClass="paragraph-text" alignment="CENTER"/>
                 <HBox spacing="10">
-                    <TextField fx:id="timeout" prefColumnCount="20"/>
-                    <ComboBox fx:id="timeoutMeasurementUnit" />
+                    <TextField fx:id="timeout" styleClass="input-fields" prefColumnCount="20"/>
+                    <ComboBox fx:id="timeoutMeasurementUnit" styleClass="input-fields"/>
                 </HBox>
                 <HBox alignment="BOTTOM_RIGHT" spacing="10" prefHeight="200">
                     <Button text="Logs" onMouseClicked="#openConsole"/>

@@ -1,6 +1,6 @@
 #contentPane {
     -fx-background-color: WHITE;
-    -fx-border-color:#4221CC;
+    -fx-border-color:#1c1c1c;
     -fx-border-width: 1 0 1 0;
 }
 
@@ -22,7 +22,8 @@
 }
 
 .input-fields {
-    -fx-background-color: #ececec;
+    -fx-background-color: #e1dccd;
+    -fx-border-color: #e1dccd;
     -fx-background-radius: 0,0,0,0;
     -fx-text-fill: black;
     -fx-font-family: 'Titillium Web';
@@ -30,20 +31,27 @@
     -fx-prompt-text-fill: gray;
 }
 
+.input-fields:focus {    
+    -fx-border-color: #f54119;    
+}
+
 .button {
-    -fx-background-color: #4221cc;
+    -fx-background-color: #1c1c1c;
     -fx-background-radius: 0,0,0,0;
-    -fx-text-fill: white;
+    -fx-text-fill: #f54119;
     -fx-font-family: 'Titillium Web';
     -fx-font-size: 18px;
 }
 
 .button:hover {
-    -fx-background-color: #5228FF;
+    -fx-background-color: #f54119;
+    -fx-text-fill: #1c1c1c;   
+
 }
 
 .button:pressed {
-    -fx-background-color: #28147C;
+    -fx-background-color: #ff7800;
+    -fx-text-fill: #1c1c1c;
 }
 
 .button .disabled{
@@ -64,7 +72,7 @@
 }
 
 .line{
-    -fx-stroke: #4221CC;
+    -fx-stroke: #1c1c1c;
 }
 
 .header-text {
@@ -85,7 +93,7 @@
     -fx-font-family: 'Titillium Web';
     -fx-font-size: 16px;
     -fx-display-caret: false;
-    -fx-border-color: #4221CC;
+    -fx-border-color: #1c1c1c;
     -fx-border-width: 0 0 1 0;
 }
 
@@ -214,5 +222,9 @@
   -fx-background-insets: 0;
   -fx-padding: 0;
   -fx-shape: null;
+}
+.input-box:focus {
+    -fx-border: 1px solid #f54119 !important;
+    -fx-box-shadow: 0 0 3px #f54119 !important;
 }
 

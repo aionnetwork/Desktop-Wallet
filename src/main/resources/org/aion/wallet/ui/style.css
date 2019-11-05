@@ -64,21 +64,27 @@
 }
 
 .button {
-    -fx-background-color: #4221cc;
+    -fx-background-color: #1c1c1c;
     -fx-background-radius: 0,0,0,0;
-    -fx-text-fill: white;
+    -fx-text-fill: #f54119;
     -fx-font-family: 'Titillium Web';
     -fx-font-size: 18px;
 }
 
 .button:hover {
-    -fx-background-color: #5228FF;
+    -fx-background-color: #f54119;
+    -fx-text-fill: #1c1c1c;
 }
 
 .button:pressed {
-    -fx-background-color: #28147C;
+    -fx-background-color: #ff7800;
+    -fx-text-fill: #1c1c1c;
 }
 
 .button .disabled{
-    -fx-background-color: #ececec;
+    -fx-background-color: #e1dccd;
+}
+.input-box:focus {
+    -fx-border: 1px solid #f54119 !important;
+    -fx-box-shadow: 0 0 3px #f54119 !important;
 }
