@@ -1,9 +1,6 @@
 # Aion Desktop Wallet
 
 Manage your AION coins using a local desktop application.
-
-![Git recording of the Aion Wallet in action.](aion-wallet-intro.gif)
-
 The Aion Desktop Wallet is a local application that allows you to create an Aion address and receive coins. The wallet is available for Linux, Mac, and Windows.
 
 ## Installation
