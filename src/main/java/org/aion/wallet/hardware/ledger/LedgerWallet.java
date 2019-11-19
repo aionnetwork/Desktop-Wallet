@@ -30,18 +30,18 @@ public class LedgerWallet implements HardwareWallet {
 
     private static final int FIRST_INDEX = 0;
 
-    private final Map<Integer, AionAccountDetails> accountCache = new ConcurrentHashMap<>();
+    //private final Map<Integer, AionAccountDetails> accountCache = new ConcurrentHashMap<>();
 
-    private final ExecutorService backgroundExecutor = Executors.newSingleThreadExecutor();
+    //private final ExecutorService backgroundExecutor = Executors.newSingleThreadExecutor();
     private ReentrantLock lock = new ReentrantLock();
 
     @Override
     public boolean isConnected() {
         try {
             AionAccountDetails firstAccount = getAccountDetails(FIRST_INDEX);
-            if (accountCache.containsKey(FIRST_INDEX) && !firstAccount.equals(accountCache.get(FIRST_INDEX))) {
+            /*if (accountCache.containsKey(FIRST_INDEX) && !firstAccount.equals(accountCache.get(FIRST_INDEX))) {
                 accountCache.clear();
-            }
+            }*/
             return true;
         } catch (LedgerException e) {
             e.printStackTrace();
@@ -78,6 +78,23 @@ public class LedgerWallet implements HardwareWallet {
     @Override
     public List<AionAccountDetails> getMultipleAccountDetails(final int derivationIndexStart, final int derivationIndexEnd) throws LedgerException {
         final List<AionAccountDetails> accounts = new LinkedList<>();
+
+        long t0 = System.nanoTime();
+        for (int i = derivationIndexStart; i < derivationIndexEnd; i++) {
+            accounts.add(getAccountDetails(i));
+        }
+        long t1 = System.nanoTime();
+
+        long durationNanoSec = (t1 - t0);
+        double durationMilliSec = durationNanoSec / 1000000.0;
+        double durationSec = durationMilliSec / 1000.0;
+
+        log.info(String.format("getMultipleAccountDetails(%d,%d) took %s", derivationIndexStart, derivationIndexEnd,
+                durationSec > 1 ? String.format("%.6f seconds", durationSec) : String.format("%.6f ms", durationMilliSec)));
+
+        return accounts;
+
+        /*
         final AionAccountDetails newAccountDetails = getAccountDetails(derivationIndexStart);
 
         if (accountCache.containsKey(derivationIndexStart)) {
@@ -107,7 +124,7 @@ public class LedgerWallet implements HardwareWallet {
                 log.error("Could not preload next accounts: " + e.getMessage(), e);
             }
         });
-        return accounts;
+        return accounts;*/
     }
 
     @Override
