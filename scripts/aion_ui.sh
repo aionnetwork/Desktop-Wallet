@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # directories
-JAVA_VERSION=11.0.1
 STORAGE_DIR="${HOME}/.aion"
 LOG_DIR="${STORAGE_DIR}/log"
 CURRENT_DATE=`date '+%Y-%m-%d_%H:%M:%S'`
@@ -27,12 +26,8 @@ cd "${SCRIPT_PATH}"
 JAVA_INSTALL="${SCRIPT_PATH}/java"
 JAVA_CMD="${JAVA_INSTALL}/bin/java"
 
-if [[ $("${JAVA_CMD}" -version 2>&1 | grep "${JAVA_VERSION}" | wc -l) -lt 1 ]]; then
-  echo "Removing old local Java version: ${JAVA_INSTALL}" &>> "${LOG_FILE}"
-  rm -rf "${JAVA_INSTALL}" &>> "${LOG_FILE}"
-fi
-
 MOD_DIR="${SCRIPT_PATH}/mod/*"
 LIB_DIR="${SCRIPT_PATH}/lib/*"
 
 "${JAVA_CMD}" -cp "${MOD_DIR}:${LIB_DIR}" -Dlocal.storage.dir="${STORAGE_DIR}" -Xms300m -Xmx500m org.aion.wallet.WalletApplication &>> "${LOG_FILE}" &
+echo "Starting the OAN Wallet ..."
