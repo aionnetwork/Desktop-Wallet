@@ -28,6 +28,7 @@ import org.aion.wallet.ui.components.partials.SaveKeystoreDialog;
 import org.aion.wallet.ui.components.partials.UnlockAccountDialog;
 import org.aion.wallet.util.BalanceUtils;
 import org.aion.wallet.util.UIUtils;
+import org.aion.wallet.util.URLManager;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -238,5 +239,22 @@ public class AccountCellItem extends ListCell<AccountDTO> {
             nameInEditMode = false;
             submitName();
         }
+    }
+
+    @FXML
+    public void onAddressClicked(final MouseEvent mouseEvent) {
+        final AccountDTO accountDTO = getItem();
+        String address = accountDTO.getPublicAddress();
+
+        if (address == null || address.length() < 2) {
+            return;
+        }
+
+        String trimmedAddress = address;
+        if (trimmedAddress.startsWith("0x", 0)) {
+            trimmedAddress = trimmedAddress.substring(2);
+        }
+
+        URLManager.openAddress(trimmedAddress);
     }
 }

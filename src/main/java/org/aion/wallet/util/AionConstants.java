@@ -8,7 +8,7 @@ public final class AionConstants {
 
     private AionConstants() {}
 
-    public static final String AION_URL = "https://mainnet.aion.network";
+    public static final String AION_URL = "https://mainnet.theoan.com";
 
     public static final BigInteger AMP = BigInteger.valueOf((long) 1E9);
 

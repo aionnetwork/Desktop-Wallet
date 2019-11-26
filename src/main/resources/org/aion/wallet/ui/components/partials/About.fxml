@@ -7,6 +7,5 @@
             fx:controller="org.aion.wallet.ui.components.partials.AboutPage"
             prefWidth="150.0">
 
-    <Label AnchorPane.topAnchor="20" styleClass="version-style" text="AION Desktop Wallet v1.2.3"
-           onMouseClicked="#openAboutDialog"/>
+    <Label AnchorPane.topAnchor="20" styleClass="version-style" text="AION Desktop Wallet v1.2.3"/>
 </AnchorPane>

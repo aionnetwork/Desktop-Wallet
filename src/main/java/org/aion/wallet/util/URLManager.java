@@ -16,6 +16,8 @@ public class URLManager {
 
     private static final String TRANSACTION_URL = "/#/transaction/";
 
+    private static final String ADDRESS_URL = "/#/account/";
+
     private static final String CENTRYS_URL = "https://www.centrys.io";
 
 
@@ -33,9 +35,24 @@ public class URLManager {
         }
     }
 
+    public static void openAddress(final String address) {
+        if (checkAddress(address)) {
+            openURL(AionConstants.AION_URL + ADDRESS_URL + address);
+        }
+    }
+
+    protected static boolean checkAddress(final String address) {
+
+        if (address == null) {
+            return false;
+        }
+
+        return address.length() == 64 &&
+                address.matches("^a0[0-9a-fA-F]+$");
+    }
+
     private static boolean checkTransactionHash(final String transactionHash) {
         return transactionHash != null &&
-               !transactionHash.isEmpty() &&
                transactionHash.length() == 64 &&
                transactionHash.matches("[0-9a-fA-F]+");
     }
