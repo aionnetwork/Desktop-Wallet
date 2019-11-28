@@ -18,7 +18,7 @@
                                styleClass="copyable-label" prefWidth="75"/>
                     <TextField fx:id="name" styleClass="copyable-label" editable="false" HBox.hgrow="ALWAYS"/>
                 </HBox>
-                <TextField fx:id="publicAddress" styleClass="copyable-label" editable="false"/>
+                <TextField fx:id="publicAddress" styleClass="copyable-label, clickable" editable="false" onMouseClicked="#onAddressClicked"/>
                 <TextField fx:id="balance" styleClass="copyable-label" editable="false"/>
             </VBox>
             <HBox>
