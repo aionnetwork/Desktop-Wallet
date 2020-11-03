@@ -9,13 +9,13 @@ import java.util.*;
 public class ConnectionProvider {
 
     private static final String DEFAULT_NAME = "Default";
-    private static final String DEFAULT_IP = "aion-main.bdnodes.net";
+    private static final String DEFAULT_IP = "mainnet-node.theoan.com";
     private static final String DEFAULT_PORT = "8547";
     private static final String DEFAULT_PROTOCOL = "tcp";
     private static final Logger log = WalletLoggerFactory.getLogger(LogEnum.WLT.name());
     private static final String DEFAULT_ID = "default-id-12345";
     public static final ConnectionDetails DEFAULT_NODE = new ConnectionDetails(DEFAULT_ID, DEFAULT_NAME, DEFAULT_PROTOCOL,
-            DEFAULT_IP, DEFAULT_PORT, "*y4vDwz$LA1b[+Yop>SkCm-H17UkaGd@3@A?*h%.");
+            DEFAULT_IP, DEFAULT_PORT, "H1zs/=rAt(yZyUDB=kc-*:.^+w*<dtGiDPyNu7D3");
 
     private final Set<ConnectionDetails> connections = new LinkedHashSet<>();
 
