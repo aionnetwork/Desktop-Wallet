@@ -14,7 +14,7 @@
         <os family="mac"/>
     </condition>
 
-    <property name="exec.version" value="v1.2.3"/>
+    <property name="exec.version" value="v1.2.4"/>
     <property name="parent.mod" value="../mod"/>
     <property name="project.name" value="aion_ui"/>
     <property name="dir.lib" value="./lib"/>

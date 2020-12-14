@@ -8,7 +8,7 @@ The Aion Desktop Wallet is a local application that allows you to create an Aion
 
 ## Installation
 
-Installation instructions and user guides can be found on the [Aion Docs website](https://docs.aion.network/docs/aion-desktop-wallet).
+Installation instructions and user guides can be found on the [Aion Docs website](https://docs-aion.theoan.com/docs/aion-desktop-wallet).
 
 ### Requirements
 
