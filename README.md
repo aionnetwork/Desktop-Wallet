@@ -27,6 +27,10 @@ Installation instructions and user guides can be found on the [Aion Docs website
 
 ## Changelog
 
+### V1.2.4
+
+-Default connection changed to a foundation internal node for additional stability.
+
 ### v1.2.3
 
 -The wallet was reskinned to align with the new OAN brand. No functional changes are included.

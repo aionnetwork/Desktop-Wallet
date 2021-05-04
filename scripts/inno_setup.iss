@@ -18,7 +18,7 @@
 
 
 #define MyAppName "AionWallet"
-#define MyAppVersion "1.2.3"
+#define MyAppVersion "1.2.4"
 #define MyAppPublisher "Aion"
 #define MyAppURL "http://www.aion.network/"
 #define MyAppExeName "AionWallet.exe"
