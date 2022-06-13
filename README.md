@@ -1,4 +1,8 @@
-# Aion Desktop Wallet
+# (⛔️ DEPRECATED) Aion Desktop Wallet
+
+[![No Maintenance Intended](http://unmaintained.tech/badge.svg)](http://unmaintained.tech/)
+
+**This codebase is deprecated and no longer supported. Please use [our web wallet](https://my-aion.theoan.com/home) instead.**
 
 Manage your AION coins using a local desktop application.
 
